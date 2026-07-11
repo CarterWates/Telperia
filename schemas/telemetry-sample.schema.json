@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://telperia.org/schemas/telemetry-sample.schema.json",
+  "title": "Telperia Telemetry Sample",
+  "description": "One non-content hardware and runtime telemetry sample.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "timestamp",
+    "node_id",
+    "gpu",
+    "cpu_utilization_percent",
+    "system_memory_used_mb",
+    "current_model",
+    "inference_engine",
+    "request_count",
+    "error_count"
+  ],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "node_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gpu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "utilization_percent",
+        "vram_used_mb",
+        "vram_total_mb",
+        "power_draw_w",
+        "temperature_c"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string"
+        },
+        "utilization_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "vram_used_mb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "vram_total_mb": {
+          "type": "number",
+          "minimum": 0
+        },
+        "power_draw_w": {
+          "type": "number",
+          "minimum": 0
+        },
+        "temperature_c": {
+          "type": "number",
+          "minimum": -40,
+          "maximum": 130
+        }
+      }
+    },
+    "cpu_utilization_percent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "system_memory_used_mb": {
+      "type": "number",
+      "minimum": 0
+    },
+    "current_model": {
+      "type": ["string", "null"]
+    },
+    "inference_engine": {
+      "type": ["string", "null"]
+    },
+    "request_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "error_count": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}
