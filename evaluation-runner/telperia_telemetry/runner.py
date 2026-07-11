@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from math import ceil
 from time import sleep
 
 from telperia_telemetry.energy import calculate_energy_wh
@@ -26,9 +27,12 @@ def collect_telemetry(
     nvml_sampler.initialize()
 
     samples: list[TelemetrySample] = []
+    sample_intervals: list[float] = []
     try:
-        sample_count = max(1, int(duration_s / interval_s))
+        sample_count = max(1, ceil(duration_s / interval_s))
         for index in range(sample_count):
+            elapsed_s = index * interval_s
+            effective_interval_s = min(interval_s, duration_s - elapsed_s)
             samples.append(
                 TelemetrySample(
                     timestamp=datetime.now(UTC),
@@ -42,13 +46,14 @@ def collect_telemetry(
                     error_count=0,
                 )
             )
+            sample_intervals.append(effective_interval_s)
             if index < sample_count - 1:
-                sleep(interval_s)
+                sleep(effective_interval_s)
     finally:
         nvml_sampler.shutdown()
 
     power_readings = [sample.gpu.power_draw_w for sample in samples]
-    energy_wh = calculate_energy_wh(power_readings, interval_s=interval_s)
+    energy_wh = calculate_energy_wh(list(zip(power_readings, sample_intervals)))
     average_power_w = sum(power_readings) / len(power_readings)
     peak_power_w = max(power_readings)
 

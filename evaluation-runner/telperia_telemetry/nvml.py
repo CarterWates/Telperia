@@ -41,13 +41,15 @@ class NvmlSampler:
             raise TelemetryUnavailableError("NVML library is unavailable")
 
         self._check(lib.nvmlInit_v2())
+        self._lib = lib
 
         handle = ctypes.c_void_p()
         result = lib.nvmlDeviceGetHandleByIndex_v2(ctypes.c_uint(self._gpu_index), ctypes.byref(handle))
         if result != NVML_SUCCESS:
+            self.shutdown()
+            self._lib = None
             raise TelemetryUnavailableError("No NVIDIA GPU is available through NVML")
 
-        self._lib = lib
         self._handle = handle
 
     def shutdown(self) -> None:

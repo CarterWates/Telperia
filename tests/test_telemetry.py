@@ -8,6 +8,7 @@ from contextlib import redirect_stderr
 from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -19,6 +20,7 @@ from telperia_telemetry.errors import TelemetryUnavailableError
 from telperia_telemetry.exporters import write_csv, write_json
 from telperia_telemetry.models import GpuMetrics, TelemetryRun, TelemetrySample
 from telperia_telemetry.nvml import NvmlSampler
+from telperia_telemetry.runner import collect_telemetry
 
 
 TELEMETRY_CLI_PATH = RUNNER_ROOT / "telemetry.py"
@@ -94,6 +96,28 @@ class NvmlSamplerTests(unittest.TestCase):
         with self.assertRaisesRegex(TelemetryUnavailableError, "NVML"):
             sampler.initialize()
 
+    def test_shuts_down_nvml_when_gpu_handle_lookup_fails(self) -> None:
+        fake_lib = FakeNvmlLibrary(handle_result=1)
+        sampler = NvmlSampler(library_loader=lambda: fake_lib)
+
+        with self.assertRaisesRegex(TelemetryUnavailableError, "No NVIDIA GPU"):
+            sampler.initialize()
+
+        self.assertEqual(fake_lib.shutdown_calls, 1)
+
+
+class RunnerTests(unittest.TestCase):
+    def test_short_duration_uses_actual_duration_for_energy(self) -> None:
+        sampler = FakeSampler(power_w=100.0)
+
+        with patch("telperia_telemetry.runner.read_cpu_utilization_percent", return_value=0.0):
+            with patch("telperia_telemetry.runner.read_memory_used_mb", return_value=0.0):
+                run = collect_telemetry(duration_s=1, interval_s=10.0, sampler=sampler)
+
+        self.assertEqual(len(run.samples), 1)
+        self.assertAlmostEqual(run.gpu_energy_wh, 100.0 / 3600.0)
+        self.assertEqual(sampler.shutdown_calls, 1)
+
 
 class CliTests(unittest.TestCase):
     def test_cli_rejects_unsupported_output_extension_before_writing(self) -> None:
@@ -152,6 +176,45 @@ def make_run() -> TelemetryRun:
         peak_power_w=80.0,
         sampling_interval_ms=1000,
     )
+
+
+class FakeNvmlLibrary:
+    def __init__(self, handle_result: int) -> None:
+        self.handle_result = handle_result
+        self.shutdown_calls = 0
+
+    def nvmlInit_v2(self) -> int:
+        return 0
+
+    def nvmlDeviceGetHandleByIndex_v2(self, *_args) -> int:
+        return self.handle_result
+
+    def nvmlShutdown(self) -> int:
+        self.shutdown_calls += 1
+        return 0
+
+
+class FakeSampler:
+    def __init__(self, power_w: float) -> None:
+        self.power_w = power_w
+        self.shutdown_calls = 0
+
+    def initialize(self) -> None:
+        return None
+
+    def shutdown(self) -> None:
+        self.shutdown_calls += 1
+
+    def read_gpu_metrics(self) -> GpuMetrics:
+        return GpuMetrics(
+            index=0,
+            name="NVIDIA Test GPU",
+            utilization_percent=10.0,
+            vram_used_mb=512.0,
+            vram_total_mb=8192.0,
+            power_draw_w=self.power_w,
+            temperature_c=50.0,
+        )
 
 
 def make_sample(power_w: float) -> TelemetrySample:
