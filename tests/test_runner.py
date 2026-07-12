@@ -1,0 +1,284 @@
+import json
+import sys
+import unittest
+from contextlib import redirect_stderr
+from datetime import UTC, datetime
+from io import StringIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+RUNNER_ROOT = PROJECT_ROOT / "evaluation-runner"
+sys.path.insert(0, str(RUNNER_ROOT))
+
+from telperia_runner.metrics import calculate_completion_ratio, calculate_factual_reliability, calculate_ipw
+from telperia_runner.monitor import NvmlBackgroundMonitor
+from telperia_runner.ollama import OllamaClient
+from telperia_runner.result import EvaluationResult, build_result_package
+from telperia_runner.schema import SchemaValidationError, validate_result_package
+from telperia_runner.suite import EvaluationTask
+from telperia_telemetry.models import GpuMetrics, TelemetrySample
+
+
+class MetricsTests(unittest.TestCase):
+    def test_calculates_completion_ratio(self) -> None:
+        ratio = calculate_completion_ratio(completed_tasks=3, total_tasks=5)
+
+        self.assertEqual(ratio, 0.6)
+
+    def test_calculates_factual_reliability_rates(self) -> None:
+        metrics = calculate_factual_reliability(correct=2, incorrect=1, abstentions=1)
+
+        self.assertEqual(metrics["total_questions"], 4)
+        self.assertEqual(metrics["correctness_rate"], 0.5)
+        self.assertEqual(metrics["incorrect_answer_rate"], 0.25)
+        self.assertEqual(metrics["abstention_rate"], 0.25)
+        self.assertAlmostEqual(metrics["attempted_accuracy"], 2 / 3)
+
+    def test_calculates_ipw_when_energy_is_positive(self) -> None:
+        ipw = calculate_ipw(tci=0.75, completion_ratio=0.8, gpu_energy_wh=0.5)
+
+        self.assertAlmostEqual(ipw["unscaled"], 1.2)
+        self.assertAlmostEqual(ipw["displayed"], 1200.0)
+
+    def test_rejects_ipw_without_positive_energy(self) -> None:
+        with self.assertRaises(ValueError):
+            calculate_ipw(tci=0.75, completion_ratio=0.8, gpu_energy_wh=0.0)
+
+
+class OllamaClientTests(unittest.TestCase):
+    def test_generate_posts_prompt_and_records_token_counts(self) -> None:
+        client = OllamaClient(base_url="http://ollama.test", opener=FakeOpener())
+
+        result = client.generate(model="llama3.1:8b", prompt="Say hello.")
+
+        self.assertTrue(result.success)
+        self.assertEqual(result.output_tokens, 4)
+        self.assertEqual(result.input_tokens, 3)
+        self.assertGreaterEqual(result.latency_ms, 0)
+
+    def test_version_supports_urllib_style_urlopen(self) -> None:
+        client = OllamaClient(base_url="http://ollama.test", opener=FakeUrlopen())
+
+        version = client.version()
+
+        self.assertEqual(version, "0.1.0")
+
+
+class ResultPackageTests(unittest.TestCase):
+    def test_builds_package_without_prompt_or_response_content(self) -> None:
+        task = EvaluationTask(
+            task_id="reasoning-001",
+            category="reasoning",
+            prompt="What comes next?",
+            expected_contains=["4"],
+        )
+        result = EvaluationResult(
+            task=task,
+            success=True,
+            score=1.0,
+            latency_ms=120.0,
+            input_tokens=5,
+            output_tokens=7,
+            error_category=None,
+        )
+
+        package = build_result_package(
+            model_name="llama3.1:8b",
+            model_revision="unknown",
+            quantization="unknown",
+            engine_version="0.1.0",
+            hardware={
+                "gpu": "unavailable",
+                "gpu_count": 1,
+                "driver": "unavailable",
+                "cuda": "unavailable",
+                "system_ram_gb": 1,
+            },
+            energy={
+                "gpu_energy_wh": 0,
+                "sampling_interval_ms": 1000,
+                "average_power_w": 0,
+                "peak_power_w": 0,
+                "raw_power_samples": [],
+            },
+            suite_id="tci-v0.1",
+            results=[result],
+            runner_version="0.1",
+        )
+
+        serialized = json.dumps(package)
+
+        self.assertEqual(package["schema_version"], "0.1")
+        self.assertEqual(package["evaluation"]["completed_tasks"], 1)
+        self.assertEqual(package["performance"]["input_tokens"], 5)
+        self.assertNotIn("What comes next?", serialized)
+        self.assertNotIn("expected_contains", serialized)
+        self.assertNotIn("prompt", serialized.lower())
+
+    def test_validates_generated_package_against_schema(self) -> None:
+        package = make_package()
+
+        validate_result_package(package, PROJECT_ROOT / "schemas" / "evaluation-run.schema.json")
+
+    def test_schema_validation_rejects_extra_raw_result_fields(self) -> None:
+        package = make_package()
+        package["evaluation"]["raw_results"][0]["prompt"] = "private content"
+
+        with self.assertRaises(SchemaValidationError):
+            validate_result_package(package, PROJECT_ROOT / "schemas" / "evaluation-run.schema.json")
+
+
+class MonitorTests(unittest.TestCase):
+    def test_nvml_monitor_uses_partial_final_interval_for_energy(self) -> None:
+        monitor = NvmlBackgroundMonitor(interval_s=10.0)
+        monitor._samples = [make_sample(timestamp=datetime(2026, 7, 11, 12, 0, tzinfo=UTC), power_w=100.0)]
+        monitor._ended_at = datetime(2026, 7, 11, 12, 0, 1, tzinfo=UTC)
+
+        energy = monitor.energy()
+
+        self.assertAlmostEqual(energy["gpu_energy_wh"], 100.0 / 3600.0)
+        self.assertEqual(energy["raw_power_samples"][0]["interval_s"], 1.0)
+
+
+class EvaluateCliTests(unittest.TestCase):
+    def test_cli_returns_clear_error_when_ollama_is_unavailable(self) -> None:
+        module = load_evaluate_cli()
+        original_argv = sys.argv
+        try:
+            with TemporaryDirectory() as tmpdir:
+                sys.argv = [
+                    "evaluate.py",
+                    "--model",
+                    "llama3.1:8b",
+                    "--suite",
+                    str(PROJECT_ROOT / "evaluation-runner" / "suites" / "tci-v0.1.json"),
+                    "--output",
+                    str(Path(tmpdir) / "run.json"),
+                ]
+                with patch.object(module, "OllamaClient", return_value=UnavailableClient()):
+                    with redirect_stderr(StringIO()):
+                        with self.assertRaises(SystemExit) as raised:
+                            module.main()
+        finally:
+            sys.argv = original_argv
+
+        self.assertEqual(raised.exception.code, 2)
+
+
+class FakeOpener:
+    def open(self, request, timeout: float):
+        body = json.loads(request.data.decode())
+        assert body["model"] == "llama3.1:8b"
+        assert body["prompt"] == "Say hello."
+        return FakeResponse(
+            {
+                "response": "hello",
+                "prompt_eval_count": 3,
+                "eval_count": 4,
+            }
+        )
+
+
+class FakeUrlopen:
+    def urlopen(self, target, timeout: float):
+        assert target == "http://ollama.test/api/version"
+        return FakeResponse({"version": "0.1.0"})
+
+
+class FakeResponse:
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_args):
+        return False
+
+    def read(self) -> bytes:
+        return json.dumps(self.payload).encode()
+
+
+class UnavailableClient:
+    def version(self):
+        raise ConnectionError("Ollama service is unavailable")
+
+
+def load_evaluate_cli():
+    path = RUNNER_ROOT / "evaluate.py"
+    spec = __import__("importlib.util").util.spec_from_file_location("evaluate_cli", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Unable to load evaluate CLI")
+    module = __import__("importlib.util").util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def make_sample(timestamp: datetime, power_w: float) -> TelemetrySample:
+    return TelemetrySample(
+        timestamp=timestamp,
+        node_id="local",
+        gpu=GpuMetrics(
+            index=0,
+            name="NVIDIA Test GPU",
+            utilization_percent=10.0,
+            vram_used_mb=512.0,
+            vram_total_mb=8192.0,
+            power_draw_w=power_w,
+            temperature_c=50.0,
+        ),
+        cpu_utilization_percent=0.0,
+        system_memory_used_mb=1024.0,
+        current_model=None,
+        inference_engine="ollama",
+        request_count=0,
+        error_count=0,
+    )
+
+
+def make_package() -> dict:
+    task = EvaluationTask(
+        task_id="reasoning-001",
+        category="reasoning",
+        prompt="What comes next?",
+        expected_contains=["4"],
+    )
+    result = EvaluationResult(
+        task=task,
+        success=True,
+        score=1.0,
+        latency_ms=120.0,
+        input_tokens=5,
+        output_tokens=7,
+        error_category=None,
+    )
+    return build_result_package(
+        model_name="llama3.1:8b",
+        model_revision="unknown",
+        quantization="unknown",
+        engine_version="0.1.0",
+        hardware={
+            "gpu": "unavailable",
+            "gpu_count": 1,
+            "driver": "unavailable",
+            "cuda": "unavailable",
+            "system_ram_gb": 1,
+        },
+        energy={
+            "gpu_energy_wh": 0,
+            "sampling_interval_ms": 1000,
+            "average_power_w": 0,
+            "peak_power_w": 0,
+            "raw_power_samples": [],
+        },
+        suite_id="tci-v0.1",
+        results=[result],
+        runner_version="0.1",
+    )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,35 @@
+{
+  "suite_id": "tci-v0.1",
+  "tasks": [
+    {
+      "task_id": "reasoning-001",
+      "category": "reasoning",
+      "prompt": "A sequence goes 2, 4, 8, 16. What number comes next? Answer with only the number.",
+      "expected_contains": ["32"]
+    },
+    {
+      "task_id": "coding-001",
+      "category": "coding",
+      "prompt": "In Python, what keyword defines a function? Answer with only the keyword.",
+      "expected_contains": ["def"]
+    },
+    {
+      "task_id": "math-001",
+      "category": "mathematics",
+      "prompt": "What is 17 plus 25? Answer with only the number.",
+      "expected_contains": ["42"]
+    },
+    {
+      "task_id": "factual-001",
+      "category": "factual_knowledge",
+      "prompt": "What planet is known as the Red Planet? Answer with only the planet name.",
+      "expected_contains": ["Mars"]
+    },
+    {
+      "task_id": "instruction-001",
+      "category": "instruction_adherence",
+      "prompt": "Reply with exactly this word and nothing else: telescope",
+      "expected_contains": ["telescope"]
+    }
+  ]
+}
