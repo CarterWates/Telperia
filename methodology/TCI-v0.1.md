@@ -20,6 +20,8 @@ TCI measures demonstrated capability across the versioned Telperia evaluation su
 
 The MVP runner maps the Long-Context and Instruction Tasks category to `instruction_adherence` tasks in the `tci-v0.1` suite.
 
+The first MVP suite contains 25 auto-gradable tasks, with five tasks in each category. This suite is intended for local experiment consistency and early calibration. It should be expanded before Telperia presents public model rankings.
+
 ## Normalization
 
 Each raw benchmark score is normalized to a 0-100 scale before category aggregation.

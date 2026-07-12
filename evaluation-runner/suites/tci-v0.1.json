@@ -1,35 +1,185 @@
 {
   "suite_id": "tci-v0.1",
+  "description": "MVP local TCI v0.1 suite with 25 auto-gradable tasks. This is stronger than the initial smoke suite but is still not a public frontier benchmark.",
   "tasks": [
     {
       "task_id": "reasoning-001",
       "category": "reasoning",
-      "prompt": "A sequence goes 2, 4, 8, 16. What number comes next? Answer with only the number.",
-      "expected_contains": ["32"]
+      "prompt": "A prize is in exactly one box: A, B, or C. Box A says: \"The prize is in B.\" Box B says: \"The prize is not in B.\" Box C says: \"The prize is not in A.\" Exactly one label is true. Which box contains the prize? Answer with only A, B, or C.",
+      "expected_contains": ["A"],
+      "exact_match": true
+    },
+    {
+      "task_id": "reasoning-002",
+      "category": "reasoning",
+      "prompt": "Five runners finished a race. Eli finished ahead of Ana. Ana finished ahead of Cy. Cy finished ahead of Di. Di finished ahead of Bo. Who finished first? Answer with only the runner's name.",
+      "expected_contains": ["Eli"],
+      "exact_match": true
+    },
+    {
+      "task_id": "reasoning-003",
+      "category": "reasoning",
+      "prompt": "All mips are dax. No dax are lorn. Some vep are mip. Must at least one vep be not lorn? Answer with only yes or no.",
+      "expected_contains": ["yes"],
+      "exact_match": true
+    },
+    {
+      "task_id": "reasoning-004",
+      "category": "reasoning",
+      "prompt": "A code is a three-digit number. The digits sum to 12. The hundreds digit is twice the ones digit. The tens digit is one less than the hundreds digit. What is the code? Answer with only the number.",
+      "expected_contains": ["651"],
+      "exact_match": true
+    },
+    {
+      "task_id": "reasoning-005",
+      "category": "reasoning",
+      "prompt": "In a non-leap year, January 1 is a Monday. What weekday is March 1 of that same year? Answer with only the weekday.",
+      "expected_contains": ["Thursday"],
+      "exact_match": true
     },
     {
       "task_id": "coding-001",
       "category": "coding",
-      "prompt": "In Python, what keyword defines a function? Answer with only the keyword.",
-      "expected_contains": ["def"]
+      "prompt": "Python output prediction. Code:\n\ndef f(x=[]):\n    x.append(len(x))\n    return x\nprint(f(), f(), f([]), f())\n\nWhat is printed? Answer with only the printed output.",
+      "expected_contains": ["[0] [0, 1] [0] [0, 1, 2]"],
+      "exact_match": true
+    },
+    {
+      "task_id": "coding-002",
+      "category": "coding",
+      "prompt": "What is the tight Big-O time complexity of this code in terms of n?\n\nfor i in range(n):\n    for j in range(i):\n        work()\n\nAnswer with only the Big-O expression.",
+      "expected_contains": ["O(n^2)", "O(n²)"],
+      "exact_match": true
+    },
+    {
+      "task_id": "coding-003",
+      "category": "coding",
+      "prompt": "Python output prediction. What does this expression evaluate to?\n\n''.join(str(i) for i in range(3))\n\nAnswer with only the resulting string.",
+      "expected_contains": ["012"],
+      "exact_match": true
+    },
+    {
+      "task_id": "coding-004",
+      "category": "coding",
+      "prompt": "A Python loop crashes on the last iteration:\n\nfor i in range(len(items) + 1):\n    total += items[i]\n\nWhich expression causes the off-by-one bug? Answer with only the expression.",
+      "expected_contains": ["len(items) + 1", "len(items)+1"],
+      "exact_match": true
+    },
+    {
+      "task_id": "coding-005",
+      "category": "coding",
+      "prompt": "Python output prediction. Code:\n\nx = {'a': 1}\ny = x\ny['b'] = 2\nprint(sorted(x.items()))\n\nWhat is printed? Answer with only the printed output.",
+      "expected_contains": ["[('a', 1), ('b', 2)]"],
+      "exact_match": true
     },
     {
       "task_id": "math-001",
       "category": "mathematics",
-      "prompt": "What is 17 plus 25? Answer with only the number.",
-      "expected_contains": ["42"]
+      "prompt": "Compute 7^222 mod 10. Answer with only the integer.",
+      "expected_contains": ["9"],
+      "exact_match": true
+    },
+    {
+      "task_id": "math-002",
+      "category": "mathematics",
+      "prompt": "Two fair six-sided dice are rolled. What is the probability that their sum is 9? Answer as a reduced fraction only.",
+      "expected_contains": ["1/9"],
+      "exact_match": true
+    },
+    {
+      "task_id": "math-003",
+      "category": "mathematics",
+      "prompt": "Solve for x: 3(2x - 5) = 4x + 7. Answer with only the value of x.",
+      "expected_contains": ["11"],
+      "exact_match": true
+    },
+    {
+      "task_id": "math-004",
+      "category": "mathematics",
+      "prompt": "A sequence is defined by a1 = 2 and a(n+1) = 3a(n) - 1. What is a4? Answer with only the integer.",
+      "expected_contains": ["41"],
+      "exact_match": true
+    },
+    {
+      "task_id": "math-005",
+      "category": "mathematics",
+      "prompt": "A rectangle has perimeter 50. What is the maximum possible area? Answer with only the number.",
+      "expected_contains": ["156.25"],
+      "exact_match": true
     },
     {
       "task_id": "factual-001",
       "category": "factual_knowledge",
-      "prompt": "What planet is known as the Red Planet? Answer with only the planet name.",
-      "expected_contains": ["Mars"]
+      "prompt": "What is the SI base unit of electric current? Answer with only the unit name.",
+      "expected_contains": ["ampere"],
+      "exact_match": true
+    },
+    {
+      "task_id": "factual-002",
+      "category": "factual_knowledge",
+      "prompt": "Who was the first woman to win a Nobel Prize? Answer with only the person's name.",
+      "expected_contains": ["Marie Curie"],
+      "exact_match": true
+    },
+    {
+      "task_id": "factual-003",
+      "category": "factual_knowledge",
+      "prompt": "Which chemical element has atomic number 74? Answer with only the element name.",
+      "expected_contains": ["tungsten", "wolfram"],
+      "exact_match": true
+    },
+    {
+      "task_id": "factual-004",
+      "category": "factual_knowledge",
+      "prompt": "Who wrote The Structure of Scientific Revolutions? Answer with only the author's name.",
+      "expected_contains": ["Thomas Kuhn"],
+      "exact_match": true
+    },
+    {
+      "task_id": "factual-005",
+      "category": "factual_knowledge",
+      "prompt": "Which spacecraft first achieved a soft landing on the Moon? Answer with only the spacecraft name.",
+      "expected_contains": ["Luna 9"],
+      "exact_match": true
     },
     {
       "task_id": "instruction-001",
       "category": "instruction_adherence",
-      "prompt": "Reply with exactly this word and nothing else: telescope",
-      "expected_contains": ["telescope"]
+      "prompt": "Return exactly this token and nothing else: TCI-READY",
+      "expected_contains": ["TCI-READY"],
+      "case_sensitive": true,
+      "exact_match": true
+    },
+    {
+      "task_id": "instruction-002",
+      "category": "instruction_adherence",
+      "prompt": "Return exactly this minified JSON object and nothing else: {\"status\":\"ok\",\"count\":3}",
+      "expected_contains": ["{\"status\":\"ok\",\"count\":3}"],
+      "expected_not_contains": ["```"],
+      "case_sensitive": true,
+      "exact_match": true
+    },
+    {
+      "task_id": "instruction-003",
+      "category": "instruction_adherence",
+      "prompt": "Reverse the string stressed. Return only the reversed string.",
+      "expected_contains": ["desserts"],
+      "exact_match": true
+    },
+    {
+      "task_id": "instruction-004",
+      "category": "instruction_adherence",
+      "prompt": "Return these words in alphabetical order, separated by single spaces, with no punctuation: red blue green",
+      "expected_contains": ["blue green red"],
+      "exact_match": true
+    },
+    {
+      "task_id": "instruction-005",
+      "category": "instruction_adherence",
+      "prompt": "Answer with the single lowercase word that is third in this sequence: alpha beta gamma delta",
+      "expected_contains": ["gamma"],
+      "case_sensitive": true,
+      "exact_match": true
     }
   ]
 }

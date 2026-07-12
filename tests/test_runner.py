@@ -16,10 +16,10 @@ sys.path.insert(0, str(RUNNER_ROOT))
 from telperia_runner.metrics import calculate_completion_ratio, calculate_factual_reliability, calculate_ipw, calculate_tci
 from telperia_runner.monitor import NvmlBackgroundMonitor
 from telperia_runner.ollama import OllamaClient
-from telperia_runner.evaluator import run_evaluation
+from telperia_runner.evaluator import run_evaluation, score_text
 from telperia_runner.result import EvaluationResult, build_result_package
 from telperia_runner.schema import SchemaValidationError, validate_result_package
-from telperia_runner.suite import EvaluationTask
+from telperia_runner.suite import EvaluationTask, load_suite
 from telperia_telemetry.models import GpuMetrics, TelemetrySample
 
 
@@ -93,6 +93,77 @@ class OllamaClientTests(unittest.TestCase):
         self.assertFalse(result.success)
         self.assertEqual(result.error_category, "ollama_error")
         self.assertEqual(result.output_tokens, 0)
+
+
+class ScoringTests(unittest.TestCase):
+    def test_exact_match_rejects_extra_text(self) -> None:
+        task = EvaluationTask(
+            task_id="instruction-001",
+            category="instruction_adherence",
+            prompt="Return only ABC-123.",
+            expected_contains=["ABC-123"],
+            exact_match=True,
+        )
+
+        self.assertEqual(score_text("ABC-123 extra", task), 0.0)
+        self.assertEqual(score_text("ABC-123", task), 1.0)
+
+    def test_case_sensitive_matching_is_optional(self) -> None:
+        task = EvaluationTask(
+            task_id="instruction-002",
+            category="instruction_adherence",
+            prompt="Return Go.",
+            expected_contains=["Go"],
+            case_sensitive=True,
+        )
+
+        self.assertEqual(score_text("go", task), 0.0)
+        self.assertEqual(score_text("Go", task), 1.0)
+
+    def test_forbidden_text_fails_score(self) -> None:
+        task = EvaluationTask(
+            task_id="instruction-003",
+            category="instruction_adherence",
+            prompt="Return READY without punctuation.",
+            expected_contains=["READY"],
+            expected_not_contains=["."],
+        )
+
+        self.assertEqual(score_text("READY.", task), 0.0)
+        self.assertEqual(score_text("READY", task), 1.0)
+
+    def test_contains_matching_still_supports_partial_credit(self) -> None:
+        task = EvaluationTask(
+            task_id="reasoning-001",
+            category="reasoning",
+            prompt="Return two facts.",
+            expected_contains=["alpha", "beta"],
+        )
+
+        self.assertEqual(score_text("alpha only", task), 0.5)
+
+
+class SuiteTests(unittest.TestCase):
+    def test_tci_suite_has_five_challenging_tasks_per_category(self) -> None:
+        suite = load_suite(PROJECT_ROOT / "evaluation-runner" / "suites" / "tci-v0.1.json")
+        categories = {}
+        for task in suite.tasks:
+            categories.setdefault(task.category, 0)
+            categories[task.category] += 1
+
+        self.assertEqual(len(suite.tasks), 25)
+        self.assertEqual(
+            categories,
+            {
+                "reasoning": 5,
+                "coding": 5,
+                "mathematics": 5,
+                "factual_knowledge": 5,
+                "instruction_adherence": 5,
+            },
+        )
+        self.assertTrue(any(task.exact_match for task in suite.tasks))
+        self.assertTrue(any(task.expected_not_contains for task in suite.tasks))
 
 
 class ResultPackageTests(unittest.TestCase):
@@ -282,6 +353,7 @@ class FakeOpener:
         body = json.loads(request.data.decode())
         assert body["model"] == "llama3.1:8b"
         assert body["prompt"] == "Say hello."
+        assert body["options"]["num_predict"] == 64
         return FakeResponse(
             {
                 "response": "hello",
@@ -320,7 +392,7 @@ class FakeEvaluationClient:
     def version(self) -> str:
         return "0.1.0"
 
-    def generate(self, model: str, prompt: str):
+    def generate(self, model: str, prompt: str, max_output_tokens: int = 64):
         return type(
             "Generation",
             (),

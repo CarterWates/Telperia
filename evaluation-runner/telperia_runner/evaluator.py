@@ -16,13 +16,14 @@ def run_evaluation(
     energy: dict[str, Any] | Callable[[], dict[str, Any]],
     model_revision: str = "unknown",
     quantization: str = "unknown",
+    max_output_tokens: int = 64,
 ) -> dict:
     engine_version = client.version()
     results: list[EvaluationResult] = []
 
     for task in suite.tasks:
-        generation = client.generate(model=model_name, prompt=task.prompt)
-        score = score_text(generation.text, task.expected_contains) if generation.success else 0.0
+        generation = client.generate(model=model_name, prompt=task.prompt, max_output_tokens=max_output_tokens)
+        score = score_text(generation.text, task) if generation.success else 0.0
         results.append(
             EvaluationResult(
                 task=task,
@@ -49,9 +50,23 @@ def run_evaluation(
     )
 
 
-def score_text(text: str, expected_contains: list[str]) -> float:
-    if not expected_contains:
+def score_text(text: str, task: EvaluationTask) -> float:
+    if not task.expected_contains:
         return 1.0
-    normalized = text.lower()
-    matches = sum(1 for expected in expected_contains if expected.lower() in normalized)
-    return matches / len(expected_contains)
+
+    candidate = text.strip()
+    expected_values = [item.strip() for item in task.expected_contains]
+    forbidden_values = [item.strip() for item in task.expected_not_contains]
+    if not task.case_sensitive:
+        candidate = candidate.lower()
+        expected_values = [item.lower() for item in expected_values]
+        forbidden_values = [item.lower() for item in forbidden_values]
+
+    if any(forbidden and forbidden in candidate for forbidden in forbidden_values):
+        return 0.0
+
+    if task.exact_match:
+        return 1.0 if any(candidate == expected for expected in expected_values) else 0.0
+
+    matches = sum(1 for expected in expected_values if expected and expected in candidate)
+    return matches / len(expected_values)

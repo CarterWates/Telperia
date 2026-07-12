@@ -32,6 +32,7 @@ def main() -> int:
     parser.add_argument("--ollama-url", default="http://127.0.0.1:11434", help="Ollama base URL.")
     parser.add_argument("--model-revision", default="unknown", help="Model revision metadata.")
     parser.add_argument("--quantization", default="unknown", help="Model quantization metadata.")
+    parser.add_argument("--max-output-tokens", type=int, default=64, help="Maximum generated tokens per task.")
     args = parser.parse_args()
 
     suite = load_suite(args.suite)
@@ -47,6 +48,7 @@ def main() -> int:
                 energy=monitor.energy,
                 model_revision=args.model_revision,
                 quantization=args.quantization,
+                max_output_tokens=args.max_output_tokens,
             )
     except (ConnectionError, TelemetryUnavailableError) as exc:
         parser.exit(status=2, message=f"evaluation unavailable: {exc}\n")

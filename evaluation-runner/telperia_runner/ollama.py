@@ -31,12 +31,15 @@ class OllamaClient:
             raise ConnectionError("Ollama service is unavailable") from exc
         return str(payload.get("version", "unknown"))
 
-    def generate(self, model: str, prompt: str, timeout: float = 120.0) -> GenerationResult:
+    def generate(self, model: str, prompt: str, timeout: float = 120.0, max_output_tokens: int = 64) -> GenerationResult:
         body = json.dumps(
             {
                 "model": model,
                 "prompt": prompt,
                 "stream": False,
+                "options": {
+                    "num_predict": max_output_tokens,
+                },
             }
         ).encode()
         req = request.Request(

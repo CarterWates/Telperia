@@ -4,6 +4,8 @@
 
 Phase 5 turns the Phase 4 runner into repeatable local experiment evidence. The goal is to generate valid Telperia result packages while clearly separating local development smoke runs from results that can support public comparison.
 
+The current `tci-v0.1` suite is a 25-task auto-gradable MVP suite. It is intended to challenge local models more than the initial smoke suite while still keeping Phase 5 reproducible. It is not yet a public frontier benchmark.
+
 ## Experiment Classes
 
 ### Local Development
@@ -73,6 +75,7 @@ python3 evaluate.py \
   --model llama3.1:8b \
   --suite suites/tci-v0.1.json \
   --hardware-monitor disabled \
+  --max-output-tokens 64 \
   --output ../datasets/results/2026-07-12_llama3-1-8b_tci-v0-1_local-dev_001.json
 ```
 
@@ -94,6 +97,7 @@ python3 evaluate.py \
   --model llama3.1:8b \
   --suite suites/tci-v0.1.json \
   --hardware-monitor nvml \
+  --max-output-tokens 64 \
   --output ../datasets/results/2026-07-12_llama3-1-8b_tci-v0-1-nvml_001.json
 ```
 

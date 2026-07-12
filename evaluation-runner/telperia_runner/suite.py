@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -11,6 +11,9 @@ class EvaluationTask:
     category: str
     prompt: str
     expected_contains: list[str]
+    expected_not_contains: list[str] = field(default_factory=list)
+    case_sensitive: bool = False
+    exact_match: bool = False
 
 
 @dataclass(frozen=True)
@@ -29,6 +32,9 @@ def load_suite(path: Path) -> EvaluationSuite:
                 category=task["category"],
                 prompt=task["prompt"],
                 expected_contains=task.get("expected_contains", []),
+                expected_not_contains=task.get("expected_not_contains", []),
+                case_sensitive=task.get("case_sensitive", False),
+                exact_match=task.get("exact_match", False),
             )
             for task in payload["tasks"]
         ],
