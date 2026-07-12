@@ -66,6 +66,15 @@ class OllamaClientTests(unittest.TestCase):
 
         self.assertEqual(version, "0.1.0")
 
+    def test_generate_marks_ollama_error_payload_as_failure(self) -> None:
+        client = OllamaClient(base_url="http://ollama.test", opener=FakeErrorOpener())
+
+        result = client.generate(model="missing-model", prompt="Say hello.")
+
+        self.assertFalse(result.success)
+        self.assertEqual(result.error_category, "ollama_error")
+        self.assertEqual(result.output_tokens, 0)
+
 
 class ResultPackageTests(unittest.TestCase):
     def test_builds_package_without_prompt_or_response_content(self) -> None:
@@ -142,6 +151,16 @@ class MonitorTests(unittest.TestCase):
         self.assertAlmostEqual(energy["gpu_energy_wh"], 100.0 / 3600.0)
         self.assertEqual(energy["raw_power_samples"][0]["interval_s"], 1.0)
 
+    def test_nvml_monitor_takes_initial_sample_on_enter(self) -> None:
+        monitor = NvmlBackgroundMonitor(interval_s=10.0)
+        monitor._sampler = FakeSampler(power_w=80.0)
+
+        with patch("telperia_runner.monitor.read_cpu_utilization_percent", return_value=0.0):
+            with patch("telperia_runner.monitor.read_memory_used_mb", return_value=1024.0):
+                with patch("telperia_runner.monitor.Thread", FakeThread):
+                    with monitor:
+                        self.assertEqual(len(monitor._samples), 1)
+
 
 class EvaluateCliTests(unittest.TestCase):
     def test_cli_returns_clear_error_when_ollama_is_unavailable(self) -> None:
@@ -182,6 +201,11 @@ class FakeOpener:
         )
 
 
+class FakeErrorOpener:
+    def open(self, request, timeout: float):
+        return FakeResponse({"error": "model not found"})
+
+
 class FakeUrlopen:
     def urlopen(self, target, timeout: float):
         assert target == "http://ollama.test/api/version"
@@ -200,6 +224,41 @@ class FakeResponse:
 
     def read(self) -> bytes:
         return json.dumps(self.payload).encode()
+
+
+class FakeThread:
+    def __init__(self, target, daemon: bool) -> None:
+        self.target = target
+        self.daemon = daemon
+
+    def start(self) -> None:
+        return None
+
+    def join(self) -> None:
+        return None
+
+
+class FakeSampler:
+    def __init__(self, power_w: float) -> None:
+        self.power_w = power_w
+        self.shutdown_calls = 0
+
+    def initialize(self) -> None:
+        return None
+
+    def shutdown(self) -> None:
+        self.shutdown_calls += 1
+
+    def read_gpu_metrics(self) -> GpuMetrics:
+        return GpuMetrics(
+            index=0,
+            name="NVIDIA Test GPU",
+            utilization_percent=10.0,
+            vram_used_mb=512.0,
+            vram_total_mb=8192.0,
+            power_draw_w=self.power_w,
+            temperature_c=50.0,
+        )
 
 
 class UnavailableClient:

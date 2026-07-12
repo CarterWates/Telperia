@@ -54,6 +54,9 @@ class OllamaClient:
         except (OSError, URLError, json.JSONDecodeError):
             return _failed_result(started, "runtime_error")
 
+        if payload.get("error"):
+            return _failed_result(started, "ollama_error")
+
         return GenerationResult(
             text=str(payload.get("response", "")),
             latency_ms=(time.perf_counter() - started) * 1000.0,

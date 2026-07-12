@@ -59,6 +59,7 @@ class NvmlBackgroundMonitor:
 
     def __enter__(self) -> "NvmlBackgroundMonitor":
         self._sampler.initialize()
+        self._collect_one()
         self._thread = Thread(target=self._collect, daemon=True)
         self._thread.start()
         return self
@@ -98,20 +99,24 @@ class NvmlBackgroundMonitor:
 
     def _collect(self) -> None:
         while not self._stop.is_set():
-            self._samples.append(
-                TelemetrySample(
-                    timestamp=datetime.now(UTC),
-                    node_id=self.node_id,
-                    gpu=self._sampler.read_gpu_metrics(),
-                    cpu_utilization_percent=read_cpu_utilization_percent(),
-                    system_memory_used_mb=read_memory_used_mb(),
-                    current_model=None,
-                    inference_engine="ollama",
-                    request_count=0,
-                    error_count=0,
-                )
-            )
             sleep(self.interval_s)
+            if not self._stop.is_set():
+                self._collect_one()
+
+    def _collect_one(self) -> None:
+        self._samples.append(
+            TelemetrySample(
+                timestamp=datetime.now(UTC),
+                node_id=self.node_id,
+                gpu=self._sampler.read_gpu_metrics(),
+                cpu_utilization_percent=read_cpu_utilization_percent(),
+                system_memory_used_mb=read_memory_used_mb(),
+                current_model=None,
+                inference_engine="ollama",
+                request_count=0,
+                error_count=0,
+            )
+        )
 
     def _raw_power_samples(self) -> list[dict[str, Any]]:
         ended_at = self._ended_at or datetime.now(UTC)
