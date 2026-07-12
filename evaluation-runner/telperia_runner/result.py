@@ -79,6 +79,9 @@ def build_result_package(
                     "category": result.task.category,
                     "score": result.score,
                     "success": result.success,
+                    "latency_ms": result.latency_ms,
+                    "input_tokens": result.input_tokens,
+                    "output_tokens": result.output_tokens,
                     "error_category": result.error_category,
                 }
                 for result in results

@@ -141,7 +141,14 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["task_id", "category", "success"],
+            "required": [
+              "task_id",
+              "category",
+              "success",
+              "latency_ms",
+              "input_tokens",
+              "output_tokens"
+            ],
             "properties": {
               "task_id": {
                 "type": "string",
@@ -156,6 +163,18 @@
               },
               "success": {
                 "type": "boolean"
+              },
+              "latency_ms": {
+                "type": "number",
+                "minimum": 0
+              },
+              "input_tokens": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "output_tokens": {
+                "type": "integer",
+                "minimum": 0
               },
               "error_category": {
                 "type": ["string", "null"]

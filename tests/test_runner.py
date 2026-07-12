@@ -123,6 +123,10 @@ class ResultPackageTests(unittest.TestCase):
         self.assertEqual(package["schema_version"], "0.1")
         self.assertEqual(package["evaluation"]["completed_tasks"], 1)
         self.assertEqual(package["performance"]["input_tokens"], 5)
+        raw_result = package["evaluation"]["raw_results"][0]
+        self.assertEqual(raw_result["latency_ms"], 120.0)
+        self.assertEqual(raw_result["input_tokens"], 5)
+        self.assertEqual(raw_result["output_tokens"], 7)
         self.assertNotIn("What comes next?", serialized)
         self.assertNotIn("expected_contains", serialized)
         self.assertNotIn("prompt", serialized.lower())
