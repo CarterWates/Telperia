@@ -6,7 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from telperia_runner import RUNNER_VERSION
-from telperia_runner.metrics import calculate_completion_ratio, calculate_factual_reliability
+from telperia_runner.metrics import calculate_completion_ratio, calculate_factual_reliability, calculate_ipw, calculate_tci
 from telperia_runner.suite import EvaluationTask
 
 
@@ -35,7 +35,9 @@ def build_result_package(
     completed_tasks = sum(1 for result in results if result.success)
     total_tasks = len(results)
     completion_ratio = calculate_completion_ratio(completed_tasks, total_tasks)
+    tci = calculate_tci(results)
     factual = _factual_metrics(results)
+    ipw = _ipw_metrics(tci["final_score"], completion_ratio, energy)
 
     return {
         "schema_version": "0.1",
@@ -67,11 +69,9 @@ def build_result_package(
             "completion_ratio": completion_ratio,
             "scores": {
                 "task_score_average": _average_score(results),
-                "tci_v0_1": {
-                    "status": "deferred",
-                    "reason": "TCI v0.1 weights are not approved in the methodology.",
-                },
+                "tci_v0_1": tci,
                 "factual_reliability_v0_1": factual,
+                "ipw_v0_1": ipw,
             },
             "raw_results": [
                 {
@@ -121,3 +121,13 @@ def _factual_metrics(results: list[EvaluationResult]) -> dict[str, float | int]:
     incorrect = sum(1 for result in factual_results if result.success and result.score < 1.0)
     abstentions = sum(1 for result in factual_results if not result.success)
     return calculate_factual_reliability(correct, incorrect, abstentions)
+
+
+def _ipw_metrics(tci_score: float, completion_ratio: float, energy: dict[str, Any]) -> dict[str, Any]:
+    gpu_energy_wh = float(energy.get("gpu_energy_wh", 0.0))
+    if gpu_energy_wh <= 0:
+        return {
+            "status": "deferred",
+            "reason": "GPU energy must be greater than zero to calculate IPW.",
+        }
+    return calculate_ipw(tci=tci_score, completion_ratio=completion_ratio, gpu_energy_wh=gpu_energy_wh)

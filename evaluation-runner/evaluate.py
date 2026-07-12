@@ -44,12 +44,10 @@ def main() -> int:
                 model_name=args.model,
                 client=client,
                 hardware=monitor.hardware(),
-                energy=monitor.energy(),
+                energy=monitor.energy,
                 model_revision=args.model_revision,
                 quantization=args.quantization,
             )
-            package["hardware"] = monitor.hardware()
-            package["energy"] = monitor.energy()
     except (ConnectionError, TelemetryUnavailableError) as exc:
         parser.exit(status=2, message=f"evaluation unavailable: {exc}\n")
 

@@ -84,7 +84,7 @@ An evaluation run should preserve:
 
 ### Status
 
-TCI v0.1 is a draft scaffold. The final category weights, normalization rules, and benchmark aggregation formula must be explicitly approved before implementation.
+TCI v0.1 is approved for MVP implementation using the category weights and aggregation formula below.
 
 ### What TCI Measures
 
@@ -94,13 +94,13 @@ TCI is intended to measure model capability across the MVP evaluation categories
 - Coding.
 - Mathematics.
 - Factual knowledge.
-- Instruction adherence.
+- Long-context and instruction tasks.
 
 TCI should describe performance on a controlled evaluation suite, not general intelligence, product usefulness, safety, or universal model quality.
 
 ### Required Preserved Values
 
-Future TCI implementations must preserve:
+TCI implementations must preserve:
 
 - Raw benchmark score.
 - Normalized benchmark score.
@@ -113,11 +113,38 @@ Future TCI implementations must preserve:
 - Methodology version.
 - Evaluation suite version.
 
-### Draft Scoring Direction
+### Categories and Weights
+
+| Category | Weight |
+| --- | ---: |
+| Reasoning | 25% |
+| Coding | 25% |
+| Mathematics | 20% |
+| Factual Knowledge | 15% |
+| Long-Context and Instruction Tasks | 15% |
+
+### Normalization
+
+Each raw benchmark score must be normalized to a 0-100 scale before category aggregation.
+
+```text
+Normalized Score = 100 * (Model Score - Reference Floor) / (Reference Ceiling - Reference Floor)
+```
+
+For the first MVP suite, task scores are bounded from 0 to 1. The runner uses a reference floor of `0`, a reference ceiling of `1`, and a clipping range of `0` to `100`.
+
+### Formula
+
+```text
+TCI v0.1 =
+0.25 * Reasoning Score
++ 0.25 * Coding Score
++ 0.20 * Mathematics Score
++ 0.15 * Factual Knowledge Score
++ 0.15 * Long-Context and Instruction Score
+```
 
 TCI should be calculated from category-level scores rather than only a final aggregate. This allows users to see whether a model is strong in coding but weak in factual knowledge, or efficient but less capable in mathematics.
-
-No TCI formula is approved in this document beyond that structural requirement.
 
 ## TRI v0.1: Telperia Reliability Index
 
@@ -197,15 +224,15 @@ IPW results must preserve:
 
 ### Status
 
-Factual Reliability v0.1 is a draft scaffold. The task set, grading rules, and answer adjudication process must be explicitly approved before implementation.
+Factual Reliability v0.1 is approved for MVP implementation for standardized factual question answering tasks.
 
 ### What Factual Reliability Measures
 
-Factual Reliability is intended to measure whether a model answers factual evaluation questions correctly, incorrectly, or by abstaining. It should distinguish a wrong answer from a refusal or uncertainty response when the evaluation design allows abstention.
+Factual Reliability measures whether a model answers factual evaluation questions correctly, incorrectly, or by abstaining. It distinguishes a wrong answer from a refusal or uncertainty response when the evaluation design allows abstention. It should not be described as a total hallucination rate.
 
 ### Required Preserved Values
 
-Future implementations must preserve:
+Implementations must preserve:
 
 - Correct responses.
 - Incorrect responses.
@@ -216,11 +243,16 @@ Future implementations must preserve:
 - Abstention rate.
 - Attempted accuracy.
 
-### Draft Definitions
+### Formulas
 
-Correctness rate should measure correct responses divided by total questions. Incorrect answer rate should measure incorrect responses divided by total questions. Abstention rate should measure abstentions divided by total questions.
+```text
+Correctness Rate = Correct Responses / Total Questions
+Incorrect Answer Rate = Incorrect Responses / Total Questions
+Abstention Rate = Abstentions / Total Questions
+Attempted Accuracy = Correct Responses / Attempted Responses
+```
 
-Attempted accuracy should measure correct responses among questions the model attempted to answer. The exact handling of partial credit, ambiguous answers, and grader disagreement is deferred until the factual reliability task set is approved.
+Attempted responses are correct plus incorrect responses. Abstentions are excluded from attempted accuracy. The exact handling of partial credit, ambiguous answers, and grader disagreement can be refined in later methodology versions.
 
 ## Transparency Score v0.1
 

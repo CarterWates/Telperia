@@ -11,10 +11,17 @@ class SchemaValidationError(ValueError):
 
 def validate_result_package(package: dict[str, Any], schema_path: Path) -> None:
     schema = json.loads(schema_path.read_text())
-    _validate(package, schema, path="$")
+    _validate(package, schema, path="$", root_schema=schema)
 
 
-def _validate(value: Any, schema: dict[str, Any], path: str) -> None:
+def _validate(value: Any, schema: dict[str, Any], path: str, root_schema: dict[str, Any]) -> None:
+    if "$ref" in schema:
+        schema = _resolve_ref(schema["$ref"], root_schema)
+
+    if "oneOf" in schema:
+        _validate_one_of(value, schema["oneOf"], path, root_schema)
+        return
+
     if "const" in schema and value != schema["const"]:
         raise SchemaValidationError(f"{path} must equal {schema['const']!r}")
 
@@ -26,16 +33,16 @@ def _validate(value: Any, schema: dict[str, Any], path: str) -> None:
         raise SchemaValidationError(f"{path} has invalid type")
 
     if isinstance(value, dict):
-        _validate_object(value, schema, path)
+        _validate_object(value, schema, path, root_schema)
     elif isinstance(value, list):
-        _validate_array(value, schema, path)
+        _validate_array(value, schema, path, root_schema)
     elif isinstance(value, str):
         _validate_string(value, schema, path)
     elif isinstance(value, int | float):
         _validate_number(value, schema, path)
 
 
-def _validate_object(value: dict[str, Any], schema: dict[str, Any], path: str) -> None:
+def _validate_object(value: dict[str, Any], schema: dict[str, Any], path: str, root_schema: dict[str, Any]) -> None:
     required = schema.get("required", [])
     for key in required:
         if key not in value:
@@ -50,10 +57,10 @@ def _validate_object(value: dict[str, Any], schema: dict[str, Any], path: str) -
 
     for key, item in value.items():
         if key in properties:
-            _validate(item, properties[key], f"{path}.{key}")
+            _validate(item, properties[key], f"{path}.{key}", root_schema)
 
 
-def _validate_array(value: list[Any], schema: dict[str, Any], path: str) -> None:
+def _validate_array(value: list[Any], schema: dict[str, Any], path: str, root_schema: dict[str, Any]) -> None:
     min_items = schema.get("minItems")
     if min_items is not None and len(value) < min_items:
         raise SchemaValidationError(f"{path} must contain at least {min_items} items")
@@ -64,7 +71,7 @@ def _validate_array(value: list[Any], schema: dict[str, Any], path: str) -> None
     item_schema = schema.get("items")
     if item_schema is not None:
         for index, item in enumerate(value):
-            _validate(item, item_schema, f"{path}[{index}]")
+            _validate(item, item_schema, f"{path}[{index}]", root_schema)
 
 
 def _validate_string(value: str, schema: dict[str, Any], path: str) -> None:
@@ -108,3 +115,32 @@ def _matches_single_type(value: Any, expected_type: str) -> bool:
     if expected_type == "number":
         return isinstance(value, int | float) and not isinstance(value, bool)
     return True
+
+
+def _validate_one_of(value: Any, options: list[dict[str, Any]], path: str, root_schema: dict[str, Any]) -> None:
+    matches = 0
+    for option in options:
+        try:
+            _validate(value, option, path, root_schema)
+        except SchemaValidationError:
+            continue
+        matches += 1
+
+    if matches != 1:
+        raise SchemaValidationError(f"{path} must match exactly one schema")
+
+
+def _resolve_ref(ref: str, root_schema: dict[str, Any]) -> dict[str, Any]:
+    if not ref.startswith("#/"):
+        raise SchemaValidationError(f"unsupported schema reference: {ref}")
+
+    target: Any = root_schema
+    for part in ref[2:].split("/"):
+        key = part.replace("~1", "/").replace("~0", "~")
+        if not isinstance(target, dict) or key not in target:
+            raise SchemaValidationError(f"unknown schema reference: {ref}")
+        target = target[key]
+
+    if not isinstance(target, dict):
+        raise SchemaValidationError(f"invalid schema reference: {ref}")
+    return target

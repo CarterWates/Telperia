@@ -13,9 +13,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_ROOT = PROJECT_ROOT / "evaluation-runner"
 sys.path.insert(0, str(RUNNER_ROOT))
 
-from telperia_runner.metrics import calculate_completion_ratio, calculate_factual_reliability, calculate_ipw
+from telperia_runner.metrics import calculate_completion_ratio, calculate_factual_reliability, calculate_ipw, calculate_tci
 from telperia_runner.monitor import NvmlBackgroundMonitor
 from telperia_runner.ollama import OllamaClient
+from telperia_runner.evaluator import run_evaluation
 from telperia_runner.result import EvaluationResult, build_result_package
 from telperia_runner.schema import SchemaValidationError, validate_result_package
 from telperia_runner.suite import EvaluationTask
@@ -36,6 +37,24 @@ class MetricsTests(unittest.TestCase):
         self.assertEqual(metrics["incorrect_answer_rate"], 0.25)
         self.assertEqual(metrics["abstention_rate"], 0.25)
         self.assertAlmostEqual(metrics["attempted_accuracy"], 2 / 3)
+
+    def test_calculates_tci_with_raw_normalized_category_and_weights(self) -> None:
+        results = [
+            make_result(task_id="reasoning-001", category="reasoning", score=0.8),
+            make_result(task_id="coding-001", category="coding", score=0.6),
+            make_result(task_id="math-001", category="mathematics", score=0.5),
+            make_result(task_id="factual-001", category="factual_knowledge", score=1.0),
+            make_result(task_id="instruction-001", category="instruction_adherence", score=0.4),
+        ]
+
+        tci = calculate_tci(results)
+
+        self.assertAlmostEqual(tci["final_score"], 66.0)
+        reasoning = tci["categories"]["reasoning"]
+        self.assertEqual(reasoning["category_weight"], 0.25)
+        self.assertAlmostEqual(reasoning["category_score"], 80.0)
+        self.assertEqual(reasoning["benchmarks"][0]["raw_benchmark_score"], 0.8)
+        self.assertAlmostEqual(reasoning["benchmarks"][0]["normalized_benchmark_score"], 80.0)
 
     def test_calculates_ipw_when_energy_is_positive(self) -> None:
         ipw = calculate_ipw(tci=0.75, completion_ratio=0.8, gpu_energy_wh=0.5)
@@ -123,6 +142,7 @@ class ResultPackageTests(unittest.TestCase):
         self.assertEqual(package["schema_version"], "0.1")
         self.assertEqual(package["evaluation"]["completed_tasks"], 1)
         self.assertEqual(package["performance"]["input_tokens"], 5)
+        self.assertIn("tci_v0_1", package["evaluation"]["scores"])
         raw_result = package["evaluation"]["raw_results"][0]
         self.assertEqual(raw_result["latency_ms"], 120.0)
         self.assertEqual(raw_result["input_tokens"], 5)
@@ -136,9 +156,42 @@ class ResultPackageTests(unittest.TestCase):
 
         validate_result_package(package, PROJECT_ROOT / "schemas" / "evaluation-run.schema.json")
 
+    def test_builds_tci_and_ipw_scores_when_energy_is_available(self) -> None:
+        package = make_package(energy_wh=2.0)
+
+        tci = package["evaluation"]["scores"]["tci_v0_1"]
+        ipw = package["evaluation"]["scores"]["ipw_v0_1"]
+
+        self.assertAlmostEqual(tci["final_score"], 25.0)
+        self.assertEqual(tci["categories"]["reasoning"]["category_weight"], 0.25)
+        self.assertEqual(tci["categories"]["reasoning"]["benchmarks"][0]["task_id"], "reasoning-001")
+        self.assertAlmostEqual(tci["categories"]["reasoning"]["benchmarks"][0]["raw_benchmark_score"], 1.0)
+        self.assertAlmostEqual(tci["categories"]["reasoning"]["benchmarks"][0]["normalized_benchmark_score"], 100.0)
+        self.assertAlmostEqual(ipw["unscaled"], 12.5)
+        self.assertAlmostEqual(ipw["displayed"], 12500.0)
+
+    def test_defers_ipw_when_energy_is_unavailable(self) -> None:
+        package = make_package(energy_wh=0.0)
+
+        self.assertEqual(package["evaluation"]["scores"]["ipw_v0_1"]["status"], "deferred")
+
     def test_schema_validation_rejects_extra_raw_result_fields(self) -> None:
         package = make_package()
         package["evaluation"]["raw_results"][0]["prompt"] = "private content"
+
+        with self.assertRaises(SchemaValidationError):
+            validate_result_package(package, PROJECT_ROOT / "schemas" / "evaluation-run.schema.json")
+
+    def test_schema_validation_applies_tci_category_references(self) -> None:
+        package = make_package()
+        del package["evaluation"]["scores"]["tci_v0_1"]["categories"]["reasoning"]["category_score"]
+
+        with self.assertRaises(SchemaValidationError):
+            validate_result_package(package, PROJECT_ROOT / "schemas" / "evaluation-run.schema.json")
+
+    def test_schema_validation_applies_ipw_one_of(self) -> None:
+        package = make_package()
+        package["evaluation"]["scores"]["ipw_v0_1"] = {"unscaled": 1.0}
 
         with self.assertRaises(SchemaValidationError):
             validate_result_package(package, PROJECT_ROOT / "schemas" / "evaluation-run.schema.json")
@@ -190,6 +243,39 @@ class EvaluateCliTests(unittest.TestCase):
 
         self.assertEqual(raised.exception.code, 2)
 
+    def test_run_evaluation_uses_post_run_energy_snapshot_for_ipw(self) -> None:
+        suite = make_suite()
+        energy_calls = 0
+
+        def energy_snapshot() -> dict:
+            nonlocal energy_calls
+            energy_calls += 1
+            return {
+                "gpu_energy_wh": 2.0,
+                "sampling_interval_ms": 1000,
+                "average_power_w": 2.0,
+                "peak_power_w": 2.0,
+                "raw_power_samples": [],
+            }
+
+        package = run_evaluation(
+            suite=suite,
+            model_name="llama3.1:8b",
+            client=FakeEvaluationClient(),
+            hardware={
+                "gpu": "NVIDIA Test GPU",
+                "gpu_count": 1,
+                "driver": "test",
+                "cuda": "test",
+                "system_ram_gb": 1,
+            },
+            energy=energy_snapshot,
+        )
+
+        self.assertEqual(energy_calls, 1)
+        self.assertEqual(package["energy"]["gpu_energy_wh"], 2.0)
+        self.assertIn("unscaled", package["evaluation"]["scores"]["ipw_v0_1"])
+
 
 class FakeOpener:
     def open(self, request, timeout: float):
@@ -228,6 +314,25 @@ class FakeResponse:
 
     def read(self) -> bytes:
         return json.dumps(self.payload).encode()
+
+
+class FakeEvaluationClient:
+    def version(self) -> str:
+        return "0.1.0"
+
+    def generate(self, model: str, prompt: str):
+        return type(
+            "Generation",
+            (),
+            {
+                "success": True,
+                "text": "4",
+                "latency_ms": 100.0,
+                "input_tokens": 1,
+                "output_tokens": 1,
+                "error_category": None,
+            },
+        )()
 
 
 class FakeThread:
@@ -302,22 +407,44 @@ def make_sample(timestamp: datetime, power_w: float) -> TelemetrySample:
     )
 
 
-def make_package() -> dict:
+def make_suite():
+    return type(
+        "Suite",
+        (),
+        {
+            "suite_id": "tci-v0.1",
+            "tasks": [
+                EvaluationTask(
+                    task_id="reasoning-001",
+                    category="reasoning",
+                    prompt="What comes next?",
+                    expected_contains=["4"],
+                )
+            ],
+        },
+    )()
+
+
+def make_result(task_id: str, category: str, score: float, success: bool = True) -> EvaluationResult:
     task = EvaluationTask(
-        task_id="reasoning-001",
-        category="reasoning",
+        task_id=task_id,
+        category=category,
         prompt="What comes next?",
         expected_contains=["4"],
     )
-    result = EvaluationResult(
+    return EvaluationResult(
         task=task,
-        success=True,
-        score=1.0,
+        success=success,
+        score=score,
         latency_ms=120.0,
         input_tokens=5,
         output_tokens=7,
         error_category=None,
     )
+
+
+def make_package(energy_wh: float = 0.0) -> dict:
+    result = make_result(task_id="reasoning-001", category="reasoning", score=1.0)
     return build_result_package(
         model_name="llama3.1:8b",
         model_revision="unknown",
@@ -331,10 +458,10 @@ def make_package() -> dict:
             "system_ram_gb": 1,
         },
         energy={
-            "gpu_energy_wh": 0,
+            "gpu_energy_wh": energy_wh,
             "sampling_interval_ms": 1000,
-            "average_power_w": 0,
-            "peak_power_w": 0,
+            "average_power_w": energy_wh,
+            "peak_power_w": energy_wh,
             "raw_power_samples": [],
         },
         suite_id="tci-v0.1",

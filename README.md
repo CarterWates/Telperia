@@ -33,4 +33,4 @@ The MVP should allow a user to:
 
 ## Current Phase
 
-Phase 1 creates the project foundation only. Runtime implementation starts in later phases.
+Phases 1-4 are implemented for the MVP foundation, schemas, local telemetry prototype, and first evaluation runner. Phase 5 is next: run initial local experiments and prepare seed result structure.

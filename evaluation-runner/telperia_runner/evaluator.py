@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any
+
 from telperia_runner.ollama import OllamaClient
 from telperia_runner.result import EvaluationResult, build_result_package
 from telperia_runner.suite import EvaluationSuite
@@ -10,7 +13,7 @@ def run_evaluation(
     model_name: str,
     client: OllamaClient,
     hardware: dict,
-    energy: dict,
+    energy: dict[str, Any] | Callable[[], dict[str, Any]],
     model_revision: str = "unknown",
     quantization: str = "unknown",
 ) -> dict:
@@ -32,13 +35,15 @@ def run_evaluation(
             )
         )
 
+    energy_snapshot = energy() if callable(energy) else energy
+
     return build_result_package(
         model_name=model_name,
         model_revision=model_revision,
         quantization=quantization,
         engine_version=engine_version,
         hardware=hardware,
-        energy=energy,
+        energy=energy_snapshot,
         suite_id=suite.suite_id,
         results=results,
     )
