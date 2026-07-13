@@ -14,7 +14,7 @@ Use this class for Mac runs, machines without NVML, or quick runner smoke tests.
 
 - Hardware monitor: `disabled`
 - Verification level: `0`
-- IPW status: may be `deferred` when GPU energy is unavailable
+- Local IPW status: may be `deferred` when GPU energy is unavailable
 - Public comparison: not eligible
 - Purpose: confirm the runner, schema, scoring, and result package flow
 
@@ -24,7 +24,7 @@ Use this class for Linux machines with an NVIDIA GPU and working NVML.
 
 - Hardware monitor: `nvml`
 - Verification level: `0` until a stronger verification process is approved
-- IPW status: expected to include unscaled and displayed IPW
+- Local IPW status: expected to include unscaled and displayed IPW
 - Public comparison: candidate seed data after review
 - Purpose: collect capability, reliability, performance, and energy evidence
 
@@ -84,7 +84,7 @@ Expected result:
 - The package validates against `schemas/evaluation-run.schema.json`.
 - TCI v0.1 is present.
 - Factual Reliability v0.1 is present.
-- IPW v0.1 is deferred because GPU energy is unavailable.
+- Local IPW v0.1 is deferred because GPU energy is unavailable.
 - No prompt text or response text is saved.
 
 ## NVIDIA Validation Command
@@ -105,7 +105,7 @@ Expected result:
 
 - Raw power samples are present.
 - GPU energy in Wh is greater than zero.
-- IPW v0.1 includes both `unscaled` and `displayed`.
+- Local IPW v0.1 includes both `unscaled` and `displayed`.
 - Hardware metadata identifies the NVIDIA GPU and driver.
 
 ## Review Checklist
@@ -119,6 +119,7 @@ Before keeping a result package in the repo, verify:
 - `evaluation.scores.tci_v0_1.final_score` is present.
 - `evaluation.scores.factual_reliability_v0_1` includes all required rates.
 - `evaluation.scores.ipw_v0_1` is either calculated or explicitly deferred.
+- `evaluation.scores.ipw_v0_1.energy_scope` is `local_inference_hardware`.
 - `evaluation.raw_results` contains task ids, scores, latency, token counts, and errors.
 - `energy.raw_power_samples` is present for NVML runs.
 - No prompt text, response text, filenames, environment variables, tokens, passwords, or API keys are present.
@@ -126,3 +127,5 @@ Before keeping a result package in the repo, verify:
 ## Publication Rule
 
 Phase 5 results are preliminary. A result may be used as seed evidence only when its run class, hardware monitor, model metadata, methodology version, schema version, and verification level are clear. Local development results must not be presented as comparable public benchmark results.
+
+Client-device power is not a valid proxy for hosted or data-center inference energy. Hosted IPW requires provider-side reported, estimated, or audited energy data in a future methodology version.

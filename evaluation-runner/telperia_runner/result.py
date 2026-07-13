@@ -128,6 +128,13 @@ def _ipw_metrics(tci_score: float, completion_ratio: float, energy: dict[str, An
     if gpu_energy_wh <= 0:
         return {
             "status": "deferred",
+            "energy_scope": "local_inference_hardware",
+            "energy_source": "unavailable",
             "reason": "GPU energy must be greater than zero to calculate IPW.",
         }
-    return calculate_ipw(tci=tci_score, completion_ratio=completion_ratio, gpu_energy_wh=gpu_energy_wh)
+    ipw = calculate_ipw(tci=tci_score, completion_ratio=completion_ratio, gpu_energy_wh=gpu_energy_wh)
+    return {
+        **ipw,
+        "energy_scope": "local_inference_hardware",
+        "energy_source": "local_gpu_telemetry",
+    }

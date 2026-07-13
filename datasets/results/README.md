@@ -36,4 +36,5 @@ Before committing a result package:
 - Confirm the run class is clear.
 - Confirm verification level is present.
 - Confirm local-dev results are not described as public comparison data.
-- Confirm NVML/IPW claims are backed by nonzero GPU energy and raw power samples.
+- Confirm NVML/Local IPW claims are backed by nonzero local GPU energy and raw power samples.
+- Confirm local-dev results are not described as hosted or data-center energy measurements.

@@ -240,11 +240,16 @@ class ResultPackageTests(unittest.TestCase):
         self.assertAlmostEqual(tci["categories"]["reasoning"]["benchmarks"][0]["normalized_benchmark_score"], 100.0)
         self.assertAlmostEqual(ipw["unscaled"], 12.5)
         self.assertAlmostEqual(ipw["displayed"], 12500.0)
+        self.assertEqual(ipw["energy_scope"], "local_inference_hardware")
+        self.assertEqual(ipw["energy_source"], "local_gpu_telemetry")
 
     def test_defers_ipw_when_energy_is_unavailable(self) -> None:
         package = make_package(energy_wh=0.0)
+        ipw = package["evaluation"]["scores"]["ipw_v0_1"]
 
-        self.assertEqual(package["evaluation"]["scores"]["ipw_v0_1"]["status"], "deferred")
+        self.assertEqual(ipw["status"], "deferred")
+        self.assertEqual(ipw["energy_scope"], "local_inference_hardware")
+        self.assertEqual(ipw["energy_source"], "unavailable")
 
     def test_schema_validation_rejects_extra_raw_result_fields(self) -> None:
         package = make_package()

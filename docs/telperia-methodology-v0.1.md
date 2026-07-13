@@ -167,15 +167,17 @@ TRI is reserved for reliability behavior across repeated or operational use. It 
 
 Do not calculate or publish TRI values until Telperia has an approved TRI methodology version.
 
-## IPW v0.1: Intelligence Per Watt-Hour
+## Local IPW v0.1: Intelligence Per Watt-Hour
 
 ### Status
 
-IPW v0.1 is approved for MVP implementation using the formula below.
+Local IPW v0.1 is approved for MVP implementation using the formula below.
 
 ### What IPW Measures
 
-IPW measures capability delivered per watt-hour for a completed evaluation run on specific hardware. It is intended to compare efficiency among similar model and hardware configurations, not to declare one universal best model.
+Local IPW measures capability delivered per watt-hour for a completed evaluation run on the hardware that actually performs inference. It is intended to compare efficiency among similar local model and hardware configurations, not to declare one universal best model.
+
+Local IPW must not be used to estimate hosted API or data-center energy by measuring the client machine sending the request. Remote or hosted inference requires provider-side energy data, a clearly labeled estimate, or an audited measurement process.
 
 ### Energy Calculation
 
@@ -203,6 +205,12 @@ Displayed IPW = 1000 * TCI * Completion Ratio / GPU Energy in Wh
 ```
 
 The unscaled IPW value must always be preserved. The displayed IPW value is a scaled presentation score and must not replace the unscaled value.
+
+Result packages must identify the energy scope and source. The MVP runner uses `local_inference_hardware` as the energy scope. It uses `local_gpu_telemetry` when NVML energy is available and `unavailable` when local GPU energy cannot be measured.
+
+### Hosted IPW
+
+Hosted or data-center IPW is deferred for future methodology work. Future versions may support provider-reported, estimated, or audited data-center energy, but those values must be labeled separately from Local IPW and must not rely on client-device power draw.
 
 ### Required Preserved Values
 

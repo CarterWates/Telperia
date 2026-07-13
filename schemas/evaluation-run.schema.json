@@ -247,7 +247,7 @@
                 {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["unscaled", "displayed"],
+                  "required": ["unscaled", "displayed", "energy_scope", "energy_source"],
                   "properties": {
                     "unscaled": {
                       "type": "number",
@@ -256,16 +256,28 @@
                     "displayed": {
                       "type": "number",
                       "minimum": 0
+                    },
+                    "energy_scope": {
+                      "const": "local_inference_hardware"
+                    },
+                    "energy_source": {
+                      "const": "local_gpu_telemetry"
                     }
                   }
                 },
                 {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["status", "reason"],
+                  "required": ["status", "energy_scope", "energy_source", "reason"],
                   "properties": {
                     "status": {
                       "const": "deferred"
+                    },
+                    "energy_scope": {
+                      "const": "local_inference_hardware"
+                    },
+                    "energy_source": {
+                      "const": "unavailable"
                     },
                     "reason": {
                       "type": "string",

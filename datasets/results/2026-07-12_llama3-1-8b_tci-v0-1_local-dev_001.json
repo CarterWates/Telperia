@@ -207,6 +207,8 @@
       },
       "ipw_v0_1": {
         "status": "deferred",
+        "energy_scope": "local_inference_hardware",
+        "energy_source": "unavailable",
         "reason": "GPU energy must be greater than zero to calculate IPW."
       }
     },

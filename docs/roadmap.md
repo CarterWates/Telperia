@@ -23,7 +23,7 @@ The Telperia MVP is complete when:
 - At least five model configurations have published results.
 - Every score includes a methodology version.
 - Every score includes a verification level.
-- Every IPW result includes hardware and energy data.
+- Every Local IPW result includes local inference hardware and energy data.
 - The evaluation runner works on a supported NVIDIA system.
 - Users can generate a valid result package.
 - Users can upload a result privately or publicly.
