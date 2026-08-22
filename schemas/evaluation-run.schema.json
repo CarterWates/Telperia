@@ -91,6 +91,25 @@
         }
       }
     },
+    "run_environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_id", "operating_system", "monitor_backend"],
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operating_system": {
+          "type": "string",
+          "minLength": 1
+        },
+        "monitor_backend": {
+          "type": "string",
+          "enum": ["disabled", "nvml"]
+        }
+      }
+    },
     "methodology": {
       "type": "object",
       "additionalProperties": false,
@@ -385,6 +404,18 @@
               }
             }
           }
+        },
+        "monitor_backend": {
+          "type": "string",
+          "enum": ["disabled", "nvml"]
+        },
+        "energy_scope": {
+          "type": "string",
+          "enum": ["local_inference_hardware"]
+        },
+        "energy_source": {
+          "type": "string",
+          "enum": ["unavailable", "local_gpu_telemetry"]
         }
       }
     },

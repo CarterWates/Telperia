@@ -20,13 +20,23 @@ Use this class for Mac runs, machines without NVML, or quick runner smoke tests.
 
 ### Supported NVIDIA Run
 
-Use this class for Linux machines with an NVIDIA GPU and working NVML.
+Use this class for Linux or Windows machines with an NVIDIA GPU and working NVML.
 
 - Hardware monitor: `nvml`
 - Verification level: `0` until a stronger verification process is approved
 - Local IPW status: expected to include unscaled and displayed IPW
 - Public comparison: candidate seed data after review
 - Purpose: collect capability, reliability, performance, and energy evidence
+
+### Mac Local Development
+
+Use this class for Apple Silicon or Intel Mac runs until a separate Mac energy methodology is approved.
+
+- Hardware monitor: `disabled`
+- Verification level: `0`
+- Local IPW status: `deferred`
+- Public comparison: not eligible
+- Purpose: confirm model capability, runner behavior, schema validation, and result package privacy without claiming GPU energy efficiency
 
 ### Sample Fixture
 
@@ -75,6 +85,7 @@ python3 evaluate.py \
   --model llama3.1:8b \
   --suite suites/tci-v0.1.json \
   --hardware-monitor disabled \
+  --node-id local \
   --max-output-tokens 64 \
   --output ../datasets/results/2026-07-12_llama3-1-8b_tci-v0-1_local-dev_001.json
 ```
@@ -87,7 +98,7 @@ Expected result:
 - Local IPW v0.1 is deferred because GPU energy is unavailable.
 - No prompt text or response text is saved.
 
-## NVIDIA Validation Command
+## Linux NVIDIA Validation Command
 
 Use this command on a supported Linux NVIDIA system:
 
@@ -97,6 +108,7 @@ python3 evaluate.py \
   --model llama3.1:8b \
   --suite suites/tci-v0.1.json \
   --hardware-monitor nvml \
+  --node-id linux-laptop \
   --max-output-tokens 64 \
   --output ../datasets/results/2026-07-12_llama3-1-8b_tci-v0-1-nvml_001.json
 ```
@@ -108,12 +120,36 @@ Expected result:
 - Local IPW v0.1 includes both `unscaled` and `displayed`.
 - Hardware metadata identifies the NVIDIA GPU and driver.
 
+## Windows NVIDIA Validation Command
+
+Use this command from PowerShell on a Windows machine with Ollama, Python, NVIDIA drivers, and NVML available:
+
+```powershell
+cd evaluation-runner
+python evaluate.py `
+  --model llama3.1:8b `
+  --suite suites/tci-v0.1.json `
+  --hardware-monitor nvml `
+  --node-id windows-5070 `
+  --max-output-tokens 64 `
+  --output ../datasets/results/2026-08-22_llama3-1-8b_tci-v0-1_windows-nvml_001.json
+```
+
+Expected result:
+
+- Raw power samples are present.
+- GPU energy in Wh is greater than zero.
+- Local IPW v0.1 includes both `unscaled` and `displayed`.
+- `energy.monitor_backend` is `nvml`.
+- `energy.energy_source` is `local_gpu_telemetry`.
+
 ## Review Checklist
 
 Before keeping a result package in the repo, verify:
 
 - The JSON validates against `schemas/evaluation-run.schema.json`.
 - `schema_version` is `0.1`.
+- `run_environment.node_id` is present and uses a user-chosen non-sensitive machine label.
 - `methodology.version` is `0.1`.
 - `verification.level` is present.
 - `evaluation.scores.tci_v0_1.final_score` is present.
@@ -121,6 +157,9 @@ Before keeping a result package in the repo, verify:
 - `evaluation.scores.ipw_v0_1` is either calculated or explicitly deferred.
 - `evaluation.scores.ipw_v0_1.energy_scope` is `local_inference_hardware`.
 - `evaluation.raw_results` contains task ids, scores, latency, token counts, and errors.
+- `energy.monitor_backend` is present.
+- `energy.energy_scope` is `local_inference_hardware`.
+- `energy.energy_source` is present.
 - `energy.raw_power_samples` is present for NVML runs.
 - No prompt text, response text, filenames, environment variables, tokens, passwords, or API keys are present.
 

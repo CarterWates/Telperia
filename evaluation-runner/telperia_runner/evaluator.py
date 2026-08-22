@@ -17,6 +17,7 @@ def run_evaluation(
     model_revision: str = "unknown",
     quantization: str = "unknown",
     max_output_tokens: int = 64,
+    node_id: str = "local",
 ) -> dict:
     engine_version = client.version()
     results: list[EvaluationResult] = []
@@ -47,6 +48,7 @@ def run_evaluation(
         energy=energy_snapshot,
         suite_id=suite.suite_id,
         results=results,
+        node_id=node_id,
     )
 
 

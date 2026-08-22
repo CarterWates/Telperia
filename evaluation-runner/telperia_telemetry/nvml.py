@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes
+import sys
 from collections.abc import Callable
 
 from telperia_telemetry.errors import TelemetryUnavailableError
@@ -96,9 +97,22 @@ class NvmlSampler:
 
 
 def _load_nvml_library() -> ctypes.CDLL | None:
-    for library_name in ("libnvidia-ml.so.1", "libnvidia-ml.so"):
+    for library_name in _nvml_library_names():
         try:
             return ctypes.CDLL(library_name)
         except OSError:
             continue
     return None
+
+
+def _nvml_library_names(platform_name: str | None = None) -> tuple[str, ...]:
+    platform = platform_name or sys.platform
+    if platform.startswith("win"):
+        return (
+            "nvml.dll",
+            "C:\\Windows\\System32\\nvml.dll",
+            "C:\\Program Files\\NVIDIA Corporation\\NVSMI\\nvml.dll",
+        )
+    if platform.startswith("linux"):
+        return ("libnvidia-ml.so.1", "libnvidia-ml.so")
+    return ("libnvidia-ml.so.1", "libnvidia-ml.so", "nvml.dll")

@@ -7,6 +7,7 @@
 3. Build the hardware telemetry prototype.
 4. Build the evaluation runner.
 5. Run initial local experiments.
+   - Phase 5.1: make the local runner compatible with Linux NVIDIA, Windows NVIDIA, and Mac local-development workflows before backend ingestion.
 6. Build the backend.
 7. Build the Observatory website.
 8. Build the Telperia Agent.
@@ -25,6 +26,8 @@ The Telperia MVP is complete when:
 - Every score includes a verification level.
 - Every Local IPW result includes local inference hardware and energy data.
 - The evaluation runner works on a supported NVIDIA system.
+- The evaluation runner works on supported Linux NVIDIA and Windows NVIDIA systems when NVML is available.
+- Mac local-development runs can generate valid capability result packages with Local IPW deferred.
 - Users can generate a valid result package.
 - Users can upload a result privately or publicly.
 - The agent can collect non-content telemetry.
@@ -36,3 +39,7 @@ The Telperia MVP is complete when:
 ## Phase 1 Boundary
 
 Phase 1 creates repository structure and documentation only. It does not introduce app code, telemetry code, runner code, backend code, schema definitions, package dependencies, or scoring implementations.
+
+## Phase 5.1 Boundary
+
+Phase 5.1 makes local experiment collection portable before backend work begins. It supports measured Local IPW on Linux and Windows NVIDIA systems through NVML, supports Mac as a local-development capability run with IPW deferred, and keeps all energy source labels explicit. It does not implement hosted or data-center IPW.

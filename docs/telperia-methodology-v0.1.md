@@ -206,7 +206,9 @@ Displayed IPW = 1000 * TCI * Completion Ratio / GPU Energy in Wh
 
 The unscaled IPW value must always be preserved. The displayed IPW value is a scaled presentation score and must not replace the unscaled value.
 
-Result packages must identify the energy scope and source. The MVP runner uses `local_inference_hardware` as the energy scope. It uses `local_gpu_telemetry` when NVML energy is available and `unavailable` when local GPU energy cannot be measured.
+Result packages must identify the monitor backend, energy scope, and energy source. The MVP runner uses `local_inference_hardware` as the energy scope. It uses `local_gpu_telemetry` when Linux or Windows NVIDIA energy is measured through NVML and `unavailable` when local GPU energy cannot be measured.
+
+Mac local-development runs may calculate TCI and Factual Reliability, but Local IPW must remain deferred until a separate Apple hardware energy methodology is approved.
 
 ### Hosted IPW
 

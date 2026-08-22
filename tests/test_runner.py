@@ -251,6 +251,22 @@ class ResultPackageTests(unittest.TestCase):
         self.assertEqual(ipw["energy_scope"], "local_inference_hardware")
         self.assertEqual(ipw["energy_source"], "unavailable")
 
+    def test_energy_metadata_identifies_monitor_scope_and_source(self) -> None:
+        package = make_package(energy_wh=2.0)
+        energy = package["energy"]
+
+        self.assertEqual(energy["monitor_backend"], "nvml")
+        self.assertEqual(energy["energy_scope"], "local_inference_hardware")
+        self.assertEqual(energy["energy_source"], "local_gpu_telemetry")
+
+    def test_run_environment_identifies_node_os_and_monitor_backend(self) -> None:
+        package = make_package(energy_wh=2.0, node_id="windows-5070")
+        environment = package["run_environment"]
+
+        self.assertEqual(environment["node_id"], "windows-5070")
+        self.assertIn("operating_system", environment)
+        self.assertEqual(environment["monitor_backend"], "nvml")
+
     def test_schema_validation_rejects_extra_raw_result_fields(self) -> None:
         package = make_package()
         package["evaluation"]["raw_results"][0]["prompt"] = "private content"
@@ -351,6 +367,30 @@ class EvaluateCliTests(unittest.TestCase):
         self.assertEqual(energy_calls, 1)
         self.assertEqual(package["energy"]["gpu_energy_wh"], 2.0)
         self.assertIn("unscaled", package["evaluation"]["scores"]["ipw_v0_1"])
+
+    def test_run_evaluation_preserves_node_id_in_package(self) -> None:
+        package = run_evaluation(
+            suite=make_suite(),
+            model_name="llama3.1:8b",
+            client=FakeEvaluationClient(),
+            hardware={
+                "gpu": "NVIDIA Test GPU",
+                "gpu_count": 1,
+                "driver": "test",
+                "cuda": "test",
+                "system_ram_gb": 1,
+            },
+            energy={
+                "gpu_energy_wh": 0.0,
+                "sampling_interval_ms": 1000,
+                "average_power_w": 0.0,
+                "peak_power_w": 0.0,
+                "raw_power_samples": [],
+            },
+            node_id="linux-laptop",
+        )
+
+        self.assertEqual(package["run_environment"]["node_id"], "linux-laptop")
 
 
 class FakeOpener:
@@ -520,7 +560,7 @@ def make_result(task_id: str, category: str, score: float, success: bool = True)
     )
 
 
-def make_package(energy_wh: float = 0.0) -> dict:
+def make_package(energy_wh: float = 0.0, node_id: str = "local") -> dict:
     result = make_result(task_id="reasoning-001", category="reasoning", score=1.0)
     return build_result_package(
         model_name="llama3.1:8b",
@@ -544,6 +584,7 @@ def make_package(energy_wh: float = 0.0) -> dict:
         suite_id="tci-v0.1",
         results=[result],
         runner_version="0.1",
+        node_id=node_id,
     )
 
 

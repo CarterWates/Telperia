@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import platform
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
@@ -31,13 +32,15 @@ def build_result_package(
     suite_id: str,
     results: list[EvaluationResult],
     runner_version: str = RUNNER_VERSION,
+    node_id: str = "local",
 ) -> dict[str, Any]:
     completed_tasks = sum(1 for result in results if result.success)
     total_tasks = len(results)
     completion_ratio = calculate_completion_ratio(completed_tasks, total_tasks)
     tci = calculate_tci(results)
     factual = _factual_metrics(results)
-    ipw = _ipw_metrics(tci["final_score"], completion_ratio, energy)
+    energy_with_metadata = _energy_with_metadata(energy)
+    ipw = _ipw_metrics(tci["final_score"], completion_ratio, energy_with_metadata)
 
     return {
         "schema_version": "0.1",
@@ -53,6 +56,11 @@ def build_result_package(
             "engine_version": engine_version,
         },
         "hardware": hardware,
+        "run_environment": {
+            "node_id": node_id,
+            "operating_system": platform.system() or "unknown",
+            "monitor_backend": energy_with_metadata["monitor_backend"],
+        },
         "methodology": {
             "version": "0.1",
             "documents": [
@@ -87,7 +95,7 @@ def build_result_package(
                 for result in results
             ],
         },
-        "energy": energy,
+        "energy": energy_with_metadata,
         "performance": {
             "input_tokens": sum(result.input_tokens for result in results),
             "output_tokens": sum(result.output_tokens for result in results),
@@ -138,3 +146,20 @@ def _ipw_metrics(tci_score: float, completion_ratio: float, energy: dict[str, An
         "energy_scope": "local_inference_hardware",
         "energy_source": "local_gpu_telemetry",
     }
+
+
+def _energy_with_metadata(energy: dict[str, Any]) -> dict[str, Any]:
+    gpu_energy_wh = float(energy.get("gpu_energy_wh", 0.0))
+    if gpu_energy_wh > 0:
+        defaults = {
+            "monitor_backend": "nvml",
+            "energy_scope": "local_inference_hardware",
+            "energy_source": "local_gpu_telemetry",
+        }
+    else:
+        defaults = {
+            "monitor_backend": "disabled",
+            "energy_scope": "local_inference_hardware",
+            "energy_source": "unavailable",
+        }
+    return {**defaults, **energy}

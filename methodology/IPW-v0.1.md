@@ -8,7 +8,7 @@ Approved for MVP implementation as Local IPW v0.1.
 
 Local IPW measures capability delivered per watt-hour for a completed evaluation run on the hardware that actually performs inference.
 
-It is valid for local model execution, such as Ollama running on a measured NVIDIA system. It is not valid for hosted API calls unless the energy measurement comes from the provider-side inference hardware.
+It is valid for local model execution, such as Ollama running on a measured Linux or Windows NVIDIA system. It is not valid for hosted API calls unless the energy measurement comes from the provider-side inference hardware.
 
 ## Formula
 
@@ -29,7 +29,14 @@ Result packages must identify the energy scope and source. For the current runne
 - `energy_source`: `local_gpu_telemetry` when GPU energy is measured through NVML
 - `energy_source`: `unavailable` when local GPU energy is unavailable
 
+Result packages should also identify the monitor backend. For the current runner:
+
+- `monitor_backend`: `nvml` when Linux or Windows NVIDIA telemetry is collected through NVML
+- `monitor_backend`: `disabled` for Mac local-development runs or other machines without approved local energy telemetry
+
 Client-device power must not be used as a proxy for remote data-center inference energy.
+
+Mac local-development runs may calculate TCI and Factual Reliability, but Local IPW must remain deferred until a separate Apple hardware energy methodology is approved.
 
 ## Hosted IPW
 

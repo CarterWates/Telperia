@@ -28,10 +28,16 @@ def disabled_energy() -> dict[str, Any]:
         "average_power_w": 0,
         "peak_power_w": 0,
         "raw_power_samples": [],
+        "monitor_backend": "disabled",
+        "energy_scope": "local_inference_hardware",
+        "energy_source": "unavailable",
     }
 
 
 class DisabledMonitor:
+    def __init__(self, node_id: str = "local") -> None:
+        self.node_id = node_id
+
     def __enter__(self) -> "DisabledMonitor":
         return self
 
@@ -95,6 +101,9 @@ class NvmlBackgroundMonitor:
             "average_power_w": sum(sample.gpu.power_draw_w for sample in self._samples) / len(self._samples),
             "peak_power_w": max(sample.gpu.power_draw_w for sample in self._samples),
             "raw_power_samples": raw_power_samples,
+            "monitor_backend": "nvml",
+            "energy_scope": "local_inference_hardware",
+            "energy_source": "local_gpu_telemetry",
         }
 
     def _collect(self) -> None:
@@ -136,9 +145,9 @@ class NvmlBackgroundMonitor:
         return raw_samples
 
 
-def create_monitor(name: str):
+def create_monitor(name: str, node_id: str = "local"):
     if name == "disabled":
-        return DisabledMonitor()
+        return DisabledMonitor(node_id=node_id)
     if name == "nvml":
-        return NvmlBackgroundMonitor()
+        return NvmlBackgroundMonitor(node_id=node_id)
     raise ValueError("hardware monitor must be disabled or nvml")

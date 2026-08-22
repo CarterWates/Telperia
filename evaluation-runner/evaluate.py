@@ -33,13 +33,14 @@ def main() -> int:
     parser.add_argument("--model-revision", default="unknown", help="Model revision metadata.")
     parser.add_argument("--quantization", default="unknown", help="Model quantization metadata.")
     parser.add_argument("--max-output-tokens", type=int, default=64, help="Maximum generated tokens per task.")
+    parser.add_argument("--node-id", default="local", help="User-chosen local machine identifier.")
     args = parser.parse_args()
 
     suite = load_suite(args.suite)
     client = OllamaClient(base_url=args.ollama_url)
 
     try:
-        with create_monitor(args.hardware_monitor) as monitor:
+        with create_monitor(args.hardware_monitor, node_id=args.node_id) as monitor:
             package = run_evaluation(
                 suite=suite,
                 model_name=args.model,
@@ -49,6 +50,7 @@ def main() -> int:
                 model_revision=args.model_revision,
                 quantization=args.quantization,
                 max_output_tokens=args.max_output_tokens,
+                node_id=args.node_id,
             )
     except (ConnectionError, TelemetryUnavailableError) as exc:
         parser.exit(status=2, message=f"evaluation unavailable: {exc}\n")

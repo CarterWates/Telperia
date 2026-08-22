@@ -33,4 +33,4 @@ The MVP should allow a user to:
 
 ## Current Phase
 
-Phases 1-4 are implemented for the MVP foundation, schemas, local telemetry prototype, and first evaluation runner. Phase 5 is in preparation: local experiment protocol and seed result structure come before initial measured runs.
+Phases 1-4 are implemented for the MVP foundation, schemas, local telemetry prototype, and first evaluation runner. Phase 5 is active: local experiment protocol, cross-platform runner compatibility, and seed result structure come before initial measured runs and backend ingestion.

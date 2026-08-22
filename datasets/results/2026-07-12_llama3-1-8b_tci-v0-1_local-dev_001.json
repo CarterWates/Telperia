@@ -18,6 +18,11 @@
     "cuda": "unavailable",
     "system_ram_gb": 1
   },
+  "run_environment": {
+    "node_id": "local",
+    "operating_system": "Darwin",
+    "monitor_backend": "disabled"
+  },
   "methodology": {
     "version": "0.1",
     "documents": [
@@ -470,7 +475,10 @@
     "sampling_interval_ms": 1000,
     "average_power_w": 0,
     "peak_power_w": 0,
-    "raw_power_samples": []
+    "raw_power_samples": [],
+    "monitor_backend": "disabled",
+    "energy_scope": "local_inference_hardware",
+    "energy_source": "unavailable"
   },
   "performance": {
     "input_tokens": 968,

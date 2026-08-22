@@ -19,7 +19,8 @@ from telperia_telemetry.energy import calculate_energy_wh
 from telperia_telemetry.errors import TelemetryUnavailableError
 from telperia_telemetry.exporters import write_csv, write_json
 from telperia_telemetry.models import GpuMetrics, TelemetryRun, TelemetrySample
-from telperia_telemetry.nvml import NvmlSampler
+from telperia_telemetry import system
+from telperia_telemetry.nvml import NvmlSampler, _nvml_library_names
 from telperia_telemetry.runner import collect_telemetry
 
 
@@ -104,6 +105,31 @@ class NvmlSamplerTests(unittest.TestCase):
             sampler.initialize()
 
         self.assertEqual(fake_lib.shutdown_calls, 1)
+
+    def test_windows_nvml_library_names_include_driver_dll(self) -> None:
+        names = _nvml_library_names(platform_name="win32")
+
+        self.assertEqual(names[0], "nvml.dll")
+
+    def test_linux_nvml_library_names_prefer_versioned_so(self) -> None:
+        names = _nvml_library_names(platform_name="linux")
+
+        self.assertEqual(names[:2], ("libnvidia-ml.so.1", "libnvidia-ml.so"))
+
+
+class SystemMetricTests(unittest.TestCase):
+    def test_cpu_utilization_falls_back_when_proc_stat_is_unavailable(self) -> None:
+        with patch.object(system, "read_cpu_snapshot", side_effect=FileNotFoundError):
+            value = system.read_cpu_utilization_percent(delay_s=0)
+
+        self.assertGreaterEqual(value, 0.0)
+        self.assertLessEqual(value, 100.0)
+
+    def test_memory_used_falls_back_when_proc_meminfo_is_unavailable(self) -> None:
+        with patch("telperia_telemetry.system.Path.read_text", side_effect=FileNotFoundError):
+            value = system.read_memory_used_mb()
+
+        self.assertGreaterEqual(value, 0.0)
 
 
 class RunnerTests(unittest.TestCase):
