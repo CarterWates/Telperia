@@ -25,7 +25,6 @@ The Telperia MVP is complete when:
 - Every score includes a methodology version.
 - Every score includes a verification level.
 - Every Local IPW result includes local inference hardware and energy data.
-- The evaluation runner works on a supported NVIDIA system.
 - The evaluation runner works on supported Linux NVIDIA and Windows NVIDIA systems when NVML is available.
 - Mac local-development runs can generate valid capability result packages with Local IPW deferred.
 - Users can generate a valid result package.
@@ -43,3 +42,7 @@ Phase 1 creates repository structure and documentation only. It does not introdu
 ## Phase 5.1 Boundary
 
 Phase 5.1 makes local experiment collection portable before backend work begins. It supports measured Local IPW on Linux and Windows NVIDIA systems through NVML, supports Mac as a local-development capability run with IPW deferred, and keeps all energy source labels explicit. It does not implement hosted or data-center IPW.
+
+## Phase 6 Entry Gate
+
+Begin backend work after at least one Linux or Windows NVIDIA result package validates with nonzero GPU energy, raw power samples, Local IPW, methodology metadata, and verification metadata. Supabase/backend ingestion should preserve private-by-default uploads and explicit public opt-in.
