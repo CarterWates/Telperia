@@ -35,7 +35,7 @@ The MVP should allow a user to:
 
 ## Current Phase
 
-Phases 1-4 are implemented for the MVP foundation, schemas, local telemetry prototype, and first evaluation runner. Phase 5 is active: local experiment protocol, cross-platform runner compatibility, and initial measured result collection come before backend ingestion.
+Phases 1-5 established the MVP foundation, schemas, local telemetry prototype, evaluation runner, cross-platform local experiment flow, seed results, repeatability protocol, and energy confidence metadata. Phase 6 is starting with backend design before live ingestion work.
 
 ## What Works Today
 
@@ -44,7 +44,7 @@ Phases 1-4 are implemented for the MVP foundation, schemas, local telemetry prot
 - Result packages preserve raw benchmark scores, normalized scores, category weights, TCI, Factual Reliability, Local IPW status, telemetry metadata, and verification metadata.
 - Linux and Windows NVIDIA systems can use `--hardware-monitor nvml` when NVML is available.
 - Mac and non-NVML machines can run with `--hardware-monitor disabled`; those runs defer Local IPW.
-- The first Windows NVIDIA result package is available under `datasets/results/`.
+- Windows NVIDIA result packages are available under `datasets/results/`.
 - No prompt text or model response text is saved in result packages.
 
 ## Quick Local Check
@@ -60,13 +60,13 @@ python3 evaluation-runner/evaluate.py --help
 ## Current Result Packages
 
 - 1 Mac/local development result with Local IPW deferred.
-- 5 Windows RTX 5070 NVML results with measured GPU energy and calculated Local IPW.
+- 11 Windows RTX 5070 NVML results with measured GPU energy and calculated Local IPW.
 
 See `docs/phase-5-results-summary.md` for the current seed result table.
 
 ## Next Experiment Runs
 
-The next project milestone is collecting more measured Phase 5 results without starting backend ingestion prematurely.
+The next project milestone is Phase 6 backend design and private-by-default result ingestion. More measured Phase 5 results can continue in parallel when a Windows or Linux NVIDIA machine is available.
 
 - Mac development run: use `--hardware-monitor disabled --node-id local`.
 - Linux NVIDIA run: use `--hardware-monitor nvml --node-id linux-laptop`.

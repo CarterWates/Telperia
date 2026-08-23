@@ -54,3 +54,7 @@ TCI v0.1 remains the active MVP capability score. A separate TCI v0.2 proposal e
 ## Phase 6 Entry Gate
 
 Backend work may begin after at least one Linux or Windows NVIDIA result package validates with nonzero GPU energy, raw power samples, Local IPW, methodology metadata, and verification metadata. Supabase/backend ingestion should preserve private-by-default uploads and explicit public opt-in.
+
+## Phase 6 Backend Design
+
+Phase 6 begins with the backend design in `docs/phase-6-backend-design.md`. The first backend implementation should validate local result packages, store raw JSON privately, extract public-safe summaries, and keep public submission as an explicit opt-in workflow.
