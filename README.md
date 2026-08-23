@@ -35,13 +35,13 @@ The MVP should allow a user to:
 
 ## Current Phase
 
-Phases 1-5 established the MVP foundation, schemas, local telemetry prototype, evaluation runner, cross-platform local experiment flow, seed results, repeatability protocol, and energy confidence metadata. Phase 6 is starting with backend design before live ingestion work.
+Phases 1-5 established the MVP foundation, schemas, local telemetry prototype, evaluation runner, cross-platform local experiment flow, seed results, repeatability protocol, and energy confidence metadata. Phase 6 is active and focused on private-by-default backend ingestion design before live Supabase implementation.
 
 ## What Works Today
 
 - The local evaluation runner can run one Ollama model at a time.
 - The default `tci-v0.1` suite contains 25 auto-gradable tasks.
-- Result packages preserve raw benchmark scores, normalized scores, category weights, TCI, Factual Reliability, Local IPW status, telemetry metadata, and verification metadata.
+- Result packages preserve raw benchmark scores, normalized scores, category weights, TCI, Factual Reliability, Local IPW status, telemetry metadata, energy confidence metadata for new runs, and verification metadata.
 - Linux and Windows NVIDIA systems can use `--hardware-monitor nvml` when NVML is available.
 - Mac and non-NVML machines can run with `--hardware-monitor disabled`; those runs defer Local IPW.
 - Windows NVIDIA result packages are available under `datasets/results/`.
@@ -64,12 +64,14 @@ python3 evaluation-runner/evaluate.py --help
 
 See `docs/phase-5-results-summary.md` for the current seed result table.
 
-## Next Experiment Runs
+## Next Project Milestone
 
-The next project milestone is Phase 6 backend design and private-by-default result ingestion. More measured Phase 5 results can continue in parallel when a Windows or Linux NVIDIA machine is available.
+The next project milestone is implementing Phase 6 private-by-default result ingestion. More measured Phase 5 results can continue in parallel when a Windows or Linux NVIDIA machine is available.
 
 - Mac development run: use `--hardware-monitor disabled --node-id local`.
 - Linux NVIDIA run: use `--hardware-monitor nvml --node-id linux-laptop`.
 - Windows NVIDIA repeat runs: use `--hardware-monitor nvml --node-id windows-5070`.
 
 See `docs/phase-5-local-experiments.md` for the full commands and review checklist.
+
+See `docs/phase-6-backend-design.md`, `docs/result-ingestion-contract.md`, and `docs/observatory-data-shape.md` for the current backend design contracts.
