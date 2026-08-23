@@ -111,6 +111,8 @@ Validation must happen before public submission status can be created.
 
 The local MVP validator lives at `evaluation-runner/telperia_runner/ingestion.py`. It is intentionally storage-free and network-free so the same checks can be reused by local tests, a future Supabase Edge Function, or a small server-side API wrapper.
 
+The first API-facing request and response shapes are defined in `docs/result-ingestion-api.md`.
+
 ## Privacy Checks
 
 Reject packages containing any keys intended to carry private content:

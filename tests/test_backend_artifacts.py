@@ -15,6 +15,7 @@ from telperia_runner.ingestion import validate_ingestion_package
 SCHEMA_PATH = PROJECT_ROOT / "schemas" / "evaluation-run.schema.json"
 FIXTURE_ROOT = PROJECT_ROOT / "tests" / "fixtures" / "ingestion"
 MIGRATION_PATH = PROJECT_ROOT / "supabase" / "migrations" / "20260823000000_phase_6_result_ingestion.sql"
+API_CONTRACT_PATH = PROJECT_ROOT / "docs" / "result-ingestion-api.md"
 
 
 class SupabaseMigrationDraftTests(unittest.TestCase):
@@ -50,6 +51,29 @@ class SupabaseMigrationDraftTests(unittest.TestCase):
 
         self.assertNotIn("service" + "_role", sql)
         self.assertNotIn("security definer", sql.lower())
+
+
+class ResultIngestionApiContractTests(unittest.TestCase):
+    def test_api_contract_defines_endpoint_errors_and_parseable_json_examples(self) -> None:
+        document = API_CONTRACT_PATH.read_text()
+
+        for expected in [
+            "POST /api/results/ingest",
+            "Authorization: Bearer",
+            "private",
+            "submit_for_public_review",
+            "invalid_schema",
+            "privacy_violation",
+            "energy_consistency_error",
+            "duplicate_run_id",
+            "evaluation-runner/telperia_runner/ingestion.py",
+        ]:
+            self.assertIn(expected, document)
+
+        examples = extract_json_blocks(document)
+        self.assertGreaterEqual(len(examples), 4)
+        for example in examples:
+            json.loads(example)
 
 
 class IngestionFixtureTests(unittest.TestCase):
@@ -97,6 +121,24 @@ class IngestionFixtureTests(unittest.TestCase):
 
 def load_fixture(filename: str) -> dict:
     return json.loads((FIXTURE_ROOT / filename).read_text())
+
+
+def extract_json_blocks(document: str) -> list[str]:
+    blocks = []
+    inside_json = False
+    current: list[str] = []
+    for line in document.splitlines():
+        if line == "```json":
+            inside_json = True
+            current = []
+            continue
+        if line == "```" and inside_json:
+            inside_json = False
+            blocks.append("\n".join(current))
+            continue
+        if inside_json:
+            current.append(line)
+    return blocks
 
 
 if __name__ == "__main__":

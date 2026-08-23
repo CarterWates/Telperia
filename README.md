@@ -76,4 +76,4 @@ The next project milestone is implementing Phase 6 private-by-default result ing
 
 See `docs/phase-5-local-experiments.md` for the full commands and review checklist.
 
-See `docs/phase-6-backend-design.md`, `docs/result-ingestion-contract.md`, `docs/observatory-data-shape.md`, `docs/supabase-setup.md`, and `docs/superpowers/plans/2026-08-23-phase-6-backend-ingestion.md` for the current backend design contracts and setup plan.
+See `docs/phase-6-backend-design.md`, `docs/result-ingestion-contract.md`, `docs/result-ingestion-api.md`, `docs/observatory-data-shape.md`, `docs/supabase-setup.md`, and `docs/superpowers/plans/2026-08-23-phase-6-backend-ingestion.md` for the current backend design contracts and setup plan.
