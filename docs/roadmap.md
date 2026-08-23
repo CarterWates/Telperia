@@ -47,6 +47,10 @@ Phase 5.1 makes local experiment collection portable before backend work begins.
 
 The repository now includes early seed result packages, including Windows RTX 5070 NVML runs with calculated Local IPW. See `docs/phase-5-results-summary.md`.
 
+## Methodology Proposal Status
+
+TCI v0.1 remains the active MVP capability score. A separate TCI v0.2 proposal exists in `methodology/TCI-v0.2-proposal.md` for future benchmark and scoring improvements, but it is not implemented and should not be used for current result packages.
+
 ## Phase 6 Entry Gate
 
 Backend work may begin after at least one Linux or Windows NVIDIA result package validates with nonzero GPU energy, raw power samples, Local IPW, methodology metadata, and verification metadata. Supabase/backend ingestion should preserve private-by-default uploads and explicit public opt-in.

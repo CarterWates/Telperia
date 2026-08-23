@@ -146,6 +146,10 @@ TCI v0.1 =
 
 TCI should be calculated from category-level scores rather than only a final aggregate. This allows users to see whether a model is strong in coding but weak in factual knowledge, or efficient but less capable in mathematics.
 
+### Future TCI v0.2 Proposal
+
+A draft proposal for improving TCI is maintained in `methodology/TCI-v0.2-proposal.md`. It is not approved for MVP scoring and does not change the active TCI v0.1 formula. The proposal explores harder benchmark tiers, clearer category separation, calibration, and robustness scoring for future methodology work.
+
 ## TRI v0.1: Telperia Reliability Index
 
 ### Status
