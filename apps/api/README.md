@@ -1,0 +1,97 @@
+# Phase 6 API Service
+
+## Status
+
+Design stub for the future Telperia backend API. This folder does not contain a running service yet.
+
+The Phase 6 API should wrap the local result validator, write private raw packages to Supabase Storage, store queryable summaries in Postgres, and create public review requests only when the user explicitly asks for them.
+
+## Source Contracts
+
+- `docs/result-ingestion-api.md`: request and response contract.
+- `docs/result-ingestion-contract.md`: validation, privacy, duplicate, and storage behavior.
+- `docs/observatory-data-shape.md`: public comparison row shape.
+- `docs/supabase-setup.md`: setup, migration, and advisor workflow.
+- `evaluation-runner/telperia_runner/ingestion.py`: local validation and public-safe summary extraction.
+- `supabase/migrations/20260823000000_phase_6_result_ingestion.sql`: draft database and Storage migration.
+
+## Recommended Shape
+
+The first service should expose:
+
+```text
+POST /api/results/ingest
+```
+
+The endpoint should accept one result package and an optional visibility mode:
+
+- `private`
+- `submit_for_public_review`
+
+It must reject direct `public` visibility. Public publishing is a review state, not an upload setting.
+
+## Ingestion Flow
+
+1. Confirm the request has a valid authenticated user.
+2. Parse exactly one result package from the request body.
+3. Run `validate_ingestion_package` from `evaluation-runner/telperia_runner/ingestion.py`.
+4. Reject packages with invalid schema, privacy violations, broken metric math, broken Local IPW math, or unsupported versions. The accepted package path must preserve no prompt or response content.
+5. Create a canonical package hash for duplicate checks.
+6. Reject reused `run_id` values when package content differs.
+7. Store raw JSON privately in the `result-packages` bucket.
+8. Insert or reuse model and hardware summary records.
+9. Insert the evaluation run and score summaries.
+10. If requested, insert a `public_submissions` row with `pending_review`.
+11. Return the response shape from `docs/result-ingestion-api.md`.
+
+## Storage
+
+Raw result packages should be written to:
+
+```text
+result-packages/users/{user_id}/runs/{run_id}.json
+```
+
+Rules:
+
+- Backend code generates the path.
+- Clients do not submit Storage paths.
+- Raw objects stay private.
+- Public pages read extracted summaries, not raw Storage URLs.
+- Failed validation writes no accepted summaries.
+
+## Database Access
+
+The migration draft enables RLS and keeps trusted summary writes behind the future backend path.
+
+The service should write:
+
+- `result_uploads`
+- `model_configs`
+- `hardware_profiles`
+- `evaluation_runs`
+- `run_scores`
+- `public_submissions` when public review is requested
+
+The public Observatory should only read approved public summaries.
+
+## Security Rules
+
+- Do not expose server-only credentials to browser code.
+- Do not trust user-editable metadata for authorization.
+- Do not collect prompt or response content.
+- Do not collect filenames, environment variables, hostnames, serial numbers, tokens, passwords, API keys, or secrets.
+- Run Supabase advisors before applying migrations to production.
+- Keep RLS enabled on exposed tables.
+
+## Not Implemented Yet
+
+- Runtime service framework.
+- Supabase client wiring.
+- Auth/session handling.
+- Live Storage writes.
+- Duplicate package hash persistence.
+- Reviewer/admin workflow.
+- Public Observatory read endpoint.
+
+Those pieces should be added after the Supabase project is active and the migration has been tested locally or in staging.

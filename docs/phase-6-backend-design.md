@@ -239,6 +239,8 @@ The detailed request, validation, extraction, response, and error-code contract 
 
 The first reusable local implementation is `evaluation-runner/telperia_runner/ingestion.py`. It validates packages and extracts the public-safe Observatory row without performing authentication, Storage writes, database writes, or network calls.
 
+The future API wrapper responsibilities are summarized in `apps/api/README.md`.
+
 ## Validation Rules
 
 The ingestion layer should require:

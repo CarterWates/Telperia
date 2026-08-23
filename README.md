@@ -48,6 +48,7 @@ Phases 1-5 established the MVP foundation, schemas, local telemetry prototype, e
 - A local ingestion validator can check result packages and extract public-safe Observatory rows before live backend upload code exists.
 - A draft Supabase migration and ingestion fixtures are available for Phase 6 backend review.
 - Public-safe Observatory row fixtures are available for Phase 7 website and API tests.
+- Backend service design and Windows contributor runbook docs are available for future implementation and test runs.
 - No prompt text or model response text is saved in result packages.
 
 ## Quick Local Check
@@ -77,4 +78,4 @@ The next project milestone is implementing Phase 6 private-by-default result ing
 
 See `docs/phase-5-local-experiments.md` for the full commands and review checklist.
 
-See `docs/phase-6-backend-design.md`, `docs/result-ingestion-contract.md`, `docs/result-ingestion-api.md`, `docs/observatory-data-shape.md`, `docs/supabase-setup.md`, and `docs/superpowers/plans/2026-08-23-phase-6-backend-ingestion.md` for the current backend design contracts and setup plan.
+See `apps/api/README.md`, `docs/phase-6-backend-design.md`, `docs/result-ingestion-contract.md`, `docs/result-ingestion-api.md`, `docs/observatory-data-shape.md`, `docs/supabase-setup.md`, `docs/windows-test-contributor-runbook.md`, and `docs/superpowers/plans/2026-08-23-phase-6-backend-ingestion.md` for the current backend design contracts and setup plan.

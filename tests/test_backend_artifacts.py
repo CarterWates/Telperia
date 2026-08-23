@@ -16,6 +16,8 @@ SCHEMA_PATH = PROJECT_ROOT / "schemas" / "evaluation-run.schema.json"
 FIXTURE_ROOT = PROJECT_ROOT / "tests" / "fixtures" / "ingestion"
 MIGRATION_PATH = PROJECT_ROOT / "supabase" / "migrations" / "20260823000000_phase_6_result_ingestion.sql"
 API_CONTRACT_PATH = PROJECT_ROOT / "docs" / "result-ingestion-api.md"
+API_README_PATH = PROJECT_ROOT / "apps" / "api" / "README.md"
+WINDOWS_RUNBOOK_PATH = PROJECT_ROOT / "docs" / "windows-test-contributor-runbook.md"
 OBSERVATORY_FIXTURE_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "public_rows.json"
 OBSERVATORY_README_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "README.md"
 
@@ -128,6 +130,43 @@ class ResultIngestionApiContractTests(unittest.TestCase):
         self.assertGreaterEqual(len(examples), 4)
         for example in examples:
             json.loads(example)
+
+
+class ApiServiceDesignTests(unittest.TestCase):
+    def test_api_readme_connects_validator_migration_storage_and_review_flow(self) -> None:
+        document = API_README_PATH.read_text()
+
+        for expected in [
+            "Phase 6 API Service",
+            "evaluation-runner/telperia_runner/ingestion.py",
+            "supabase/migrations/20260823000000_phase_6_result_ingestion.sql",
+            "result-packages",
+            "public_submissions",
+            "docs/result-ingestion-api.md",
+            "private",
+            "submit_for_public_review",
+            "no prompt or response content",
+        ]:
+            self.assertIn(expected, document)
+
+
+class WindowsContributorRunbookTests(unittest.TestCase):
+    def test_windows_runbook_covers_clean_model_testing_workflow(self) -> None:
+        document = WINDOWS_RUNBOOK_PATH.read_text()
+
+        for expected in [
+            "Windows Test Contributor Runbook",
+            "git clone",
+            "python -m unittest discover -s tests -q",
+            "ollama pull",
+            "python evaluation-runner/evaluate.py",
+            "--hardware-monitor nvml",
+            "--node-id windows-5070",
+            "git checkout -b",
+            "git push",
+            "Do not commit prompt text or response text",
+        ]:
+            self.assertIn(expected, document)
 
 
 class ObservatoryFixtureTests(unittest.TestCase):
