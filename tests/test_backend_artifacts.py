@@ -104,11 +104,17 @@ class SupabaseMigrationDraftTests(unittest.TestCase):
             "create policy \"Users can read their own result package objects\"",
             "comment on table public.result_uploads",
             "revoke all on table public.result_uploads from anon, authenticated",
+            "alter table storage.objects enable row level security",
         ]:
             self.assertIn(expected, sql)
 
         self.assertNotIn("service" + "_role", sql)
         self.assertNotIn("security definer", sql.lower())
+        self.assertNotIn("on storage.objects for insert\nto authenticated", sql)
+        self.assertNotIn("on public.result_uploads for insert\nto authenticated", sql)
+        self.assertNotIn("on public.evaluation_runs for insert\nto authenticated", sql)
+        self.assertNotIn("on public.run_scores for insert\nto authenticated", sql)
+        self.assertNotIn("on public.public_submissions for insert\nto authenticated", sql)
 
 
 class ResultIngestionApiContractTests(unittest.TestCase):

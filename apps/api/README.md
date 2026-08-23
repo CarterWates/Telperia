@@ -35,7 +35,7 @@ It must reject direct `public` visibility. Public publishing is a review state, 
 1. Confirm the request has a valid authenticated user.
 2. Parse exactly one result package from the request body.
 3. Run `validate_ingestion_package` from `evaluation-runner/telperia_runner/ingestion.py`.
-4. Reject packages with invalid schema, privacy violations, broken metric math, broken Local IPW math, or unsupported versions. The accepted package path must preserve no prompt or response content.
+4. Reject packages with invalid schema, privacy violations, broken metric math, broken Local IPW math, or unsupported versions. Accepted packages must contain no prompt or response content.
 5. Create a canonical package hash for duplicate checks.
 6. Reject reused `run_id` values when package content differs.
 7. Store raw JSON privately in the `result-packages` bucket.
