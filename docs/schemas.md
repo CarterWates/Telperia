@@ -12,6 +12,8 @@ Evaluation run packages may include `run_environment` metadata with a user-chose
 
 Energy confidence metadata is optional for backward compatibility with earlier result packages. New runner output should include it to describe sample count, measured duration, minimum recommendations, and warning codes.
 
+Backend ingestion requirements, privacy checks, extracted summary fields, warning codes, and response shapes are defined in `docs/result-ingestion-contract.md`.
+
 ## Privacy Boundary
 
 Schemas intentionally exclude prompt text, response text, filenames, environment variables, API keys, tokens, and passwords. Implementations should use identifiers for tasks and requests rather than storing private content.
