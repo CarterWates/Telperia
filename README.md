@@ -59,8 +59,10 @@ python3 evaluation-runner/evaluate.py --help
 
 ## Current Result Packages
 
-- `2026-07-12_llama3-1-8b_tci-v0-1_local-dev_001.json`: Mac/local development result with Local IPW deferred.
-- `2026-08-23_llama3-1-8b_tci-v0-1_windows-nvml_001.json`: Windows RTX 5070 result with NVML energy and calculated Local IPW.
+- 1 Mac/local development result with Local IPW deferred.
+- 5 Windows RTX 5070 NVML results with measured GPU energy and calculated Local IPW.
+
+See `docs/phase-5-results-summary.md` for the current seed result table.
 
 ## Next Experiment Runs
 

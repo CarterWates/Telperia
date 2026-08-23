@@ -43,6 +43,10 @@ Phase 1 creates repository structure and documentation only. It does not introdu
 
 Phase 5.1 makes local experiment collection portable before backend work begins. It supports measured Local IPW on Linux and Windows NVIDIA systems through NVML, supports Mac as a local-development capability run with IPW deferred, and keeps all energy source labels explicit. It does not implement hosted or data-center IPW.
 
+## Phase 5 Data Status
+
+The repository now includes early seed result packages, including Windows RTX 5070 NVML runs with calculated Local IPW. See `docs/phase-5-results-summary.md`.
+
 ## Phase 6 Entry Gate
 
-Begin backend work after at least one Linux or Windows NVIDIA result package validates with nonzero GPU energy, raw power samples, Local IPW, methodology metadata, and verification metadata. Supabase/backend ingestion should preserve private-by-default uploads and explicit public opt-in.
+Backend work may begin after at least one Linux or Windows NVIDIA result package validates with nonzero GPU energy, raw power samples, Local IPW, methodology metadata, and verification metadata. Supabase/backend ingestion should preserve private-by-default uploads and explicit public opt-in.

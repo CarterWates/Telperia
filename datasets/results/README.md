@@ -29,7 +29,11 @@ Example:
 | File | Class | Node | Model | Local IPW |
 | --- | --- | --- | --- | --- |
 | `2026-07-12_llama3-1-8b_tci-v0-1_local-dev_001.json` | `local-dev` | `local` | `llama3.1:8b` | deferred |
+| `2026-08-23_gemma2-9b_tci-v0-1_windows-nvml_001.json` | `nvidia-nvml` | `windows-5070` | `gemma2:9b` | calculated |
 | `2026-08-23_llama3-1-8b_tci-v0-1_windows-nvml_001.json` | `nvidia-nvml` | `windows-5070` | `llama3.1:8b` | calculated |
+| `2026-08-23_llama3-2-3b_tci-v0-1_windows-nvml_001.json` | `nvidia-nvml` | `windows-5070` | `llama3.2:3b` | calculated |
+| `2026-08-23_mistral-7b_tci-v0-1_windows-nvml_001.json` | `nvidia-nvml` | `windows-5070` | `mistral:7b` | calculated |
+| `2026-08-23_qwen2-5-7b_tci-v0-1_windows-nvml_001.json` | `nvidia-nvml` | `windows-5070` | `qwen2.5:7b` | calculated |
 
 ## Privacy Boundary
 

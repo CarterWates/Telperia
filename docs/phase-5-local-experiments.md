@@ -163,6 +163,8 @@ Before keeping a result package in the repo, verify:
 - `energy.raw_power_samples` is present for NVML runs.
 - No prompt text, response text, filenames, environment variables, tokens, passwords, or API keys are present.
 
+Current reviewed result packages are summarized in `docs/phase-5-results-summary.md`.
+
 ## Publication Rule
 
 Phase 5 results are preliminary. A result may be used as seed evidence only when its run class, hardware monitor, model metadata, methodology version, schema version, and verification level are clear. Local development results must not be presented as comparable public benchmark results.
