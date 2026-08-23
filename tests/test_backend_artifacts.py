@@ -18,6 +18,8 @@ MIGRATION_PATH = PROJECT_ROOT / "supabase" / "migrations" / "20260823000000_phas
 API_CONTRACT_PATH = PROJECT_ROOT / "docs" / "result-ingestion-api.md"
 API_README_PATH = PROJECT_ROOT / "apps" / "api" / "README.md"
 WINDOWS_RUNBOOK_PATH = PROJECT_ROOT / "docs" / "windows-test-contributor-runbook.md"
+DOCS_README_PATH = PROJECT_ROOT / "docs" / "README.md"
+SECURITY_PATH = PROJECT_ROOT / "SECURITY.md"
 OBSERVATORY_FIXTURE_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "public_rows.json"
 OBSERVATORY_README_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "README.md"
 
@@ -165,6 +167,44 @@ class WindowsContributorRunbookTests(unittest.TestCase):
             "git checkout -b",
             "git push",
             "Do not commit prompt text or response text",
+        ]:
+            self.assertIn(expected, document)
+
+
+class DocumentationNavigationTests(unittest.TestCase):
+    def test_docs_readme_explains_reading_paths(self) -> None:
+        document = DOCS_README_PATH.read_text()
+
+        for expected in [
+            "Read These Docs In This Order",
+            "Contributors",
+            "Methodology Readers",
+            "Backend Work",
+            "Local Testing",
+            "docs/roadmap.md",
+            "docs/telperia-methodology-v0.1.md",
+            "docs/result-ingestion-api.md",
+            "docs/windows-test-contributor-runbook.md",
+        ]:
+            self.assertIn(expected, document)
+
+
+class SecurityChecklistTests(unittest.TestCase):
+    def test_security_checklist_covers_telperia_risks(self) -> None:
+        document = SECURITY_PATH.read_text()
+
+        for expected in [
+            "Telperia Security Review Checklist",
+            "Secrets",
+            "Prompt And Response Privacy",
+            "Public Uploads",
+            "RLS",
+            "Private Raw JSON",
+            "Dataset Review",
+            "Release Checklist",
+            "result-packages",
+            "Supabase Security Advisor",
+            "Do not commit",
         ]:
             self.assertIn(expected, document)
 
