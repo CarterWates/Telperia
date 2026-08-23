@@ -36,6 +36,17 @@ Result packages should also identify the monitor backend. For the current runner
 - `monitor_backend`: `nvml` when Linux or Windows NVIDIA telemetry is collected through NVML
 - `monitor_backend`: `disabled` for Mac local-development runs or other machines without approved local energy telemetry
 
+Result packages should include energy confidence metadata when available. Energy confidence does not change the IPW formula. It describes the quality of the energy measurement behind the score.
+
+For the current runner:
+
+- `quality`: `unavailable` when local GPU energy is not measured.
+- `quality`: `low` when a measured run has fewer than 10 power samples or less than 30 seconds of measured duration.
+- `quality`: `medium` when a measured run meets the minimum sample and duration thresholds.
+- `warning_codes`: machine-readable notes such as `energy_unavailable`, `low_sample_count`, `short_duration`, and `gross_energy_scope`.
+
+The MVP runner does not assign `high` energy confidence. A future methodology may reserve high confidence for repeated runs, idle-baseline adjustment, or stronger isolation controls.
+
 Client-device power must not be used as a proxy for remote data-center inference energy.
 
 Mac local-development runs may calculate TCI and Factual Reliability, but Local IPW must remain deferred until a separate Apple hardware energy methodology is approved.

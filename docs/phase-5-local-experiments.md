@@ -80,6 +80,17 @@ For important model/hardware comparisons:
 - Keep every raw result package rather than overwriting prior runs.
 - Treat future idle-baseline or baseline-adjusted values as separate from the gross measured GPU energy preserved in the result package.
 
+## Energy Confidence
+
+New runner output includes `energy.energy_confidence` when result packages are generated after this protocol update.
+
+- `unavailable`: GPU energy was not measured.
+- `low`: the run has measured GPU energy, but fewer than 10 power samples or less than 30 seconds of measured duration.
+- `medium`: the run has measured GPU energy and meets the minimum sample and duration thresholds.
+- `high`: reserved for future methodology work.
+
+Low confidence does not invalidate a result package. It means Local IPW should be interpreted cautiously, especially when comparing short runs or machines with different background GPU activity.
+
 ## Mac Local Development Command
 
 Before running the evaluation, confirm Ollama is installed, running, and has the target model available:

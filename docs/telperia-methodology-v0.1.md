@@ -216,6 +216,19 @@ Result packages must identify the monitor backend, energy scope, and energy sour
 
 Mac local-development runs may calculate TCI and Factual Reliability, but Local IPW must remain deferred until a separate Apple hardware energy methodology is approved.
 
+### Energy Confidence
+
+Energy confidence metadata describes the quality of the GPU energy evidence behind Local IPW. It does not change the IPW formula and must not replace raw power samples.
+
+For the MVP runner:
+
+- `unavailable` means local GPU energy was not measured.
+- `low` means measured energy is present, but the run has fewer than 10 power samples or less than 30 seconds of measured duration.
+- `medium` means measured energy is present and meets the minimum sample and duration thresholds.
+- `high` is reserved for future methodology work, such as repeated-run confidence, idle-baseline adjustment, or stronger workload isolation.
+
+Warning codes should remain machine-readable so the Observatory can explain weak energy evidence without changing historical results.
+
 ### Repeatability Protocol
 
 For Phase 5 MVP evidence, measured NVIDIA runs should follow a repeatable setup:
@@ -247,6 +260,7 @@ IPW results must preserve:
 - Sampling interval.
 - Average power.
 - Peak power.
+- Energy confidence metadata when available.
 - Hardware profile.
 - Methodology version.
 

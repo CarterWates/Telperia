@@ -7,7 +7,13 @@ from typing import Any
 from uuid import uuid4
 
 from telperia_runner import RUNNER_VERSION
-from telperia_runner.metrics import calculate_completion_ratio, calculate_factual_reliability, calculate_ipw, calculate_tci
+from telperia_runner.metrics import (
+    calculate_completion_ratio,
+    calculate_energy_confidence,
+    calculate_factual_reliability,
+    calculate_ipw,
+    calculate_tci,
+)
 from telperia_runner.suite import EvaluationTask
 
 
@@ -162,4 +168,10 @@ def _energy_with_metadata(energy: dict[str, Any]) -> dict[str, Any]:
             "energy_scope": "local_inference_hardware",
             "energy_source": "unavailable",
         }
-    return {**defaults, **energy}
+    energy_with_defaults = {**defaults, **energy}
+    energy_with_defaults["energy_confidence"] = calculate_energy_confidence(
+        gpu_energy_wh=gpu_energy_wh,
+        raw_power_samples=energy_with_defaults.get("raw_power_samples", []),
+        monitor_backend=energy_with_defaults["monitor_backend"],
+    )
+    return energy_with_defaults

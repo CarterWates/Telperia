@@ -13,7 +13,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_ROOT = PROJECT_ROOT / "evaluation-runner"
 sys.path.insert(0, str(RUNNER_ROOT))
 
-from telperia_runner.metrics import calculate_completion_ratio, calculate_factual_reliability, calculate_ipw, calculate_tci
+from telperia_runner.metrics import (
+    calculate_completion_ratio,
+    calculate_energy_confidence,
+    calculate_factual_reliability,
+    calculate_ipw,
+    calculate_tci,
+)
 from telperia_runner.monitor import NvmlBackgroundMonitor
 from telperia_runner.ollama import OllamaClient
 from telperia_runner.evaluator import run_evaluation, score_text
@@ -65,6 +71,46 @@ class MetricsTests(unittest.TestCase):
     def test_rejects_ipw_without_positive_energy(self) -> None:
         with self.assertRaises(ValueError):
             calculate_ipw(tci=0.75, completion_ratio=0.8, gpu_energy_wh=0.0)
+
+    def test_calculates_low_energy_confidence_for_short_sparse_runs(self) -> None:
+        confidence = calculate_energy_confidence(
+            gpu_energy_wh=0.1,
+            raw_power_samples=[
+                {"power_w": 90.0, "interval_s": 1.0},
+                {"power_w": 95.0, "interval_s": 1.0},
+                {"power_w": 92.0, "interval_s": 1.0},
+            ],
+            monitor_backend="nvml",
+        )
+
+        self.assertEqual(confidence["quality"], "low")
+        self.assertEqual(confidence["sample_count"], 3)
+        self.assertAlmostEqual(confidence["measured_duration_s"], 3.0)
+        self.assertIn("low_sample_count", confidence["warning_codes"])
+        self.assertIn("short_duration", confidence["warning_codes"])
+        self.assertIn("gross_energy_scope", confidence["warning_codes"])
+
+    def test_calculates_medium_energy_confidence_for_adequate_single_runs(self) -> None:
+        confidence = calculate_energy_confidence(
+            gpu_energy_wh=1.0,
+            raw_power_samples=[{"power_w": 100.0, "interval_s": 1.0} for _ in range(30)],
+            monitor_backend="nvml",
+        )
+
+        self.assertEqual(confidence["quality"], "medium")
+        self.assertEqual(confidence["sample_count"], 30)
+        self.assertAlmostEqual(confidence["measured_duration_s"], 30.0)
+        self.assertEqual(confidence["warning_codes"], ["gross_energy_scope"])
+
+    def test_marks_energy_confidence_unavailable_without_measured_energy(self) -> None:
+        confidence = calculate_energy_confidence(
+            gpu_energy_wh=0.0,
+            raw_power_samples=[],
+            monitor_backend="disabled",
+        )
+
+        self.assertEqual(confidence["quality"], "unavailable")
+        self.assertIn("energy_unavailable", confidence["warning_codes"])
 
 
 class OllamaClientTests(unittest.TestCase):
@@ -258,6 +304,8 @@ class ResultPackageTests(unittest.TestCase):
         self.assertEqual(energy["monitor_backend"], "nvml")
         self.assertEqual(energy["energy_scope"], "local_inference_hardware")
         self.assertEqual(energy["energy_source"], "local_gpu_telemetry")
+        self.assertEqual(energy["energy_confidence"]["quality"], "low")
+        self.assertIn("low_sample_count", energy["energy_confidence"]["warning_codes"])
 
     def test_run_environment_identifies_node_os_and_monitor_backend(self) -> None:
         package = make_package(energy_wh=2.0, node_id="windows-5070")
@@ -284,6 +332,13 @@ class ResultPackageTests(unittest.TestCase):
     def test_schema_validation_applies_ipw_one_of(self) -> None:
         package = make_package()
         package["evaluation"]["scores"]["ipw_v0_1"] = {"unscaled": 1.0}
+
+        with self.assertRaises(SchemaValidationError):
+            validate_result_package(package, PROJECT_ROOT / "schemas" / "evaluation-run.schema.json")
+
+    def test_schema_validation_applies_energy_confidence_shape(self) -> None:
+        package = make_package(energy_wh=2.0)
+        package["energy"]["energy_confidence"]["quality"] = "certain"
 
         with self.assertRaises(SchemaValidationError):
             validate_result_package(package, PROJECT_ROOT / "schemas" / "evaluation-run.schema.json")

@@ -8,7 +8,9 @@ Telperia schemas define the portable data contracts used by the runner, telemetr
 - `schemas/telemetry-sample.schema.json` describes one non-content hardware telemetry sample.
 - `schemas/inference-event.schema.json` describes one non-content inference event.
 
-Evaluation run packages may include `run_environment` metadata with a user-chosen `node_id`, operating system family, and monitor backend. Energy blocks may include `monitor_backend`, `energy_scope`, and `energy_source` so local-dev, Linux NVIDIA, Windows NVIDIA, and future backends can be distinguished without changing metric formulas.
+Evaluation run packages may include `run_environment` metadata with a user-chosen `node_id`, operating system family, and monitor backend. Energy blocks may include `monitor_backend`, `energy_scope`, `energy_source`, and `energy_confidence` so local-dev, Linux NVIDIA, Windows NVIDIA, and future backends can be distinguished without changing metric formulas.
+
+Energy confidence metadata is optional for backward compatibility with earlier result packages. New runner output should include it to describe sample count, measured duration, minimum recommendations, and warning codes.
 
 ## Privacy Boundary
 

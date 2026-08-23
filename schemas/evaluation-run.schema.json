@@ -416,6 +416,53 @@
         "energy_source": {
           "type": "string",
           "enum": ["unavailable", "local_gpu_telemetry"]
+        },
+        "energy_confidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "quality",
+            "sample_count",
+            "measured_duration_s",
+            "minimum_recommended_samples",
+            "minimum_recommended_duration_s",
+            "warning_codes"
+          ],
+          "properties": {
+            "quality": {
+              "type": "string",
+              "enum": ["unavailable", "low", "medium", "high"]
+            },
+            "sample_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "measured_duration_s": {
+              "type": "number",
+              "minimum": 0
+            },
+            "minimum_recommended_samples": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "minimum_recommended_duration_s": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "warning_codes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "energy_unavailable",
+                  "low_sample_count",
+                  "short_duration",
+                  "gross_energy_scope"
+                ]
+              },
+              "uniqueItems": true
+            }
+          }
         }
       }
     },

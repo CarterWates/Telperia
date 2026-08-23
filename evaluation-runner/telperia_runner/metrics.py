@@ -81,6 +81,36 @@ def calculate_ipw(tci: float, completion_ratio: float, gpu_energy_wh: float) -> 
     }
 
 
+def calculate_energy_confidence(
+    gpu_energy_wh: float,
+    raw_power_samples: list[dict[str, Any]],
+    monitor_backend: str,
+) -> dict[str, Any]:
+    sample_count = len(raw_power_samples)
+    measured_duration_s = sum(float(sample.get("interval_s", 0.0)) for sample in raw_power_samples)
+    warning_codes: list[str] = []
+
+    if gpu_energy_wh <= 0 or monitor_backend == "disabled":
+        warning_codes.append("energy_unavailable")
+        quality = "unavailable"
+    else:
+        if sample_count < 10:
+            warning_codes.append("low_sample_count")
+        if measured_duration_s < 30.0:
+            warning_codes.append("short_duration")
+        warning_codes.append("gross_energy_scope")
+        quality = "low" if "low_sample_count" in warning_codes or "short_duration" in warning_codes else "medium"
+
+    return {
+        "quality": quality,
+        "sample_count": sample_count,
+        "measured_duration_s": measured_duration_s,
+        "minimum_recommended_samples": 10,
+        "minimum_recommended_duration_s": 30.0,
+        "warning_codes": warning_codes,
+    }
+
+
 def _benchmark_score(result: Any) -> dict[str, float | str]:
     raw_score = float(result.score)
     if not 0.0 <= raw_score <= 1.0:
