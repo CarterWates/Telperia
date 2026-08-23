@@ -25,7 +25,7 @@ These are preliminary Phase 5 seed results. They are useful for validating Telpe
 
 - Local IPW is only calculated for result packages with measured local GPU energy.
 - Current measured energy values are gross local GPU energy during the evaluation window, not perfectly isolated model-only energy.
-- New result packages include energy confidence metadata. Earlier seed result packages remain valid but may not include that field.
+- Result packages generated after the energy confidence update include energy confidence metadata. The current seed result packages remain valid but do not include that field.
 - The Mac/local development result is valid for runner and schema validation, but it is not comparable energy evidence.
 - The Windows RTX 5070 results are useful for same-hardware comparison across local Ollama models.
 - Verification level is currently `0`; future Telperia Verified claims require a stronger approved process.

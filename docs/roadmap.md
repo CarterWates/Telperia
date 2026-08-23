@@ -45,7 +45,7 @@ Phase 5.1 makes local experiment collection portable before backend work begins.
 
 ## Phase 5 Data Status
 
-The repository now includes early seed result packages, including Windows RTX 5070 NVML runs with calculated Local IPW and repeat runs for selected models. Phase 5 also added a repeatability protocol and energy confidence metadata so Local IPW evidence can be interpreted honestly. See `docs/phase-5-results-summary.md` and `docs/phase-5-local-experiments.md`.
+The repository now includes early seed result packages, including Windows RTX 5070 NVML runs with calculated Local IPW and repeat runs for selected models. Phase 5 also added a repeatability protocol and runner support for energy confidence metadata so future Local IPW evidence can be interpreted honestly. See `docs/phase-5-results-summary.md` and `docs/phase-5-local-experiments.md`.
 
 ## Methodology Proposal Status
 
@@ -53,7 +53,7 @@ TCI v0.1 remains the active MVP capability score. A separate TCI v0.2 proposal e
 
 ## Phase 6 Entry Gate
 
-Backend work may begin because `main` now contains validated Windows NVIDIA result packages with nonzero GPU energy, raw power samples, Local IPW, methodology metadata, verification metadata, and energy confidence context. Supabase/backend ingestion should preserve private-by-default uploads and explicit public opt-in.
+Backend work may begin because `main` now contains validated Windows NVIDIA result packages with nonzero GPU energy, raw power samples, Local IPW, methodology metadata, and verification metadata. New runner output also includes energy confidence metadata for future ingested runs. Supabase/backend ingestion should preserve private-by-default uploads and explicit public opt-in.
 
 ## Phase 6 Backend Design
 

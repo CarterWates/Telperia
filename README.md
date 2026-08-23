@@ -35,7 +35,7 @@ The MVP should allow a user to:
 
 ## Current Phase
 
-Phases 1-5 established the MVP foundation, schemas, local telemetry prototype, evaluation runner, cross-platform local experiment flow, seed results, repeatability protocol, and energy confidence metadata. Phase 6 is active and focused on private-by-default backend ingestion design before live Supabase implementation.
+Phases 1-5 established the MVP foundation, schemas, local telemetry prototype, evaluation runner, cross-platform local experiment flow, seed results, repeatability protocol, and energy confidence metadata support. Phase 6 is active and focused on private-by-default backend ingestion design before live Supabase implementation.
 
 ## What Works Today
 
