@@ -47,6 +47,7 @@ Phases 1-5 established the MVP foundation, schemas, local telemetry prototype, e
 - Windows NVIDIA result packages are available under `datasets/results/`.
 - A local ingestion validator can check result packages and extract public-safe Observatory rows before live backend upload code exists.
 - A draft Supabase migration and ingestion fixtures are available for Phase 6 backend review.
+- Public-safe Observatory row fixtures are available for Phase 7 website and API tests.
 - No prompt text or model response text is saved in result packages.
 
 ## Quick Local Check

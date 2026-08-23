@@ -9,13 +9,67 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_ROOT = PROJECT_ROOT / "evaluation-runner"
 sys.path.insert(0, str(RUNNER_ROOT))
 
-from telperia_runner.ingestion import validate_ingestion_package
+from telperia_runner.ingestion import extract_observatory_row, validate_ingestion_package
 
 
 SCHEMA_PATH = PROJECT_ROOT / "schemas" / "evaluation-run.schema.json"
 FIXTURE_ROOT = PROJECT_ROOT / "tests" / "fixtures" / "ingestion"
 MIGRATION_PATH = PROJECT_ROOT / "supabase" / "migrations" / "20260823000000_phase_6_result_ingestion.sql"
 API_CONTRACT_PATH = PROJECT_ROOT / "docs" / "result-ingestion-api.md"
+OBSERVATORY_FIXTURE_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "public_rows.json"
+OBSERVATORY_README_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "README.md"
+
+OBSERVATORY_REQUIRED_FIELDS = {
+    "result_id",
+    "run_id",
+    "model_name",
+    "model_revision",
+    "quantization",
+    "runtime_engine",
+    "runtime_version",
+    "hardware_label",
+    "gpu",
+    "gpu_count",
+    "operating_system",
+    "monitor_backend",
+    "tci_v0_1",
+    "factual_correctness_rate",
+    "factual_incorrect_answer_rate",
+    "factual_abstention_rate",
+    "factual_attempted_accuracy",
+    "local_ipw_unscaled",
+    "local_ipw_displayed",
+    "local_ipw_status",
+    "gpu_energy_wh",
+    "energy_confidence",
+    "energy_warning_codes",
+    "verification_level",
+    "methodology_version",
+    "evaluation_suite",
+    "completed_tasks",
+    "total_tasks",
+    "completion_ratio",
+    "error_count",
+    "result_timestamp",
+    "published_at",
+}
+OBSERVATORY_PRIVATE_FIELDS = {
+    "user_id",
+    "email",
+    "storage_path",
+    "prompt",
+    "response",
+    "filename",
+    "file_path",
+    "environment",
+    "env",
+    "api_key",
+    "token",
+    "password",
+    "secret",
+    "hostname",
+    "serial_number",
+}
 
 
 class SupabaseMigrationDraftTests(unittest.TestCase):
@@ -74,6 +128,44 @@ class ResultIngestionApiContractTests(unittest.TestCase):
         self.assertGreaterEqual(len(examples), 4)
         for example in examples:
             json.loads(example)
+
+
+class ObservatoryFixtureTests(unittest.TestCase):
+    def test_public_rows_fixture_matches_public_data_shape(self) -> None:
+        rows = json.loads(OBSERVATORY_FIXTURE_PATH.read_text())
+
+        self.assertGreaterEqual(len(rows), 3)
+        for row in rows:
+            self.assertEqual(set(row), OBSERVATORY_REQUIRED_FIELDS)
+            self.assertTrue(OBSERVATORY_PRIVATE_FIELDS.isdisjoint(row))
+            self.assertIn(row["local_ipw_status"], ["calculated", "deferred"])
+            self.assertIn(row["energy_confidence"], ["unavailable", "low", "medium", "high", None])
+            self.assertEqual(row["methodology_version"], "0.1")
+            self.assertEqual(row["evaluation_suite"], "tci-v0.1")
+            self.assertGreaterEqual(row["tci_v0_1"], 0)
+            self.assertLessEqual(row["tci_v0_1"], 100)
+            self.assertGreaterEqual(row["completion_ratio"], 0)
+            self.assertLessEqual(row["completion_ratio"], 1)
+
+    def test_public_rows_fixture_matches_extracted_ingestion_summaries(self) -> None:
+        rows = json.loads(OBSERVATORY_FIXTURE_PATH.read_text())
+        packages = [
+            load_fixture("valid_private_upload.json"),
+            load_fixture("low_energy_confidence_warning.json"),
+            load_fixture("duplicate_run_id_original.json"),
+        ]
+        expected = [
+            extract_observatory_row(package, result_id=f"public-fixture-{index}", published_at="2026-08-23T00:00:00Z")
+            for index, package in enumerate(packages, start=1)
+        ]
+
+        self.assertEqual(rows, expected)
+
+    def test_observatory_fixture_readme_links_data_shape_contract(self) -> None:
+        readme = OBSERVATORY_README_PATH.read_text()
+
+        self.assertIn("docs/observatory-data-shape.md", readme)
+        self.assertIn("public_rows.json", readme)
 
 
 class IngestionFixtureTests(unittest.TestCase):

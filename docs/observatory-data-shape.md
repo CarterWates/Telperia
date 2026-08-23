@@ -229,3 +229,5 @@ The future Phase 7 Observatory website can use this contract to build:
 - Hardware-filtered leaderboards.
 - Energy confidence warnings.
 - Methodology and verification badges.
+
+Public-safe fixture rows for future website and API tests live in `tests/fixtures/observatory/public_rows.json`.
