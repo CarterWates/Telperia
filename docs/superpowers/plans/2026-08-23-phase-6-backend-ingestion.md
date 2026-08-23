@@ -37,10 +37,10 @@
 
 ## Task 2: Supabase Project Readiness
 
-- [ ] Reactivate or create the Supabase project.
-- [ ] Confirm local CLI, MCP, or dashboard access.
-- [ ] Confirm the project is not connected to any public client using service-role credentials.
-- [ ] Create separate local, staging, and production environment variable notes before adding deploy scripts.
+- [x] Document how to reactivate or create the Supabase project.
+- [x] Document local CLI, dashboard, migration, and advisor workflow.
+- [x] Document frontend/public and server-only environment variable expectations.
+- [ ] Confirm the project is not connected to any public client using server-only credentials.
 - [ ] Document the selected backend wrapper: Edge Function, API app, or both.
 
 ## Task 3: Database Migration
