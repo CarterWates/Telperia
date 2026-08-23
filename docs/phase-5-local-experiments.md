@@ -62,6 +62,24 @@ Example:
 2026-07-12_llama3-1-8b_tci-v0-1_local-dev_001.json
 ```
 
+## Repeatability Protocol
+
+Measured NVIDIA runs record gross local GPU energy during the evaluation window. They are not perfectly isolated model-only energy measurements if other GPU workloads are active.
+
+Before measured runs:
+
+- Close GPU-heavy applications.
+- Keep the machine plugged in.
+- Use the same operating system power mode across runs.
+- Let the GPU idle briefly before starting the evaluation.
+- Avoid games, video rendering, screen recording, other local AI tools, or CUDA workloads during the run.
+
+For important model/hardware comparisons:
+
+- Run the same model two or more times when practical.
+- Keep every raw result package rather than overwriting prior runs.
+- Treat future idle-baseline or baseline-adjusted values as separate from the gross measured GPU energy preserved in the result package.
+
 ## Mac Local Development Command
 
 Before running the evaluation, confirm Ollama is installed, running, and has the target model available:
