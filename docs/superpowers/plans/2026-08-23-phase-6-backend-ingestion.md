@@ -45,9 +45,9 @@
 
 ## Task 3: Database Migration
 
-- [ ] Create migrations for `profiles`, `result_uploads`, `model_configs`, `hardware_profiles`, `evaluation_runs`, `run_scores`, and `public_submissions`.
-- [ ] Add constraints for accepted visibility, ingestion status, public submission status, score ranges, and nonnegative energy values.
-- [ ] Add indexes for owner lookup, public result listing, model lookup, hardware filtering, methodology version, and evaluation suite.
+- [x] Draft migration for `profiles`, `result_uploads`, `model_configs`, `hardware_profiles`, `evaluation_runs`, `run_scores`, and `public_submissions`.
+- [x] Draft constraints for accepted visibility, ingestion status, public submission status, score ranges, and nonnegative energy values.
+- [x] Draft indexes for owner lookup, public result listing, model lookup, hardware filtering, methodology version, and evaluation suite.
 - [ ] Store raw JSON in private Storage rather than public tables.
 - [ ] Avoid storing local usernames, hostnames, serial numbers, or upload filenames.
 

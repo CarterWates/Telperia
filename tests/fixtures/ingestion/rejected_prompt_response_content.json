@@ -1,0 +1,109 @@
+{
+  "schema_version": "0.1",
+  "run_id": "22222222-2222-4222-8222-222222222222",
+  "timestamp": "2026-08-23T00:00:00Z",
+  "model": {
+    "name": "llama3.1:8b",
+    "revision": "unknown",
+    "quantization": "unknown"
+  },
+  "runtime": {
+    "engine": "ollama",
+    "engine_version": "0.1.0"
+  },
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 5070",
+    "gpu_count": 1,
+    "driver": "unknown",
+    "cuda": "unknown",
+    "system_ram_gb": 32
+  },
+  "run_environment": {
+    "node_id": "windows-5070",
+    "operating_system": "Windows",
+    "monitor_backend": "nvml"
+  },
+  "methodology": {
+    "version": "0.1",
+    "documents": [
+      "docs/telperia-methodology-v0.1.md",
+      "methodology/TCI-v0.1.md",
+      "methodology/IPW-v0.1.md",
+      "methodology/factual-reliability-v0.1.md"
+    ]
+  },
+  "evaluation": {
+    "suite": "tci-v0.1",
+    "completed_tasks": 1,
+    "total_tasks": 1,
+    "completion_ratio": 1.0,
+    "scores": {
+      "task_score_average": 1.0,
+      "private_probe": {
+        "prompt": "Return only the private phrase.",
+        "response": "private phrase"
+      },
+      "tci_v0_1": {
+        "methodology_version": "TCI v0.1",
+        "final_score": 25.0,
+        "categories": {
+          "reasoning": {"category_weight": 0.25, "category_score": 100.0, "benchmarks": [{"task_id": "reasoning-001", "raw_benchmark_score": 1.0, "normalized_benchmark_score": 100.0}]},
+          "coding": {"category_weight": 0.25, "category_score": 0.0, "benchmarks": []},
+          "mathematics": {"category_weight": 0.2, "category_score": 0.0, "benchmarks": []},
+          "factual_knowledge": {"category_weight": 0.15, "category_score": 0.0, "benchmarks": []},
+          "instruction_adherence": {"category_weight": 0.15, "category_score": 0.0, "benchmarks": []}
+        }
+      },
+      "factual_reliability_v0_1": {
+        "correct_responses": 0,
+        "incorrect_responses": 0,
+        "abstentions": 0,
+        "total_questions": 0,
+        "correctness_rate": 0.0,
+        "incorrect_answer_rate": 0.0,
+        "abstention_rate": 0.0,
+        "attempted_accuracy": 0.0
+      },
+      "ipw_v0_1": {
+        "unscaled": 12.5,
+        "displayed": 12500.0,
+        "energy_scope": "local_inference_hardware",
+        "energy_source": "local_gpu_telemetry"
+      }
+    },
+    "raw_results": [
+      {"task_id": "reasoning-001", "category": "reasoning", "score": 1.0, "success": true, "latency_ms": 120.0, "input_tokens": 5, "output_tokens": 7, "error_category": null}
+    ]
+  },
+  "energy": {
+    "gpu_energy_wh": 2.0,
+    "sampling_interval_ms": 1000,
+    "average_power_w": 100.0,
+    "peak_power_w": 110.0,
+    "raw_power_samples": [
+      {"timestamp": "2026-08-23T00:00:00Z", "power_w": 100.0, "interval_s": 1.0},
+      {"timestamp": "2026-08-23T00:00:01Z", "power_w": 110.0, "interval_s": 1.0}
+    ],
+    "monitor_backend": "nvml",
+    "energy_scope": "local_inference_hardware",
+    "energy_source": "local_gpu_telemetry",
+    "energy_confidence": {
+      "quality": "low",
+      "sample_count": 2,
+      "measured_duration_s": 2.0,
+      "minimum_recommended_samples": 10,
+      "minimum_recommended_duration_s": 30.0,
+      "warning_codes": ["low_sample_count", "short_duration", "gross_energy_scope"]
+    }
+  },
+  "performance": {
+    "input_tokens": 5,
+    "output_tokens": 7,
+    "tokens_per_second": 58.3333333333,
+    "error_count": 0
+  },
+  "verification": {
+    "level": 0,
+    "runner_version": "0.1"
+  }
+}
