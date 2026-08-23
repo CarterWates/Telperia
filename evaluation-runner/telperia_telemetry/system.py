@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import ctypes
 from dataclasses import dataclass
 from pathlib import Path
 from time import sleep
@@ -60,6 +61,9 @@ def _fallback_cpu_utilization_percent() -> float:
 
 
 def _fallback_memory_used_mb() -> float:
+    if os.name == "nt":
+        return _windows_memory_used_mb()
+
     if not hasattr(os, "sysconf"):
         return 0.0
 
@@ -73,3 +77,32 @@ def _fallback_memory_used_mb() -> float:
         return 0.0
 
     return (page_size * physical_pages) / 1024.0 / 1024.0
+
+
+class _WindowsMemoryStatus(ctypes.Structure):
+    _fields_ = [
+        ("dwLength", ctypes.c_ulong),
+        ("dwMemoryLoad", ctypes.c_ulong),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+    ]
+
+
+def _windows_memory_used_mb(kernel32=None) -> float:
+    if kernel32 is None:
+        kernel32 = ctypes.windll.kernel32
+
+    status = _WindowsMemoryStatus()
+    status.dwLength = ctypes.sizeof(status)
+    if not kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):
+        return 0.0
+
+    used_bytes = status.ullTotalPhys - status.ullAvailPhys
+    if used_bytes <= 0:
+        return 0.0
+    return used_bytes / 1024.0 / 1024.0

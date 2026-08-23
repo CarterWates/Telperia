@@ -20,6 +20,7 @@ from telperia_telemetry.errors import TelemetryUnavailableError
 from telperia_telemetry.exporters import write_csv, write_json
 from telperia_telemetry.models import GpuMetrics, TelemetryRun, TelemetrySample
 from telperia_telemetry import system
+from telperia_telemetry.system import _windows_memory_used_mb
 from telperia_telemetry.nvml import NvmlSampler, _nvml_library_names
 from telperia_telemetry.runner import collect_telemetry
 
@@ -131,6 +132,14 @@ class SystemMetricTests(unittest.TestCase):
 
         self.assertGreaterEqual(value, 0.0)
 
+    def test_windows_memory_reader_returns_used_physical_memory(self) -> None:
+        six_gb = 6 * 1024 * 1024 * 1024
+        sixteen_gb = 16 * 1024 * 1024 * 1024
+
+        value = _windows_memory_used_mb(FakeKernel32(total_phys=sixteen_gb, available_phys=sixteen_gb - six_gb))
+
+        self.assertEqual(value, 6144.0)
+
 
 class RunnerTests(unittest.TestCase):
     def test_short_duration_uses_actual_duration_for_energy(self) -> None:
@@ -241,6 +250,18 @@ class FakeSampler:
             power_draw_w=self.power_w,
             temperature_c=50.0,
         )
+
+
+class FakeKernel32:
+    def __init__(self, total_phys: int, available_phys: int) -> None:
+        self.total_phys = total_phys
+        self.available_phys = available_phys
+
+    def GlobalMemoryStatusEx(self, status_ptr) -> int:
+        status = status_ptr._obj
+        status.ullTotalPhys = self.total_phys
+        status.ullAvailPhys = self.available_phys
+        return 1
 
 
 def make_sample(power_w: float) -> TelemetrySample:
