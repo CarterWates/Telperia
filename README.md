@@ -1,8 +1,10 @@
 # Telperia
 
-Telperia is an MVP for transparent measurements of local AI model capability, reliability, efficiency, and verification metadata.
+Telperia is an open AI measurement project for understanding how AI systems perform, how reliable they are, how much energy they use, and how much evidence supports each claim.
 
-The first release is planned as a web platform, evaluation runner, and lightweight telemetry agent. A native iOS application is not part of the MVP.
+The long-term goal is to build an AI Observatory where builders, researchers, companies, and local AI users can compare model configurations through transparent methodology, reproducible result packages, hardware metadata, verification levels, and energy-aware scores such as Local Intelligence-per-Watt.
+
+This repository contains the MVP foundation for that system: methodology documents, schemas, a local evaluation runner, NVIDIA telemetry collection, and early result packages. The first release is planned as a web platform, evaluation runner, and lightweight telemetry agent. A native iOS application is not part of the MVP.
 
 ## MVP Objective
 
