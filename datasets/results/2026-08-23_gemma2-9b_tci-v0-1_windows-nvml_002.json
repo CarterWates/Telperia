@@ -1,0 +1,529 @@
+{
+  "schema_version": "0.1",
+  "run_id": "d62976b7-ee2d-449a-a2d4-6e9f95c68218",
+  "timestamp": "2026-08-23T18:04:06.020225+00:00",
+  "model": {
+    "name": "gemma2:9b",
+    "revision": "unknown",
+    "quantization": "unknown"
+  },
+  "runtime": {
+    "engine": "ollama",
+    "engine_version": "0.32.15"
+  },
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 5070",
+    "gpu_count": 1,
+    "driver": "unknown",
+    "cuda": "unknown",
+    "system_ram_gb": 11.6583251953125
+  },
+  "run_environment": {
+    "node_id": "windows-5070",
+    "operating_system": "Windows",
+    "monitor_backend": "nvml"
+  },
+  "methodology": {
+    "version": "0.1",
+    "documents": [
+      "docs/telperia-methodology-v0.1.md",
+      "methodology/TCI-v0.1.md",
+      "methodology/IPW-v0.1.md",
+      "methodology/factual-reliability-v0.1.md"
+    ]
+  },
+  "evaluation": {
+    "suite": "tci-v0.1",
+    "completed_tasks": 25,
+    "total_tasks": 25,
+    "completion_ratio": 1.0,
+    "scores": {
+      "task_score_average": 0.6,
+      "tci_v0_1": {
+        "methodology_version": "TCI v0.1",
+        "final_score": 56.0,
+        "categories": {
+          "reasoning": {
+            "category_weight": 0.25,
+            "category_score": 40.0,
+            "benchmarks": [
+              {
+                "task_id": "reasoning-001",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              },
+              {
+                "task_id": "reasoning-002",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "reasoning-003",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              },
+              {
+                "task_id": "reasoning-004",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              },
+              {
+                "task_id": "reasoning-005",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              }
+            ]
+          },
+          "coding": {
+            "category_weight": 0.25,
+            "category_score": 60.0,
+            "benchmarks": [
+              {
+                "task_id": "coding-001",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              },
+              {
+                "task_id": "coding-002",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "coding-003",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "coding-004",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "coding-005",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              }
+            ]
+          },
+          "mathematics": {
+            "category_weight": 0.2,
+            "category_score": 20.0,
+            "benchmarks": [
+              {
+                "task_id": "math-001",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "math-002",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              },
+              {
+                "task_id": "math-003",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              },
+              {
+                "task_id": "math-004",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              },
+              {
+                "task_id": "math-005",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              }
+            ]
+          },
+          "factual_knowledge": {
+            "category_weight": 0.15,
+            "category_score": 80.0,
+            "benchmarks": [
+              {
+                "task_id": "factual-001",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "factual-002",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "factual-003",
+                "raw_benchmark_score": 0.0,
+                "normalized_benchmark_score": 0.0
+              },
+              {
+                "task_id": "factual-004",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "factual-005",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              }
+            ]
+          },
+          "instruction_adherence": {
+            "category_weight": 0.15,
+            "category_score": 100.0,
+            "benchmarks": [
+              {
+                "task_id": "instruction-001",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "instruction-002",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "instruction-003",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "instruction-004",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              },
+              {
+                "task_id": "instruction-005",
+                "raw_benchmark_score": 1.0,
+                "normalized_benchmark_score": 100.0
+              }
+            ]
+          }
+        }
+      },
+      "factual_reliability_v0_1": {
+        "correct_responses": 4,
+        "incorrect_responses": 1,
+        "abstentions": 0,
+        "total_questions": 5,
+        "correctness_rate": 0.8,
+        "incorrect_answer_rate": 0.2,
+        "abstention_rate": 0.0,
+        "attempted_accuracy": 0.8
+      },
+      "ipw_v0_1": {
+        "unscaled": 331.3671878951324,
+        "displayed": 331367.1878951324,
+        "energy_scope": "local_inference_hardware",
+        "energy_source": "local_gpu_telemetry"
+      }
+    },
+    "raw_results": [
+      {
+        "task_id": "reasoning-001",
+        "category": "reasoning",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 3234.2846000101417,
+        "input_tokens": 81,
+        "output_tokens": 64,
+        "error_category": null
+      },
+      {
+        "task_id": "reasoning-002",
+        "category": "reasoning",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 102.6922999881208,
+        "input_tokens": 52,
+        "output_tokens": 4,
+        "error_category": null
+      },
+      {
+        "task_id": "reasoning-003",
+        "category": "reasoning",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 114.10450004041195,
+        "input_tokens": 46,
+        "output_tokens": 5,
+        "error_category": null
+      },
+      {
+        "task_id": "reasoning-004",
+        "category": "reasoning",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 122.10720009170473,
+        "input_tokens": 57,
+        "output_tokens": 6,
+        "error_category": null
+      },
+      {
+        "task_id": "reasoning-005",
+        "category": "reasoning",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 98.13140006735921,
+        "input_tokens": 40,
+        "output_tokens": 4,
+        "error_category": null
+      },
+      {
+        "task_id": "coding-001",
+        "category": "coding",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 375.39569986984134,
+        "input_tokens": 60,
+        "output_tokens": 28,
+        "error_category": null
+      },
+      {
+        "task_id": "coding-002",
+        "category": "coding",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 170.27410003356636,
+        "input_tokens": 57,
+        "output_tokens": 9,
+        "error_category": null
+      },
+      {
+        "task_id": "coding-003",
+        "category": "coding",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 112.00889991596341,
+        "input_tokens": 43,
+        "output_tokens": 4,
+        "error_category": null
+      },
+      {
+        "task_id": "coding-004",
+        "category": "coding",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 178.73639985919,
+        "input_tokens": 58,
+        "output_tokens": 10,
+        "error_category": null
+      },
+      {
+        "task_id": "coding-005",
+        "category": "coding",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 171.86150001361966,
+        "input_tokens": 57,
+        "output_tokens": 10,
+        "error_category": null
+      },
+      {
+        "task_id": "math-001",
+        "category": "mathematics",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 61.71240005642176,
+        "input_tokens": 27,
+        "output_tokens": 2,
+        "error_category": null
+      },
+      {
+        "task_id": "math-002",
+        "category": "mathematics",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 760.8284000307322,
+        "input_tokens": 36,
+        "output_tokens": 64,
+        "error_category": null
+      },
+      {
+        "task_id": "math-003",
+        "category": "mathematics",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 106.77570011466742,
+        "input_tokens": 38,
+        "output_tokens": 4,
+        "error_category": null
+      },
+      {
+        "task_id": "math-004",
+        "category": "mathematics",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 97.15389995835721,
+        "input_tokens": 48,
+        "output_tokens": 5,
+        "error_category": null
+      },
+      {
+        "task_id": "math-005",
+        "category": "mathematics",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 147.55469979718328,
+        "input_tokens": 30,
+        "output_tokens": 8,
+        "error_category": null
+      },
+      {
+        "task_id": "factual-001",
+        "category": "factual_knowledge",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 81.65129995904863,
+        "input_tokens": 26,
+        "output_tokens": 3,
+        "error_category": null
+      },
+      {
+        "task_id": "factual-002",
+        "category": "factual_knowledge",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 91.47660015150905,
+        "input_tokens": 29,
+        "output_tokens": 3,
+        "error_category": null
+      },
+      {
+        "task_id": "factual-003",
+        "category": "factual_knowledge",
+        "score": 0.0,
+        "success": true,
+        "latency_ms": 102.93709998950362,
+        "input_tokens": 26,
+        "output_tokens": 4,
+        "error_category": null
+      },
+      {
+        "task_id": "factual-004",
+        "category": "factual_knowledge",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 104.39200000837445,
+        "input_tokens": 27,
+        "output_tokens": 5,
+        "error_category": null
+      },
+      {
+        "task_id": "factual-005",
+        "category": "factual_knowledge",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 82.45959994383156,
+        "input_tokens": 27,
+        "output_tokens": 4,
+        "error_category": null
+      },
+      {
+        "task_id": "instruction-001",
+        "category": "instruction_adherence",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 104.1278000921011,
+        "input_tokens": 21,
+        "output_tokens": 5,
+        "error_category": null
+      },
+      {
+        "task_id": "instruction-002",
+        "category": "instruction_adherence",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 165.1246000546962,
+        "input_tokens": 29,
+        "output_tokens": 10,
+        "error_category": null
+      },
+      {
+        "task_id": "instruction-003",
+        "category": "instruction_adherence",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 123.49120015278459,
+        "input_tokens": 20,
+        "output_tokens": 5,
+        "error_category": null
+      },
+      {
+        "task_id": "instruction-004",
+        "category": "instruction_adherence",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 126.9270998891443,
+        "input_tokens": 28,
+        "output_tokens": 6,
+        "error_category": null
+      },
+      {
+        "task_id": "instruction-005",
+        "category": "instruction_adherence",
+        "score": 1.0,
+        "success": true,
+        "latency_ms": 58.51279990747571,
+        "input_tokens": 26,
+        "output_tokens": 2,
+        "error_category": null
+      }
+    ]
+  },
+  "energy": {
+    "monitor_backend": "nvml",
+    "energy_scope": "local_inference_hardware",
+    "energy_source": "local_gpu_telemetry",
+    "gpu_energy_wh": 0.16899681696222224,
+    "sampling_interval_ms": 1000,
+    "average_power_w": 89.23242857142857,
+    "peak_power_w": 174.583,
+    "raw_power_samples": [
+      {
+        "timestamp": "2026-08-23T18:03:59.108241+00:00",
+        "power_w": 18.336,
+        "interval_s": 1.003783
+      },
+      {
+        "timestamp": "2026-08-23T18:04:00.112024+00:00",
+        "power_w": 21.539,
+        "interval_s": 1.000662
+      },
+      {
+        "timestamp": "2026-08-23T18:04:01.112686+00:00",
+        "power_w": 31.753,
+        "interval_s": 1.000554
+      },
+      {
+        "timestamp": "2026-08-23T18:04:02.113240+00:00",
+        "power_w": 52.046,
+        "interval_s": 1.000703
+      },
+      {
+        "timestamp": "2026-08-23T18:04:03.113943+00:00",
+        "power_w": 169.665,
+        "interval_s": 1.000392
+      },
+      {
+        "timestamp": "2026-08-23T18:04:04.114335+00:00",
+        "power_w": 156.705,
+        "interval_s": 1.000714
+      },
+      {
+        "timestamp": "2026-08-23T18:04:05.115049+00:00",
+        "power_w": 174.583,
+        "interval_s": 0.905176
+      }
+    ]
+  },
+  "performance": {
+    "input_tokens": 989,
+    "output_tokens": 274,
+    "tokens_per_second": 39.740544716419,
+    "error_count": 0
+  },
+  "verification": {
+    "level": 0,
+    "runner_version": "0.1"
+  }
+}
