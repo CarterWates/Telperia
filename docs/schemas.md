@@ -14,6 +14,8 @@ Energy confidence metadata is optional for backward compatibility with earlier r
 
 Backend ingestion requirements, privacy checks, extracted summary fields, warning codes, and response shapes are defined in `docs/result-ingestion-contract.md`.
 
+The public-safe comparison read model for the future Observatory is defined in `docs/observatory-data-shape.md`.
+
 ## Privacy Boundary
 
 Schemas intentionally exclude prompt text, response text, filenames, environment variables, API keys, tokens, and passwords. Implementations should use identifiers for tasks and requests rather than storing private content.

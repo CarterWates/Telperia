@@ -303,6 +303,8 @@ The public Observatory should read from approved summary data containing:
 
 The public projection should not expose owner email, private raw object path, prompt text, response text, local filenames, hostnames, or tokens.
 
+The detailed public comparison shape is defined in `docs/observatory-data-shape.md`.
+
 ## Phase 6 Build Order
 
 1. Create a Supabase project or reactivate the paused project.
@@ -314,6 +316,7 @@ The public projection should not expose owner email, private raw object path, pr
 7. Add a private upload path.
 8. Add public submission request and review status.
 9. Add a read-only public summary query for Phase 7 Observatory work.
+10. Shape approved public summaries according to `docs/observatory-data-shape.md`.
 
 ## Open Decisions
 

@@ -60,3 +60,5 @@ Backend work may begin after at least one Linux or Windows NVIDIA result package
 Phase 6 begins with the backend design in `docs/phase-6-backend-design.md`. The first backend implementation should validate local result packages, store raw JSON privately, extract public-safe summaries, and keep public submission as an explicit opt-in workflow.
 
 The result ingestion contract is defined in `docs/result-ingestion-contract.md`. Backend implementation should follow that contract before adding public Observatory reads.
+
+The public Observatory comparison data shape is defined in `docs/observatory-data-shape.md`, including model, hardware, TCI, Factual Reliability, Local IPW, energy confidence, verification level, and methodology version fields.
