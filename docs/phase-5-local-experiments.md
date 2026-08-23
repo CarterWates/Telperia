@@ -132,7 +132,7 @@ python evaluate.py `
   --hardware-monitor nvml `
   --node-id windows-5070 `
   --max-output-tokens 64 `
-  --output ../datasets/results/2026-08-22_llama3-1-8b_tci-v0-1_windows-nvml_001.json
+  --output ../datasets/results/2026-08-23_llama3-1-8b_tci-v0-1_windows-nvml_001.json
 ```
 
 Expected result:

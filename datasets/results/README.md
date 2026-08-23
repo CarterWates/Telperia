@@ -24,6 +24,13 @@ Example:
 2026-07-12_llama3-1-8b_tci-v0-1_local-dev_001.json
 ```
 
+## Current Results
+
+| File | Class | Node | Model | Local IPW |
+| --- | --- | --- | --- | --- |
+| `2026-07-12_llama3-1-8b_tci-v0-1_local-dev_001.json` | `local-dev` | `local` | `llama3.1:8b` | deferred |
+| `2026-08-23_llama3-1-8b_tci-v0-1_windows-nvml_001.json` | `nvidia-nvml` | `windows-5070` | `llama3.1:8b` | calculated |
+
 ## Privacy Boundary
 
 Result packages must not include prompt text, response text, filenames, environment variables, API keys, tokens, passwords, or private user content. Store task identifiers and measured outputs only.

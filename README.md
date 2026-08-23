@@ -33,7 +33,7 @@ The MVP should allow a user to:
 
 ## Current Phase
 
-Phases 1-4 are implemented for the MVP foundation, schemas, local telemetry prototype, and first evaluation runner. Phase 5 is active: local experiment protocol, cross-platform runner compatibility, and seed result structure come before initial measured runs and backend ingestion.
+Phases 1-4 are implemented for the MVP foundation, schemas, local telemetry prototype, and first evaluation runner. Phase 5 is active: local experiment protocol, cross-platform runner compatibility, and initial measured result collection come before backend ingestion.
 
 ## What Works Today
 
@@ -42,6 +42,7 @@ Phases 1-4 are implemented for the MVP foundation, schemas, local telemetry prot
 - Result packages preserve raw benchmark scores, normalized scores, category weights, TCI, Factual Reliability, Local IPW status, telemetry metadata, and verification metadata.
 - Linux and Windows NVIDIA systems can use `--hardware-monitor nvml` when NVML is available.
 - Mac and non-NVML machines can run with `--hardware-monitor disabled`; those runs defer Local IPW.
+- The first Windows NVIDIA result package is available under `datasets/results/`.
 - No prompt text or model response text is saved in result packages.
 
 ## Quick Local Check
@@ -54,12 +55,17 @@ python3 -m compileall -q evaluation-runner tests
 python3 evaluation-runner/evaluate.py --help
 ```
 
+## Current Result Packages
+
+- `2026-07-12_llama3-1-8b_tci-v0-1_local-dev_001.json`: Mac/local development result with Local IPW deferred.
+- `2026-08-23_llama3-1-8b_tci-v0-1_windows-nvml_001.json`: Windows RTX 5070 result with NVML energy and calculated Local IPW.
+
 ## Next Experiment Runs
 
-The next project milestone is collecting measured Phase 5 results without starting backend ingestion prematurely.
+The next project milestone is collecting more measured Phase 5 results without starting backend ingestion prematurely.
 
 - Mac development run: use `--hardware-monitor disabled --node-id local`.
 - Linux NVIDIA run: use `--hardware-monitor nvml --node-id linux-laptop`.
-- Windows NVIDIA run: use `--hardware-monitor nvml --node-id windows-5070`.
+- Windows NVIDIA repeat runs: use `--hardware-monitor nvml --node-id windows-5070`.
 
 See `docs/phase-5-local-experiments.md` for the full commands and review checklist.
