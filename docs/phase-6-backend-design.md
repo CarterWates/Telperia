@@ -237,6 +237,8 @@ Rules:
 
 The detailed request, validation, extraction, response, and error-code contract is defined in `docs/result-ingestion-contract.md`.
 
+The first reusable local implementation is `evaluation-runner/telperia_runner/ingestion.py`. It validates packages and extracts the public-safe Observatory row without performing authentication, Storage writes, database writes, or network calls.
+
 ## Validation Rules
 
 The ingestion layer should require:
@@ -309,14 +311,16 @@ The detailed public comparison shape is defined in `docs/observatory-data-shape.
 
 1. Create a Supabase project or reactivate the paused project.
 2. Confirm Supabase CLI or MCP access.
-3. Implement the result ingestion contract in `docs/result-ingestion-contract.md`.
+3. Use the local validator in `evaluation-runner/telperia_runner/ingestion.py` as the server-side validation baseline.
 4. Create the initial migration for tables, indexes, RLS, and Storage bucket policies.
-5. Add server-side ingestion validation.
+5. Add server-side ingestion validation by wrapping the local contract checks.
 6. Add tests with valid and rejected result packages.
 7. Add a private upload path.
 8. Add public submission request and review status.
 9. Add a read-only public summary query for Phase 7 Observatory work.
 10. Shape approved public summaries according to `docs/observatory-data-shape.md`.
+
+The implementation sequence is tracked in `docs/superpowers/plans/2026-08-23-phase-6-backend-ingestion.md`.
 
 ## Open Decisions
 

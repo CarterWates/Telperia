@@ -109,6 +109,8 @@ The ingestion service should validate in this order:
 
 Validation must happen before public submission status can be created.
 
+The local MVP validator lives at `evaluation-runner/telperia_runner/ingestion.py`. It is intentionally storage-free and network-free so the same checks can be reused by local tests, a future Supabase Edge Function, or a small server-side API wrapper.
+
 ## Privacy Checks
 
 Reject packages containing any keys intended to carry private content:
@@ -380,3 +382,5 @@ When implementation begins, add tests for:
 - Rejecting duplicate `run_id` with different package content.
 - Preserving raw JSON separately from extracted summaries.
 - Ensuring default visibility is private.
+
+Implemented local validator coverage currently includes valid package acceptance, privacy key rejection, completion-ratio checks, IPW math checks, low energy-confidence warnings, missing energy-confidence warnings for older packages, and public-safe Observatory row extraction.

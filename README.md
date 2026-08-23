@@ -45,6 +45,7 @@ Phases 1-5 established the MVP foundation, schemas, local telemetry prototype, e
 - Linux and Windows NVIDIA systems can use `--hardware-monitor nvml` when NVML is available.
 - Mac and non-NVML machines can run with `--hardware-monitor disabled`; those runs defer Local IPW.
 - Windows NVIDIA result packages are available under `datasets/results/`.
+- A local ingestion validator can check result packages and extract public-safe Observatory rows before live backend upload code exists.
 - No prompt text or model response text is saved in result packages.
 
 ## Quick Local Check
@@ -74,4 +75,4 @@ The next project milestone is implementing Phase 6 private-by-default result ing
 
 See `docs/phase-5-local-experiments.md` for the full commands and review checklist.
 
-See `docs/phase-6-backend-design.md`, `docs/result-ingestion-contract.md`, and `docs/observatory-data-shape.md` for the current backend design contracts.
+See `docs/phase-6-backend-design.md`, `docs/result-ingestion-contract.md`, `docs/observatory-data-shape.md`, and `docs/superpowers/plans/2026-08-23-phase-6-backend-ingestion.md` for the current backend design contracts and implementation plan.
