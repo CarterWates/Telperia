@@ -24,7 +24,6 @@
     "energy_confidence": "low",
     "energy_warning_codes": [
       "low_sample_count",
-      "short_duration",
       "gross_energy_scope"
     ],
     "verification_level": 0,
@@ -62,7 +61,6 @@
     "energy_confidence": "low",
     "energy_warning_codes": [
       "low_sample_count",
-      "short_duration",
       "gross_energy_scope"
     ],
     "verification_level": 0,
@@ -100,7 +98,6 @@
     "energy_confidence": "low",
     "energy_warning_codes": [
       "low_sample_count",
-      "short_duration",
       "gross_energy_scope"
     ],
     "verification_level": 0,

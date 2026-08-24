@@ -250,12 +250,10 @@ revoke all on table public.public_submissions from anon, authenticated;
 
 grant select, insert, update on table public.profiles to authenticated;
 grant select on table public.result_uploads to authenticated;
-grant select on table public.model_configs to anon, authenticated;
-grant select on table public.hardware_profiles to anon, authenticated;
+grant select on table public.model_configs to authenticated;
+grant select on table public.hardware_profiles to authenticated;
 grant select on table public.evaluation_runs to authenticated;
-grant select on table public.evaluation_runs to anon;
 grant select on table public.run_scores to authenticated;
-grant select on table public.run_scores to anon;
 grant select on table public.public_submissions to authenticated;
 
 create policy "Users can read their own profile"
@@ -279,27 +277,29 @@ on public.result_uploads for select
 to authenticated
 using ((select auth.uid()) = user_id);
 
-create policy "Public can read model configs used by public runs"
+create policy "Users can read model configs for their own runs"
 on public.model_configs for select
-to anon, authenticated
+to authenticated
 using (
   exists (
     select 1
     from public.evaluation_runs
+    join public.result_uploads on result_uploads.id = evaluation_runs.upload_id
     where evaluation_runs.model_config_id = model_configs.id
-      and evaluation_runs.is_public = true
+      and result_uploads.user_id = (select auth.uid())
   )
 );
 
-create policy "Public can read hardware profiles used by public runs"
+create policy "Users can read hardware profiles for their own runs"
 on public.hardware_profiles for select
-to anon, authenticated
+to authenticated
 using (
   exists (
     select 1
     from public.evaluation_runs
+    join public.result_uploads on result_uploads.id = evaluation_runs.upload_id
     where evaluation_runs.hardware_profile_id = hardware_profiles.id
-      and evaluation_runs.is_public = true
+      and result_uploads.user_id = (select auth.uid())
   )
 );
 
@@ -315,11 +315,6 @@ using (
   )
 );
 
-create policy "Anyone can read public runs"
-on public.evaluation_runs for select
-to anon, authenticated
-using (is_public = true);
-
 create policy "Users can read scores for their own runs"
 on public.run_scores for select
 to authenticated
@@ -330,18 +325,6 @@ using (
     join public.result_uploads on result_uploads.id = evaluation_runs.upload_id
     where evaluation_runs.id = run_scores.evaluation_run_id
       and result_uploads.user_id = (select auth.uid())
-  )
-);
-
-create policy "Anyone can read scores for public runs"
-on public.run_scores for select
-to anon, authenticated
-using (
-  exists (
-    select 1
-    from public.evaluation_runs
-    where evaluation_runs.id = run_scores.evaluation_run_id
-      and evaluation_runs.is_public = true
   )
 );
 

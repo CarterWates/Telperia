@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
+from telperia_runner.metrics import TCI_CATEGORY_WEIGHTS
 from telperia_runner.schema import SchemaValidationError, validate_result_package
 
 
 FLOAT_TOLERANCE = 1e-6
+ENERGY_RELATIVE_TOLERANCE = 0.02
+MAX_PRIVACY_SCAN_DEPTH = 100
+MAX_PRIVACY_SCAN_NODES = 10_000
 ACCEPTED_SCHEMA_VERSION = "0.1"
 ACCEPTED_METHODOLOGY_VERSION = "0.1"
 ACCEPTED_EVALUATION_SUITE = "tci-v0.1"
@@ -31,6 +38,22 @@ PRIVATE_CONTENT_KEYS = {
     "hostname",
     "serial_number",
 }
+PRIVATE_CONTENT_KEY_ALIASES = {re.sub(r"[^a-z0-9]", "", key.lower()) for key in PRIVATE_CONTENT_KEYS} | {
+    "prompttext",
+    "responsetext",
+    "apikey",
+    "filepath",
+    "serialnumber",
+}
+SENSITIVE_VALUE_PATTERNS = [
+    re.compile(r"\bsk-[A-Za-z0-9_-]{16,}\b"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{16,}\b"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+    re.compile(r"(^|[\s'\"])(/Users/|/home/|C:\\)"),
+    re.compile(r"(^|[\s'\"])\.env(\.|$|[\s'\"])"),
+    re.compile(r"\b(prompt|response)\s*:", re.IGNORECASE),
+    re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE),
+]
 
 
 @dataclass(frozen=True)
@@ -47,9 +70,13 @@ def validate_ingestion_package(package: dict[str, Any], schema_path: Path) -> In
     except SchemaValidationError as exc:
         return _reject("invalid_schema", f"Result package failed schema validation: {exc}")
 
-    private_key_path = _find_private_content_key(package)
-    if private_key_path is not None:
-        return _reject("privacy_violation", f"Result package contains a private content key at {private_key_path}.")
+    structural_error = _validate_required_ingestion_fields(package)
+    if structural_error is not None:
+        return structural_error
+
+    privacy_violation_path = _find_privacy_violation(package)
+    if privacy_violation_path is not None:
+        return _reject("privacy_violation", f"Result package contains private content at {privacy_violation_path}.")
 
     version_error = _validate_versions(package)
     if version_error is not None:
@@ -143,11 +170,33 @@ def _validate_versions(package: dict[str, Any]) -> IngestionValidation | None:
 def _validate_metric_consistency(package: dict[str, Any]) -> IngestionValidation | None:
     evaluation = package["evaluation"]
     scores = evaluation["scores"]
+    raw_results = evaluation["raw_results"]
     completed_tasks = evaluation["completed_tasks"]
     total_tasks = evaluation["total_tasks"]
 
     if completed_tasks > total_tasks:
         return _reject("metric_consistency_error", "Completed task count cannot exceed total task count.")
+    if total_tasks != len(raw_results):
+        return _reject("metric_consistency_error", "Total task count does not match raw result count.")
+
+    expected_completed = sum(1 for result in raw_results if result.get("success") is True)
+    if completed_tasks != expected_completed:
+        return _reject("metric_consistency_error", "Completed task count does not match successful raw results.")
+
+    if package["performance"]["error_count"] != sum(1 for result in raw_results if result.get("success") is not True):
+        return _reject("metric_consistency_error", "Error count does not match failed raw results.")
+
+    raw_scores = []
+    raw_result_scores_by_task: dict[str, float] = {}
+    for result in raw_results:
+        score = float(result["score"])
+        if not _between(score, 0.0, 1.0):
+            return _reject("metric_consistency_error", "Raw result score must be between 0 and 1.")
+        raw_scores.append(score)
+        raw_result_scores_by_task[result["task_id"]] = score
+
+    if not _close(scores["task_score_average"], _average(raw_scores)):
+        return _reject("metric_consistency_error", "Task score average does not match raw result scores.")
 
     expected_ratio = completed_tasks / total_tasks if total_tasks else 0.0
     if not _close(evaluation.get("completion_ratio", 0.0), expected_ratio):
@@ -157,11 +206,18 @@ def _validate_metric_consistency(package: dict[str, Any]) -> IngestionValidation
     if not _between(tci["final_score"], 0.0, 100.0):
         return _reject("metric_consistency_error", "TCI final score must be between 0 and 100.")
 
-    for category in tci["categories"].values():
+    expected_final_score = 0.0
+    for category_name, category in tci["categories"].items():
+        expected_weight = TCI_CATEGORY_WEIGHTS.get(category_name)
+        if expected_weight is None:
+            return _reject("metric_consistency_error", "TCI includes an unsupported category.")
         if not _between(category["category_weight"], 0.0, 1.0):
             return _reject("metric_consistency_error", "TCI category weight must be between 0 and 1.")
+        if not _close(category["category_weight"], expected_weight):
+            return _reject("metric_consistency_error", "TCI category weight does not match the methodology.")
         if not _between(category["category_score"], 0.0, 100.0):
             return _reject("metric_consistency_error", "TCI category score must be between 0 and 100.")
+        normalized_scores = []
         for benchmark in category["benchmarks"]:
             if not _between(benchmark["raw_benchmark_score"], 0.0, 1.0):
                 return _reject("metric_consistency_error", "Raw benchmark score must be between 0 and 1.")
@@ -169,18 +225,27 @@ def _validate_metric_consistency(package: dict[str, Any]) -> IngestionValidation
                 return _reject("metric_consistency_error", "Normalized benchmark score must be between 0 and 100.")
             if not _close(benchmark["normalized_benchmark_score"], benchmark["raw_benchmark_score"] * 100.0):
                 return _reject("metric_consistency_error", "Normalized benchmark score does not match raw score.")
+            raw_result_score = raw_result_scores_by_task.get(benchmark["task_id"])
+            if raw_result_score is not None and not _close(benchmark["raw_benchmark_score"], raw_result_score):
+                return _reject("metric_consistency_error", "TCI benchmark score does not match raw result score.")
+            normalized_scores.append(benchmark["normalized_benchmark_score"])
 
-    factual_error = _validate_factual_metrics(scores["factual_reliability_v0_1"])
+        expected_category_score = _average(normalized_scores)
+        if not _close(category["category_score"], expected_category_score):
+            return _reject("metric_consistency_error", "TCI category score does not match benchmark scores.")
+        expected_final_score += expected_weight * expected_category_score
+
+    if not _close(tci["final_score"], expected_final_score):
+        return _reject("metric_consistency_error", "TCI final score does not match category scores and weights.")
+
+    factual_error = _validate_factual_metrics(scores["factual_reliability_v0_1"], raw_results)
     if factual_error is not None:
         return factual_error
-
-    if package["performance"]["error_count"] < 0:
-        return _reject("metric_consistency_error", "Error count cannot be negative.")
 
     return None
 
 
-def _validate_factual_metrics(factual: dict[str, Any]) -> IngestionValidation | None:
+def _validate_factual_metrics(factual: dict[str, Any], raw_results: list[dict[str, Any]]) -> IngestionValidation | None:
     correct = factual["correct_responses"]
     incorrect = factual["incorrect_responses"]
     abstentions = factual["abstentions"]
@@ -201,6 +266,13 @@ def _validate_factual_metrics(factual: dict[str, Any]) -> IngestionValidation | 
             return _reject("metric_consistency_error", "Factual Reliability rates must be between 0 and 1.")
         if not _close(factual[key], expected):
             return _reject("metric_consistency_error", f"Factual Reliability {key} does not match counts.")
+
+    factual_results = [result for result in raw_results if result["category"] == "factual_knowledge"]
+    expected_correct = sum(1 for result in factual_results if result.get("success") is True and float(result["score"]) >= 1.0)
+    expected_incorrect = sum(1 for result in factual_results if result.get("success") is True and float(result["score"]) < 1.0)
+    expected_abstentions = sum(1 for result in factual_results if result.get("success") is not True)
+    if (correct, incorrect, abstentions) != (expected_correct, expected_incorrect, expected_abstentions):
+        return _reject("metric_consistency_error", "Factual Reliability counts do not match factual raw results.")
 
     return None
 
@@ -225,6 +297,9 @@ def _validate_energy_consistency(package: dict[str, Any]) -> IngestionValidation
             return _reject("energy_consistency_error", "Calculated Local IPW requires the NVML monitor backend.")
         if not energy.get("raw_power_samples"):
             return _reject("energy_consistency_error", "Calculated Local IPW requires raw power samples.")
+        sample_error = _validate_power_sample_summary(energy)
+        if sample_error is not None:
+            return sample_error
 
         expected_unscaled = tci_score * completion_ratio / gpu_energy_wh
         if not _close(ipw["unscaled"], expected_unscaled):
@@ -240,6 +315,58 @@ def _validate_energy_consistency(package: dict[str, Any]) -> IngestionValidation
             return _reject("energy_consistency_error", "Deferred Local IPW should report zero GPU energy.")
 
     return _validate_energy_confidence(energy)
+
+
+def _validate_required_ingestion_fields(package: dict[str, Any]) -> IngestionValidation | None:
+    if "run_environment" not in package:
+        return _reject("invalid_schema", "Result package must include run environment metadata for ingestion.")
+    if not package.get("evaluation", {}).get("raw_results"):
+        return _reject("invalid_schema", "Result package must include raw evaluation results for ingestion.")
+
+    try:
+        UUID(package["run_id"])
+    except (TypeError, ValueError):
+        return _reject("invalid_schema", "Result package run_id must be a valid UUID.")
+
+    if not _is_parseable_timestamp(package["timestamp"]):
+        return _reject("invalid_schema", "Result package timestamp must be a parseable timestamp.")
+
+    for sample in package.get("energy", {}).get("raw_power_samples", []):
+        if not _is_parseable_timestamp(sample["timestamp"]):
+            return _reject("invalid_schema", "Raw power sample timestamp must be a parseable timestamp.")
+
+    return None
+
+
+def _validate_power_sample_summary(energy: dict[str, Any]) -> IngestionValidation | None:
+    samples = energy.get("raw_power_samples", [])
+    intervals = [float(sample["interval_s"]) for sample in samples if "interval_s" in sample]
+    if len(intervals) != len(samples):
+        return None
+
+    power_values = [float(sample["power_w"]) for sample in samples]
+    if any(power_w < 0 for power_w in power_values) or any(interval_s < 0 for interval_s in intervals):
+        return _reject("energy_consistency_error", "Raw power samples cannot contain negative values.")
+
+    measured_duration = sum(intervals)
+    if measured_duration <= 0:
+        return _reject("energy_consistency_error", "Raw power samples must cover a positive measured duration.")
+
+    watt_seconds = sum(power_w * interval_s for power_w, interval_s in zip(power_values, intervals))
+    expected_energy_wh = watt_seconds / 3600.0
+    expected_average_power_w = watt_seconds / measured_duration
+    expected_peak_power_w = max(power_values)
+
+    checks = [
+        ("gpu_energy_wh", expected_energy_wh, "GPU energy does not match raw power samples."),
+        ("average_power_w", expected_average_power_w, "Average power does not match raw power samples."),
+        ("peak_power_w", expected_peak_power_w, "Peak power does not match raw power samples."),
+    ]
+    for key, expected, message in checks:
+        if not _close_energy(float(energy[key]), expected):
+            return _reject("energy_consistency_error", message)
+
+    return None
 
 
 def _validate_energy_confidence(energy: dict[str, Any]) -> IngestionValidation | None:
@@ -278,21 +405,45 @@ def _warning_codes(package: dict[str, Any]) -> list[str]:
     return warnings
 
 
-def _find_private_content_key(value: Any, path: str = "$") -> str | None:
-    if isinstance(value, dict):
-        for key, item in value.items():
-            current_path = f"{path}.{key}"
-            if key.lower() in PRIVATE_CONTENT_KEYS:
-                return current_path
-            nested = _find_private_content_key(item, current_path)
-            if nested is not None:
-                return nested
-    elif isinstance(value, list):
-        for index, item in enumerate(value):
-            nested = _find_private_content_key(item, f"{path}[{index}]")
-            if nested is not None:
-                return nested
+def _find_privacy_violation(value: Any) -> str | None:
+    stack: list[tuple[Any, str, int]] = [(value, "$", 0)]
+    visited_nodes = 0
+
+    while stack:
+        current, path, depth = stack.pop()
+        visited_nodes += 1
+        if visited_nodes > MAX_PRIVACY_SCAN_NODES or depth > MAX_PRIVACY_SCAN_DEPTH:
+            return path
+
+        if isinstance(current, dict):
+            for key, item in current.items():
+                current_path = f"{path}.{key}"
+                if _normalize_key(str(key)) in PRIVATE_CONTENT_KEY_ALIASES:
+                    return current_path
+                stack.append((item, current_path, depth + 1))
+        elif isinstance(current, list):
+            for index, item in enumerate(current):
+                stack.append((item, f"{path}[{index}]", depth + 1))
+        elif isinstance(current, str) and _looks_sensitive_value(current):
+            return path
+
     return None
+
+
+def _looks_sensitive_value(value: str) -> bool:
+    return any(pattern.search(value) for pattern in SENSITIVE_VALUE_PATTERNS)
+
+
+def _normalize_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", value.lower())
+
+
+def _is_parseable_timestamp(value: str) -> bool:
+    try:
+        datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return False
+    return True
 
 
 def _between(value: float, minimum: float, maximum: float) -> bool:
@@ -301,3 +452,13 @@ def _between(value: float, minimum: float, maximum: float) -> bool:
 
 def _close(left: float, right: float) -> bool:
     return abs(float(left) - float(right)) <= FLOAT_TOLERANCE
+
+
+def _close_energy(left: float, right: float) -> bool:
+    return abs(float(left) - float(right)) <= max(FLOAT_TOLERANCE, abs(float(right)) * ENERGY_RELATIVE_TOLERANCE)
+
+
+def _average(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    return sum(values) / len(values)

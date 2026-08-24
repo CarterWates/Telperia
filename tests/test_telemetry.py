@@ -90,6 +90,46 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(rows[0]["gpu_power_draw_w"], "75.0")
         self.assertEqual(rows[0]["current_model"], "")
 
+    def test_csv_export_neutralizes_formula_like_text_cells(self) -> None:
+        sample = TelemetrySample(
+            timestamp=datetime(2026, 7, 11, 12, 0, tzinfo=UTC),
+            node_id="=SUM(1,1)",
+            gpu=GpuMetrics(
+                index=0,
+                name="+NVIDIA Test GPU",
+                utilization_percent=50.0,
+                vram_used_mb=1024.0,
+                vram_total_mb=8192.0,
+                power_draw_w=75.0,
+                temperature_c=62.0,
+            ),
+            cpu_utilization_percent=12.5,
+            system_memory_used_mb=4096.0,
+            current_model="@model",
+            inference_engine="-ollama",
+            request_count=0,
+            error_count=0,
+        )
+        run = TelemetryRun(
+            node_id="local",
+            samples=[sample],
+            gpu_energy_wh=75.0 / 3600.0,
+            average_power_w=75.0,
+            peak_power_w=75.0,
+            sampling_interval_ms=1000,
+        )
+
+        with TemporaryDirectory() as tmpdir:
+            output = Path(tmpdir) / "telemetry.csv"
+            write_csv(run, output)
+
+            rows = list(csv.DictReader(output.read_text().splitlines()))
+
+        self.assertEqual(rows[0]["node_id"], "'=SUM(1,1)")
+        self.assertEqual(rows[0]["gpu_name"], "'+NVIDIA Test GPU")
+        self.assertEqual(rows[0]["current_model"], "'@model")
+        self.assertEqual(rows[0]["inference_engine"], "'-ollama")
+
 
 class NvmlSamplerTests(unittest.TestCase):
     def test_raises_clear_error_when_nvml_library_is_missing(self) -> None:
@@ -110,7 +150,8 @@ class NvmlSamplerTests(unittest.TestCase):
     def test_windows_nvml_library_names_include_driver_dll(self) -> None:
         names = _nvml_library_names(platform_name="win32")
 
-        self.assertEqual(names[0], "nvml.dll")
+        self.assertEqual(names[0], "C:\\Windows\\System32\\nvml.dll")
+        self.assertNotIn("nvml.dll", names)
 
     def test_linux_nvml_library_names_prefer_versioned_so(self) -> None:
         names = _nvml_library_names(platform_name="linux")

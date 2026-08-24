@@ -109,7 +109,6 @@ def _nvml_library_names(platform_name: str | None = None) -> tuple[str, ...]:
     platform = platform_name or sys.platform
     if platform.startswith("win"):
         return (
-            "nvml.dll",
             "C:\\Windows\\System32\\nvml.dll",
             "C:\\Program Files\\NVIDIA Corporation\\NVSMI\\nvml.dll",
         )

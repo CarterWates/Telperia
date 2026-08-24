@@ -47,6 +47,38 @@ class IngestionValidatorTests(unittest.TestCase):
         self.assertFalse(validation.accepted)
         self.assertEqual(validation.error_code, "privacy_violation")
 
+    def test_rejects_private_content_aliases_and_sensitive_values(self) -> None:
+        package = make_valid_energy_package()
+        package["evaluation"]["scores"]["private_probe"] = {"promptText": "do not store me"}
+
+        validation = validate_ingestion_package(package, SCHEMA_PATH)
+
+        self.assertFalse(validation.accepted)
+        self.assertEqual(validation.error_code, "privacy_violation")
+
+    def test_rejects_sensitive_text_in_public_summary_fields(self) -> None:
+        package = make_valid_energy_package()
+        package["model"]["name"] = "response: private answer"
+
+        validation = validate_ingestion_package(package, SCHEMA_PATH)
+
+        self.assertFalse(validation.accepted)
+        self.assertEqual(validation.error_code, "privacy_violation")
+
+    def test_rejects_deeply_nested_privacy_payloads_without_crashing(self) -> None:
+        package = make_valid_energy_package()
+        nested = {}
+        current = nested
+        for _ in range(150):
+            current["next"] = {}
+            current = current["next"]
+        package["evaluation"]["scores"]["nested_probe"] = nested
+
+        validation = validate_ingestion_package(package, SCHEMA_PATH)
+
+        self.assertFalse(validation.accepted)
+        self.assertEqual(validation.error_code, "privacy_violation")
+
     def test_rejects_invalid_ipw_math(self) -> None:
         package = make_valid_energy_package()
         package["evaluation"]["scores"]["ipw_v0_1"]["unscaled"] = 999.0
@@ -76,6 +108,51 @@ class IngestionValidatorTests(unittest.TestCase):
         self.assertFalse(validation.accepted)
         self.assertEqual(validation.error_code, "metric_consistency_error")
 
+    def test_rejects_forged_tci_category_score(self) -> None:
+        package = make_valid_energy_package()
+        package["evaluation"]["scores"]["tci_v0_1"]["categories"]["reasoning"]["category_score"] = 50.0
+
+        validation = validate_ingestion_package(package, SCHEMA_PATH)
+
+        self.assertFalse(validation.accepted)
+        self.assertEqual(validation.error_code, "metric_consistency_error")
+
+    def test_rejects_raw_result_score_outside_range(self) -> None:
+        package = make_valid_energy_package()
+        package["evaluation"]["raw_results"][0]["score"] = 42.0
+
+        validation = validate_ingestion_package(package, SCHEMA_PATH)
+
+        self.assertFalse(validation.accepted)
+        self.assertEqual(validation.error_code, "metric_consistency_error")
+
+    def test_rejects_missing_ingestion_fields(self) -> None:
+        package = make_valid_energy_package()
+        del package["run_environment"]
+
+        validation = validate_ingestion_package(package, SCHEMA_PATH)
+
+        self.assertFalse(validation.accepted)
+        self.assertEqual(validation.error_code, "invalid_schema")
+
+    def test_rejects_invalid_run_id_format(self) -> None:
+        package = make_valid_energy_package()
+        package["run_id"] = "not-a-uuid"
+
+        validation = validate_ingestion_package(package, SCHEMA_PATH)
+
+        self.assertFalse(validation.accepted)
+        self.assertEqual(validation.error_code, "invalid_schema")
+
+    def test_rejects_energy_summary_that_disagrees_with_raw_samples(self) -> None:
+        package = make_valid_energy_package()
+        package["energy"]["average_power_w"] = 500.0
+
+        validation = validate_ingestion_package(package, SCHEMA_PATH)
+
+        self.assertFalse(validation.accepted)
+        self.assertEqual(validation.error_code, "energy_consistency_error")
+
     def test_does_not_treat_token_count_fields_as_private_content(self) -> None:
         package = make_valid_energy_package()
         token_package = copy.deepcopy(package)
@@ -90,17 +167,19 @@ class IngestionValidatorTests(unittest.TestCase):
 def make_valid_energy_package() -> dict:
     package = make_package(energy_wh=2.0)
     samples = [
-        {"timestamp": "2026-08-23T00:00:00Z", "power_w": 100.0, "interval_s": 1.0},
-        {"timestamp": "2026-08-23T00:00:01Z", "power_w": 100.0, "interval_s": 1.0},
+        {"timestamp": "2026-08-23T00:00:00Z", "power_w": 100.0, "interval_s": 36.0},
+        {"timestamp": "2026-08-23T00:00:36Z", "power_w": 100.0, "interval_s": 36.0},
     ]
     package["energy"]["raw_power_samples"] = samples
+    package["energy"]["average_power_w"] = 100.0
+    package["energy"]["peak_power_w"] = 100.0
     package["energy"]["energy_confidence"] = {
         "quality": "low",
         "sample_count": len(samples),
-        "measured_duration_s": 2.0,
+        "measured_duration_s": 72.0,
         "minimum_recommended_samples": 10,
         "minimum_recommended_duration_s": 30.0,
-        "warning_codes": ["low_sample_count", "short_duration", "gross_energy_scope"],
+        "warning_codes": ["low_sample_count", "gross_energy_scope"],
     }
     return package
 

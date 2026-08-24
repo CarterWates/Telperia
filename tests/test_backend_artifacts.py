@@ -110,6 +110,11 @@ class SupabaseMigrationDraftTests(unittest.TestCase):
 
         self.assertNotIn("service" + "_role", sql)
         self.assertNotIn("security definer", sql.lower())
+        self.assertNotIn("grant select on table public.evaluation_runs to anon", sql)
+        self.assertNotIn("grant select on table public.run_scores to anon", sql)
+        self.assertNotIn("to anon, authenticated", sql)
+        self.assertNotIn("Anyone can read public runs", sql)
+        self.assertNotIn("Anyone can read scores for public runs", sql)
         self.assertNotIn("on storage.objects for insert\nto authenticated", sql)
         self.assertNotIn("on public.result_uploads for insert\nto authenticated", sql)
         self.assertNotIn("on public.evaluation_runs for insert\nto authenticated", sql)
