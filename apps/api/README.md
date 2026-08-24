@@ -2,7 +2,7 @@
 
 ## Status
 
-Local Phase 6 API skeleton for result ingestion. This folder now contains a storage-free, network-free service module that wraps the local result validator and returns the same response shape expected by the future hosted endpoint.
+Local Phase 6 API skeleton for result ingestion. This folder contains a storage-free service module and a runnable local HTTP API that wrap the local result validator and return the same response shape expected by the future hosted endpoint.
 
 The Phase 6 API should wrap the local result validator, write private raw packages to Supabase Storage, store queryable summaries in Postgres, and create public review requests only when the user explicitly asks for them.
 
@@ -47,11 +47,55 @@ It currently provides:
 - Local validation through `evaluation-runner/telperia_runner/ingestion.py`.
 - Public-safe Observatory summary extraction for accepted records.
 
-It does not open a network port or write to Supabase. That keeps Phase 6 implementation testable on a Mac before live infrastructure is connected.
+The runnable local HTTP wrapper lives in:
+
+```text
+apps/api/telperia_api/http_app.py
+```
+
+It exposes:
+
+- `GET /health`
+- `POST /api/results/ingest`
+
+It does not write to Supabase. Accepted uploads are stored in memory only for the lifetime of the local process. That keeps Phase 6 implementation testable on a Mac before live infrastructure is connected.
+
+## Run Locally
+
+From the repository root:
+
+```bash
+PYTHONPATH=apps/api:evaluation-runner python3 -m telperia_api.http_app --host 127.0.0.1 --port 8000
+```
+
+Health check:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+Validate and ingest a fixture locally:
+
+```bash
+python3 - <<'PY' > /tmp/telperia-ingest-fixture.json
+import json
+from pathlib import Path
+
+package = json.loads(Path("tests/fixtures/ingestion/valid_private_upload.json").read_text())
+print(json.dumps({"result_package": package}))
+PY
+
+curl -X POST http://127.0.0.1:8000/api/results/ingest \
+  -H 'Content-Type: application/json' \
+  -H 'X-Telperia-User-Id: local-dev-user' \
+  --data-binary @/tmp/telperia-ingest-fixture.json
+```
+
+The `X-Telperia-User-Id` header is a local-only stand-in for future authenticated user identity. It is not real authentication and should not be used for hosted deployments.
 
 ## Ingestion Flow
 
-1. Confirm the request has a valid authenticated user.
+1. Resolve the local user identity placeholder. Hosted deployments should replace this with authenticated user identity.
 2. Parse exactly one result package from the request body.
 3. Run `validate_ingestion_package` from `evaluation-runner/telperia_runner/ingestion.py`.
 4. Reject packages with invalid schema, privacy violations, broken metric math, broken Local IPW math, or unsupported versions. Accepted packages must contain no prompt or response content.
@@ -105,7 +149,6 @@ The public Observatory should only read approved public summaries.
 
 ## Not Implemented Yet
 
-- Runtime HTTP framework.
 - Supabase client wiring.
 - Auth/session handling.
 - Live Storage writes.

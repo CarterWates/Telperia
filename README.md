@@ -131,9 +131,8 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 Phase 6 is active. The focus is private-by-default result ingestion before live backend deployment.
 
-The next major implementation work is to turn the Phase 6 backend design into a working service that can:
+The repo now includes a runnable local HTTP API wrapper around the ingestion validator. The next major implementation work is to connect the backend design to Supabase so it can:
 
-- Add a runtime HTTP wrapper around the local ingestion service.
 - Connect authenticated requests to Supabase.
 - Store raw JSON privately.
 - Persist public-safe summary rows.

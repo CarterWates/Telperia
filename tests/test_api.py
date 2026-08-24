@@ -38,6 +38,10 @@ class LocalIngestionApiTests(unittest.TestCase):
 
         self.assertEqual(path, "result-packages/users/user-1/runs/run-1.json")
 
+    def test_storage_path_rejects_unsafe_segments(self) -> None:
+        with self.assertRaises(ValueError):
+            storage_path_for(user_id="../user-1", run_id="run-1")
+
     def test_accepts_private_upload_and_stores_local_record(self) -> None:
         package = load_fixture("valid_private_upload.json")
         store = InMemoryIngestionStore()
@@ -99,6 +103,19 @@ class LocalIngestionApiTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.payload["error_code"], "unauthenticated")
+
+    def test_rejects_unsafe_local_user_id(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+
+        response = ingest_result_request(
+            {"result_package": package},
+            user_id="../user-1",
+            schema_path=SCHEMA_PATH,
+            store=InMemoryIngestionStore(),
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.payload["error_code"], "invalid_request_body")
 
     def test_returns_existing_record_for_duplicate_matching_package(self) -> None:
         package = load_fixture("valid_private_upload.json")

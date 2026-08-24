@@ -41,7 +41,7 @@
 - [x] Document local CLI, dashboard, migration, and advisor workflow.
 - [x] Document frontend/public and server-only environment variable expectations.
 - [ ] Confirm the project is not connected to any public client using server-only credentials.
-- [ ] Document the selected backend wrapper: Edge Function, API app, or both.
+- [x] Document the selected backend wrapper: local API app first, with Supabase wiring deferred.
 
 ## Task 3: Database Migration
 

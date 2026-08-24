@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,7 @@ from telperia_runner.ingestion import extract_observatory_row, validate_ingestio
 
 
 ALLOWED_VISIBILITIES = {"private", "submit_for_public_review"}
+SAFE_STORAGE_SEGMENT = re.compile(r"^[A-Za-z0-9_-]+$")
 VALIDATION_ERROR_STATUS = {
     "invalid_schema": 422,
     "unsupported_schema_version": 422,
@@ -61,6 +63,8 @@ def ingest_result_request(
 ) -> IngestionResponse:
     if not user_id:
         return _rejected(401, "unauthenticated", "Authentication is required to upload result packages.")
+    if not _is_safe_storage_segment(user_id):
+        return _rejected(400, "invalid_request_body", "Authenticated user id must be a safe storage segment.")
 
     request_error = _validate_request_body(body)
     if request_error is not None:
@@ -110,6 +114,8 @@ def canonical_package_hash(package: dict[str, Any]) -> str:
 
 
 def storage_path_for(*, user_id: str, run_id: str) -> str:
+    if not _is_safe_storage_segment(user_id) or not _is_safe_storage_segment(run_id):
+        raise ValueError("Storage path segments must contain only letters, numbers, underscores, and hyphens.")
     return f"result-packages/users/{user_id}/runs/{run_id}.json"
 
 
@@ -151,6 +157,10 @@ def _response_visibility(visibility: str) -> str:
     if visibility == "submit_for_public_review":
         return "submitted_for_public_review"
     return visibility
+
+
+def _is_safe_storage_segment(value: str) -> bool:
+    return bool(SAFE_STORAGE_SEGMENT.fullmatch(value))
 
 
 def _rejected(status_code: int, error_code: str, message: str) -> IngestionResponse:

@@ -54,6 +54,6 @@ python3 -m compileall -q evaluation-runner tests
 
 ## Current Phase
 
-Phase 6 is focused on private-by-default result ingestion. The repo currently has local validation, API and backend contracts, a Supabase migration draft, setup guidance, test fixtures, and public-safe Observatory row examples.
+Phase 6 is focused on private-by-default result ingestion. The repo currently has local validation, a runnable local API wrapper, API and backend contracts, a Supabase migration draft, setup guidance, test fixtures, and public-safe Observatory row examples.
 
-The repo now includes a local API skeleton, `evaluation-runner/validate_result.py`, and a static Observatory shell. Live Supabase deployment and a running hosted API are not implemented yet.
+The repo now includes a local API skeleton, `evaluation-runner/validate_result.py`, and a static Observatory shell. Live Supabase deployment and a hosted API are not implemented yet.
