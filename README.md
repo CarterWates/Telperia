@@ -98,6 +98,7 @@ Completed foundation work includes:
 - A local Phase 6 API skeleton that wraps the validator and models backend ingestion responses.
 - A result validation CLI for checking packages before hosted upload exists.
 - Public-safe Observatory row fixtures for future website and API testing.
+- A static Observatory website shell with home, methodology, results table, and result detail views.
 - A Phase 6 backend design, result ingestion contract, API contract, Supabase setup guide, and draft migration.
 - Security guidance for secrets, uploads, raw JSON privacy, public review, and release checks.
 
@@ -138,7 +139,7 @@ The next major implementation work is to turn the Phase 6 backend design into a 
 - Persist public-safe summary rows.
 - Keep public submission as an explicit opt-in review flow.
 
-After Phase 6, the next major product step is the Observatory website: public comparison pages for model, hardware, TCI, Factual Reliability, Local IPW, energy confidence, verification level, and methodology version.
+The first static Observatory shell now exists under `apps/observatory-web/`. The next website step is connecting it to persisted public summaries after Phase 6 backend ingestion is live.
 
 ## Repository Map
 
@@ -163,6 +164,12 @@ python3 -m unittest discover -s tests -q
 python3 -m compileall -q evaluation-runner tests
 python3 evaluation-runner/evaluate.py --help
 python3 evaluation-runner/validate_result.py tests/fixtures/ingestion/valid_private_upload.json
+```
+
+Open the static Observatory shell locally:
+
+```bash
+open apps/observatory-web/index.html
 ```
 
 ## Running Local Evaluations

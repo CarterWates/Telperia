@@ -62,3 +62,9 @@ Phase 6 is active. It begins with the backend design in `docs/phase-6-backend-de
 The result ingestion contract is defined in `docs/result-ingestion-contract.md`. Backend implementation should follow that contract before adding public Observatory reads.
 
 The public Observatory comparison data shape is defined in `docs/observatory-data-shape.md`, including model, hardware, TCI, Factual Reliability, Local IPW, energy confidence, verification level, and methodology version fields.
+
+## Phase 7 Static Shell
+
+An initial static Observatory shell exists in `apps/observatory-web/`. It includes homepage positioning, methodology overview, seed result comparison, result detail, and current status sections using local public-safe fixture data.
+
+This shell is not deployed and does not read from Supabase yet. It should become the public Observatory frontend after Phase 6 backend ingestion can persist and expose approved summary rows.

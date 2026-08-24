@@ -38,6 +38,13 @@ This folder is organized so a new reader can move from the project purpose to th
 4. `tests/fixtures/observatory/README.md`: public-safe Observatory row fixtures.
 5. `docs/observatory-data-shape.md`: future public comparison row shape.
 
+## Website Work
+
+1. `apps/observatory-web/README.md`: static Observatory shell status and local opening instructions.
+2. `apps/observatory-web/index.html`: current home, methodology, result table, detail, and status shell.
+3. `tests/fixtures/observatory/README.md`: public-safe row fixture used by the shell.
+4. `docs/observatory-data-shape.md`: contract for the public comparison fields.
+
 Quick local checks:
 
 ```bash
@@ -49,4 +56,4 @@ python3 -m compileall -q evaluation-runner tests
 
 Phase 6 is focused on private-by-default result ingestion. The repo currently has local validation, API and backend contracts, a Supabase migration draft, setup guidance, test fixtures, and public-safe Observatory row examples.
 
-The repo now includes a local API skeleton and `evaluation-runner/validate_result.py` for backend-shaped validation without network access. Live Supabase deployment and a running hosted API are not implemented yet.
+The repo now includes a local API skeleton, `evaluation-runner/validate_result.py`, and a static Observatory shell. Live Supabase deployment and a running hosted API are not implemented yet.

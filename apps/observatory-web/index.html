@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Telperia Observatory</title>
+    <meta
+      name="description"
+      content="Telperia Observatory compares AI model capability, reliability, local energy use, and verification metadata."
+    >
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="Telperia home">
+        <img src="../../assets/telperia-logo.png" alt="Telperia logo" width="44" height="44">
+        <span>Telperia</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#observatory">Observatory</a>
+        <a href="#methodology">Methodology</a>
+        <a href="#status">Status</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="home">
+        <div class="hero-copy">
+          <p class="eyebrow">Open AI measurement</p>
+          <h1>Measure AI you can actually inspect.</h1>
+          <p>
+            Telperia compares AI model configurations through transparent methodology,
+            reproducible result packages, hardware metadata, verification levels, and
+            Local Intelligence-per-Watt.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="#observatory">Explore Observatory</a>
+            <a class="button secondary" href="../../evaluation-runner/README.md">Run Evaluation Runner</a>
+            <a class="button ghost" href="#services">Request Report</a>
+          </div>
+        </div>
+        <div class="hero-panel" aria-label="Current MVP snapshot">
+          <div>
+            <span class="metric-value" data-summary="result-count">0</span>
+            <span class="metric-label">public-safe seed rows</span>
+          </div>
+          <div>
+            <span class="metric-value">TCI v0.1</span>
+            <span class="metric-label">active capability method</span>
+          </div>
+          <div>
+            <span class="metric-value">Local IPW</span>
+            <span class="metric-label">measured only when GPU energy exists</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="measures-title">
+        <div class="section-heading">
+          <p class="eyebrow">What Telperia measures</p>
+          <h2 id="measures-title">Capability, reliability, efficiency, and evidence.</h2>
+        </div>
+        <div class="measure-grid">
+          <article class="measure-card">
+            <h3>TCI</h3>
+            <p>Capability score across reasoning, coding, mathematics, factual knowledge, and instruction adherence.</p>
+          </article>
+          <article class="measure-card">
+            <h3>Factual Reliability</h3>
+            <p>Correctness, incorrect answer rate, abstention rate, and attempted accuracy for factual tasks.</p>
+          </article>
+          <article class="measure-card">
+            <h3>Local IPW</h3>
+            <p>Capability per watt-hour of measured local GPU energy during an evaluation run.</p>
+          </article>
+          <article class="measure-card">
+            <h3>Verification</h3>
+            <p>Evidence level, methodology version, hardware metadata, telemetry source, and limitations.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section split" id="services" aria-labelledby="services-title">
+        <div>
+          <p class="eyebrow">For builders</p>
+          <h2 id="services-title">Run local evaluations and compare real configurations.</h2>
+          <p>
+            Builders can use the local runner to generate standardized packages,
+            validate them privately, and prepare results for future public review.
+          </p>
+        </div>
+        <div>
+          <p class="eyebrow">For teams</p>
+          <h2>Evaluation reports for AI decisions.</h2>
+          <p>
+            Telperia can grow into transparent reports covering model capability,
+            reliability, latency, local energy use, hardware tradeoffs, and verification.
+          </p>
+        </div>
+      </section>
+
+      <section class="section observatory-section" id="observatory" aria-labelledby="observatory-title">
+        <div class="section-heading">
+          <p class="eyebrow">Public Observatory MVP</p>
+          <h2 id="observatory-title">Seed result comparison</h2>
+          <p>
+            These rows use the same public-safe shape prepared by the Phase 6 ingestion validator.
+            They are early MVP fixtures, not a public leaderboard.
+          </p>
+        </div>
+        <div class="table-toolbar">
+          <label for="result-search">Filter results</label>
+          <input id="result-search" type="search" placeholder="Model, hardware, method">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Hardware</th>
+                <th>TCI</th>
+                <th>Factual</th>
+                <th>Local IPW</th>
+                <th>Energy Confidence</th>
+                <th>Verification</th>
+              </tr>
+            </thead>
+            <tbody id="results-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section detail-section" id="result-detail" aria-labelledby="detail-title">
+        <div class="section-heading">
+          <p class="eyebrow">Result detail</p>
+          <h2 id="detail-title">Selected result</h2>
+        </div>
+        <div class="detail-grid" id="detail-grid"></div>
+      </section>
+
+      <section class="section" id="methodology" aria-labelledby="methodology-title">
+        <div class="section-heading">
+          <p class="eyebrow">Methodology</p>
+          <h2 id="methodology-title">Scores stay tied to documented methods.</h2>
+        </div>
+        <div class="method-list">
+          <article>
+            <h3>TCI v0.1</h3>
+            <p>Current MVP capability score. TCI v0.2 exists only as a proposal.</p>
+          </article>
+          <article>
+            <h3>Local IPW v0.1</h3>
+            <p>Uses local GPU telemetry. Hosted or data-center IPW remains deferred.</p>
+          </article>
+          <article>
+            <h3>Privacy boundary</h3>
+            <p>Result packages do not save prompt or response content by default.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section status-section" id="status" aria-labelledby="status-title">
+        <div class="section-heading">
+          <p class="eyebrow">Current status</p>
+          <h2 id="status-title">Phase 6 is focused on private-by-default ingestion.</h2>
+        </div>
+        <ul class="status-list">
+          <li>Local runner, telemetry, schemas, and result validation are implemented.</li>
+          <li>Local API skeleton exists; live Supabase writes are not connected yet.</li>
+          <li>The public Observatory website is currently a static shell with seed data.</li>
+          <li>Community submissions, auth, and reviewer workflows are planned after backend ingestion.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Telperia Observatory MVP shell</span>
+      <a href="../../docs/README.md">Docs</a>
+      <a href="../../SECURITY.md">Security</a>
+    </footer>
+
+    <script src="public-results.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
