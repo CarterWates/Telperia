@@ -97,13 +97,24 @@ class SupabaseMigrationDraftTests(unittest.TestCase):
             "create type public.ingestion_status",
             "create type public.public_submission_status",
             "create type public.local_ipw_status",
+            "create type public.energy_confidence_quality",
             "create index if not exists result_uploads_user_id_idx",
+            "create index if not exists result_uploads_owner_private_lookup_idx",
+            "create unique index if not exists result_uploads_run_id_unique_idx",
             "create index if not exists evaluation_runs_public_lookup_idx",
+            "create index if not exists evaluation_runs_methodology_suite_idx",
+            "create index if not exists evaluation_runs_verification_level_idx",
             "create index if not exists run_scores_tci_v0_1_idx",
+            "create index if not exists run_scores_energy_confidence_idx",
             "insert into storage.buckets",
             "create policy \"Users can read their own result package objects\"",
+            "create policy \"Users can upload their own result package objects\"",
+            "create policy \"Users can create pending private upload records\"",
+            "create policy \"Users can request public review for accepted uploads\"",
+            "create policy \"Users can request public review records for their own accepted runs\"",
             "comment on table public.result_uploads",
             "revoke all on table public.result_uploads from anon, authenticated",
+            "grant update (visibility, public_submission_requested, updated_at) on table public.result_uploads to authenticated",
             "alter table storage.objects enable row level security",
         ]:
             self.assertIn(expected, sql)
@@ -115,11 +126,58 @@ class SupabaseMigrationDraftTests(unittest.TestCase):
         self.assertNotIn("to anon, authenticated", sql)
         self.assertNotIn("Anyone can read public runs", sql)
         self.assertNotIn("Anyone can read scores for public runs", sql)
-        self.assertNotIn("on storage.objects for insert\nto authenticated", sql)
-        self.assertNotIn("on public.result_uploads for insert\nto authenticated", sql)
         self.assertNotIn("on public.evaluation_runs for insert\nto authenticated", sql)
         self.assertNotIn("on public.run_scores for insert\nto authenticated", sql)
-        self.assertNotIn("on public.public_submissions for insert\nto authenticated", sql)
+
+    def test_phase_6_migration_enforces_metric_and_privacy_boundaries(self) -> None:
+        sql = MIGRATION_PATH.read_text().lower()
+
+        for expected in [
+            "constraint result_uploads_visibility_status_shape",
+            "constraint result_uploads_public_review_requested_shape",
+            "constraint evaluation_runs_completion_ratio",
+            "constraint evaluation_runs_verification_level",
+            "constraint run_scores_tci_range",
+            "constraint run_scores_factual_rates",
+            "constraint run_scores_ipw_shape",
+            "constraint run_scores_energy_nonnegative",
+            "create policy \"users can request public review records for their own accepted runs\"",
+            "result_uploads.ingestion_status = 'accepted'",
+        ]:
+            self.assertIn(expected, sql)
+
+        table_blocks = []
+        for table_name in [
+            "public.result_uploads",
+            "public.model_configs",
+            "public.hardware_profiles",
+            "public.evaluation_runs",
+            "public.run_scores",
+            "public.public_submissions",
+        ]:
+            marker = f"create table if not exists {table_name} ("
+            start = sql.index(marker)
+            end = sql.index("\n);\n", start)
+            table_blocks.append(sql[start:end])
+
+        exposed_columns = "\n".join(table_blocks)
+        for forbidden_column in [
+            " raw_json ",
+            " result_package ",
+            " prompt_text ",
+            " response_text ",
+            " filename ",
+            " file_path ",
+            " hostname ",
+            " serial_number ",
+            " local_username ",
+        ]:
+            self.assertNotIn(forbidden_column, exposed_columns)
+
+        self.assertIn("allowed_mime_types", sql)
+        self.assertIn("array['application/json']", sql)
+        self.assertIn("(storage.foldername(name))[1] = 'users'", sql)
+        self.assertIn("(storage.foldername(name))[2] = (select auth.uid())::text", sql)
 
 
 class ResultIngestionApiContractTests(unittest.TestCase):

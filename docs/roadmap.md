@@ -63,6 +63,8 @@ The result ingestion contract is defined in `docs/result-ingestion-contract.md`.
 
 The public Observatory comparison data shape is defined in `docs/observatory-data-shape.md`, including model, hardware, TCI, Factual Reliability, Local IPW, energy confidence, verification level, and methodology version fields.
 
+The local API skeleton and core Supabase migration foundation are in place for review. The migration defines private result package storage, owner-scoped upload records, normalized model and hardware tables, accepted run summaries, score summaries, and a public submission review queue. It has not been applied to a live Supabase project yet.
+
 ## Phase 7 Static Shell
 
 An initial static Observatory shell exists in `apps/observatory-web/`. It includes homepage positioning, methodology overview, seed result comparison, result detail, and current status sections using local public-safe fixture data.

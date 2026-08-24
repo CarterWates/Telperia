@@ -2,7 +2,7 @@
 
 ## Status
 
-Phase 6 design draft for the Telperia MVP backend. This document defines the first backend shape before live Supabase setup, migrations, or application code.
+Phase 6 backend design for the Telperia MVP. The local API wrapper and first Supabase migration foundation exist in the repo, but the migration has not been applied to a live Supabase project.
 
 The Phase 6 backend should accept local evaluation result packages, keep uploads private by default, validate every package before ingestion, and expose only explicitly public results to the future Observatory.
 
@@ -314,7 +314,7 @@ The detailed public comparison shape is defined in `docs/observatory-data-shape.
 1. Create a Supabase project or reactivate the paused project.
 2. Confirm Supabase CLI or MCP access.
 3. Use the local validator in `evaluation-runner/telperia_runner/ingestion.py` as the server-side validation baseline.
-4. Create the initial migration for tables, indexes, RLS, and Storage bucket policies.
+4. Create the initial migration for tables, indexes, RLS, and Storage bucket policies. Done in `supabase/migrations/20260823000000_phase_6_result_ingestion.sql`.
 5. Add server-side ingestion validation by wrapping the local contract checks.
 6. Add tests with valid and rejected result packages.
 7. Add a private upload path.

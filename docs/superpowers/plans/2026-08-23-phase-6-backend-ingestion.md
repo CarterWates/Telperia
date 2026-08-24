@@ -48,17 +48,17 @@
 - [x] Draft migration for `profiles`, `result_uploads`, `model_configs`, `hardware_profiles`, `evaluation_runs`, `run_scores`, and `public_submissions`.
 - [x] Draft constraints for accepted visibility, ingestion status, public submission status, score ranges, and nonnegative energy values.
 - [x] Draft indexes for owner lookup, public result listing, model lookup, hardware filtering, methodology version, and evaluation suite.
-- [ ] Store raw JSON in private Storage rather than public tables.
-- [ ] Avoid storing local usernames, hostnames, serial numbers, or upload filenames.
+- [x] Store raw JSON in private Storage rather than public tables.
+- [x] Avoid storing local usernames, hostnames, serial numbers, or upload filenames.
 
 ## Task 4: RLS And Storage Policies
 
-- [ ] Enable RLS on every exposed application table.
-- [ ] Allow authenticated users to read their own private uploads.
-- [ ] Allow authenticated users to create uploads only for themselves.
-- [ ] Allow authenticated users to request public review only for their own accepted uploads.
+- [x] Enable RLS on every exposed application table.
+- [x] Allow authenticated users to read their own private uploads.
+- [x] Allow authenticated users to create uploads only for themselves.
+- [x] Allow authenticated users to request public review only for their own accepted uploads.
 - [ ] Allow anonymous or public clients to read approved public summaries only.
-- [ ] Keep raw Storage objects private and owner-scoped.
+- [x] Keep raw Storage objects private and owner-scoped.
 - [ ] Avoid user-controlled Storage paths and overwrite behavior for the MVP.
 
 ## Task 5: Ingestion Endpoint

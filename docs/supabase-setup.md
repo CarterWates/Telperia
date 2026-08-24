@@ -208,4 +208,4 @@ Stop before applying remote changes if:
 
 ## Current Limitation
 
-This repository currently contains a migration draft and local validation tests. It does not yet contain a live ingestion endpoint, database client wiring, or deployed Supabase project configuration.
+This repository currently contains a local API wrapper, a Supabase migration foundation, and local validation tests. It does not yet contain live Supabase database client wiring or deployed Supabase project configuration.
