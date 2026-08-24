@@ -73,8 +73,6 @@ a {
   width: 36px;
   height: 36px;
   object-fit: cover;
-  background: var(--black);
-  border: 1px solid var(--rule-strong);
   border-radius: 50%;
 }
 

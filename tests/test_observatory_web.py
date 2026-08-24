@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import re
+import struct
 import unittest
+import zlib
 from pathlib import Path
 
 
@@ -110,6 +112,16 @@ class ObservatoryWebShellTests(unittest.TestCase):
         self.assertIn("max-width: 620px;", css)
         self.assertIn("@media (max-width: 1180px)", css)
 
+    def test_logo_asset_preserves_transparency(self) -> None:
+        transparent, opaque = count_png_alpha_states(WEB_ROOT / "assets" / "telperia-logo.png")
+        css = (WEB_ROOT / "styles.css").read_text()
+        brand_image_rule = re.search(r"\.brand img\s*{[^}]*}", css)
+
+        self.assertGreater(transparent, 0)
+        self.assertGreater(opaque, 0)
+        self.assertIsNotNone(brand_image_rule)
+        self.assertNotIn("background", brand_image_rule.group(0))
+
 
 def load_public_results() -> list[dict]:
     text = (WEB_ROOT / "public-results.js").read_text()
@@ -117,6 +129,78 @@ def load_public_results() -> list[dict]:
     if match is None:
         raise AssertionError("public-results.js must assign window.TELPERIA_PUBLIC_RESULTS")
     return json.loads(match.group(1))
+
+
+def count_png_alpha_states(path: Path) -> tuple[int, int]:
+    data = path.read_bytes()
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise AssertionError("logo asset must be a PNG")
+
+    position = 8
+    width = height = bit_depth = color_type = None
+    idat_chunks = []
+    while position < len(data):
+        length = struct.unpack(">I", data[position : position + 4])[0]
+        chunk_type = data[position + 4 : position + 8]
+        chunk = data[position + 8 : position + 8 + length]
+        position += 12 + length
+        if chunk_type == b"IHDR":
+            width, height, bit_depth, color_type, *_ = struct.unpack(">IIBBBBB", chunk)
+        elif chunk_type == b"IDAT":
+            idat_chunks.append(chunk)
+        elif chunk_type == b"IEND":
+            break
+
+    if bit_depth != 8 or color_type != 6:
+        raise AssertionError("logo asset must be an 8-bit RGBA PNG")
+
+    raw = zlib.decompress(b"".join(idat_chunks))
+    bytes_per_pixel = 4
+    stride = width * bytes_per_pixel
+    previous = [0] * stride
+    transparent = 0
+    opaque = 0
+    pointer = 0
+
+    for _ in range(height):
+        filter_type = raw[pointer]
+        pointer += 1
+        scanline = list(raw[pointer : pointer + stride])
+        pointer += stride
+        row = [0] * stride
+        for index, value in enumerate(scanline):
+            left = row[index - bytes_per_pixel] if index >= bytes_per_pixel else 0
+            up = previous[index]
+            upper_left = previous[index - bytes_per_pixel] if index >= bytes_per_pixel else 0
+            if filter_type == 0:
+                predictor = 0
+            elif filter_type == 1:
+                predictor = left
+            elif filter_type == 2:
+                predictor = up
+            elif filter_type == 3:
+                predictor = (left + up) // 2
+            elif filter_type == 4:
+                paeth = left + up - upper_left
+                left_distance = abs(paeth - left)
+                up_distance = abs(paeth - up)
+                corner_distance = abs(paeth - upper_left)
+                predictor = (
+                    left
+                    if left_distance <= up_distance and left_distance <= corner_distance
+                    else up
+                    if up_distance <= corner_distance
+                    else upper_left
+                )
+            else:
+                raise AssertionError(f"unsupported PNG filter: {filter_type}")
+            row[index] = (value + predictor) & 255
+        alpha_values = row[3::4]
+        transparent += sum(1 for alpha in alpha_values if alpha == 0)
+        opaque += sum(1 for alpha in alpha_values if alpha > 0)
+        previous = row
+
+    return transparent, opaque
 
 
 if __name__ == "__main__":
