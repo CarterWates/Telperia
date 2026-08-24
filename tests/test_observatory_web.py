@@ -27,14 +27,21 @@ REQUIRED_RESULT_FIELDS = {
 
 class ObservatoryWebShellTests(unittest.TestCase):
     def test_static_shell_files_exist(self) -> None:
-        for filename in ["index.html", "styles.css", "app.js", "public-results.js", "README.md"]:
+        for filename in [
+            "index.html",
+            "styles.css",
+            "app.js",
+            "public-results.js",
+            "README.md",
+            "assets/telperia-logo.png",
+        ]:
             self.assertTrue((WEB_ROOT / filename).exists(), filename)
 
     def test_index_includes_logo_navigation_sections_and_scripts(self) -> None:
         html = (WEB_ROOT / "index.html").read_text()
 
         for expected in [
-            "../../assets/telperia-logo.png",
+            "assets/telperia-logo.png",
             "A measurement layer for AI systems.",
             "Benchmark specimen",
             "Every measurement has provenance.",
