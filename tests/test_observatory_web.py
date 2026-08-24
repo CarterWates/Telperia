@@ -93,6 +93,16 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertIsNone(re.search(pattern, css))
         self.assertNotIn("linear-gradient", css)
 
+    def test_hero_layout_uses_viewport_safe_desktop_scale(self) -> None:
+        css = (WEB_ROOT / "styles.css").read_text()
+
+        h1_match = re.search(r"h1\s*{[^}]*font-size:\s*([0-9.]+)rem;", css)
+        self.assertIsNotNone(h1_match)
+        self.assertLessEqual(float(h1_match.group(1)), 5.6)
+        self.assertIn("grid-template-columns: minmax(0, 0.52fr) minmax(340px, 0.48fr);", css)
+        self.assertIn("max-width: 620px;", css)
+        self.assertIn("@media (max-width: 1180px)", css)
+
 
 def load_public_results() -> list[dict]:
     text = (WEB_ROOT / "public-results.js").read_text()

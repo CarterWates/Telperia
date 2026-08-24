@@ -117,9 +117,9 @@ a {
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.95fr);
-  gap: clamp(48px, 8vw, 96px);
-  align-items: end;
+  grid-template-columns: minmax(0, 0.52fr) minmax(340px, 0.48fr);
+  gap: clamp(36px, 5vw, 72px);
+  align-items: center;
   min-height: calc(100vh - 70px);
 }
 
@@ -155,11 +155,11 @@ p {
 }
 
 h1 {
-  max-width: 840px;
-  margin-bottom: 28px;
-  font-size: 8.4rem;
+  max-width: 620px;
+  margin-bottom: 24px;
+  font-size: 5.4rem;
   font-weight: 620;
-  line-height: 0.9;
+  line-height: 0.94;
 }
 
 h2 {
@@ -183,7 +183,7 @@ h3 {
 .about-section p {
   max-width: 650px;
   color: var(--ink-soft);
-  font-size: 1.24rem;
+  font-size: 1.16rem;
 }
 
 .hero-actions,
@@ -229,7 +229,7 @@ h3 {
   display: flex;
   justify-content: space-between;
   gap: 18px;
-  padding: 18px 20px;
+  padding: 14px 18px;
   border-bottom: 1px solid #2b2b30;
   font-family: var(--mono);
   font-size: 0.72rem;
@@ -247,14 +247,14 @@ h3 {
 }
 
 .specimen-grid div {
-  min-height: 118px;
-  padding: 18px 20px;
+  min-height: 96px;
+  padding: 16px 18px;
   border-right: 1px solid #2b2b30;
   border-bottom: 1px solid #2b2b30;
 }
 
 .specimen-grid dt {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: #8f8f98;
   font-family: var(--mono);
   font-size: 0.68rem;
@@ -265,7 +265,7 @@ h3 {
   overflow-wrap: anywhere;
   color: #f6f6f6;
   font-family: var(--mono);
-  font-size: 1.24rem;
+  font-size: 1.08rem;
 }
 
 .specimen-axis {
@@ -273,8 +273,8 @@ h3 {
   grid-template-columns: repeat(8, 1fr);
   align-items: end;
   gap: 8px;
-  height: 128px;
-  padding: 22px 20px 18px;
+  height: 104px;
+  padding: 18px 18px 14px;
   border-bottom: 1px solid #2b2b30;
 }
 
@@ -288,7 +288,7 @@ h3 {
 
 .run-specimen p {
   margin: 0;
-  padding: 18px 20px;
+  padding: 16px 18px;
   color: #b9b9c0;
   font-family: var(--mono);
   font-size: 0.76rem;
@@ -597,9 +597,32 @@ tbody tr.is-selected {
   margin-left: 18px;
 }
 
+@media (max-width: 1180px) {
+  h1 {
+    max-width: 560px;
+    font-size: 4.65rem;
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 0.5fr) minmax(320px, 0.5fr);
+    gap: 34px;
+  }
+
+  .specimen-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .specimen-grid dd {
+    font-size: 0.98rem;
+  }
+}
+
 @media (max-width: 980px) {
   h1 {
-    font-size: 5.6rem;
+    max-width: 680px;
+    font-size: 4.25rem;
   }
 
   h2 {
