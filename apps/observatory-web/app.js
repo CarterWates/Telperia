@@ -5,9 +5,31 @@
   const detailTitle = document.querySelector("#detail-title");
   const resultSearch = document.querySelector("#result-search");
   const resultCount = document.querySelector('[data-summary="result-count"]');
+  const heroFields = document.querySelectorAll("[data-hero]");
 
   if (resultCount) {
     resultCount.textContent = String(results.length);
+  }
+
+  function updateHeroSpecimen(row) {
+    if (!row) {
+      return;
+    }
+    heroFields.forEach((field) => {
+      const key = field.dataset.hero;
+      const value = row[key];
+      if (key === "tci_v0_1") {
+        field.textContent = formatNumber(value);
+      } else if (key === "gpu_energy_wh") {
+        field.textContent = `${formatNumber(value)} Wh`;
+      } else if (key === "local_ipw_displayed") {
+        field.textContent = formatIpw(row);
+      } else if (key === "monitor_backend") {
+        field.textContent = String(value || "unavailable").toUpperCase();
+      } else {
+        field.textContent = value || "--";
+      }
+    });
   }
 
   function formatPercent(value) {
@@ -54,16 +76,15 @@
       appendCell(tr, row.hardware_label);
       appendCell(tr, formatNumber(row.tci_v0_1));
       appendCell(tr, formatPercent(row.factual_correctness_rate));
+      appendCell(tr, `${formatNumber(row.gpu_energy_wh)} Wh`);
       appendCell(tr, formatIpw(row));
 
       const confidenceCell = document.createElement("td");
       const confidence = document.createElement("span");
-      confidence.className = "pill";
-      confidence.textContent = row.energy_confidence || "unavailable";
+      confidence.className = "state";
+      confidence.textContent = `L${row.verification_level} / ${row.energy_confidence || "unavailable"}`;
       confidenceCell.appendChild(confidence);
       tr.appendChild(confidenceCell);
-
-      appendCell(tr, `Level ${row.verification_level}`);
       tr.addEventListener("click", () => selectResult(row.result_id));
       tr.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -76,7 +97,7 @@
   }
 
   function selectResult(resultId) {
-    const row = results.find((item) => item.result_id === resultId) || results[0];
+    const row = resultId ? results.find((item) => item.result_id === resultId) : null;
     if (!row) {
       detailTitle.textContent = "No result selected";
       detailGrid.replaceChildren();
@@ -105,7 +126,7 @@
       ["Evaluation Suite", row.evaluation_suite],
     ].forEach(([label, value]) => {
       const item = document.createElement("article");
-      item.className = "detail-card";
+      item.className = "detail-record";
       const labelNode = document.createElement("span");
       const valueNode = document.createElement("strong");
       labelNode.textContent = label;
@@ -138,5 +159,6 @@
   });
 
   renderResultsTable(results);
+  updateHeroSpecimen(results[0]);
   selectResult(results[0] ? results[0].result_id : null);
 })();

@@ -35,12 +35,19 @@ class ObservatoryWebShellTests(unittest.TestCase):
 
         for expected in [
             "../../assets/telperia-logo.png",
+            "A measurement layer for AI systems.",
+            "Benchmark specimen",
+            "Every measurement has provenance.",
+            "The machine is part of the result.",
             "Explore Observatory",
             "Run Evaluation Runner",
             "Request Report",
             'id="home"',
             'id="observatory"',
             'id="methodology"',
+            'id="benchmarks"',
+            'id="research"',
+            'id="about"',
             'id="status"',
             'id="result-detail"',
             "public-results.js",
@@ -62,6 +69,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
         script = (WEB_ROOT / "app.js").read_text()
 
         for expected in [
+            "data-hero",
             "model_name",
             "hardware_label",
             "tci_v0_1",
@@ -72,6 +80,18 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "methodology_version",
         ]:
             self.assertIn(expected, script)
+
+        self.assertNotIn("innerHTML", script)
+
+    def test_visual_system_avoids_ai_startup_cliches(self) -> None:
+        css = (WEB_ROOT / "styles.css").read_text().lower()
+        html = (WEB_ROOT / "index.html").read_text().lower()
+
+        for forbidden in ["glassmorphism", "glowing", "blob", "particle", "robot", "brain"]:
+            pattern = rf"\b{forbidden}\b"
+            self.assertIsNone(re.search(pattern, html))
+            self.assertIsNone(re.search(pattern, css))
+        self.assertNotIn("linear-gradient", css)
 
 
 def load_public_results() -> list[dict]:
