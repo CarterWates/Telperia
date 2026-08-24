@@ -81,6 +81,8 @@ Allowed `visibility` values on ingest:
 
 The backend must not accept direct `public` visibility on first upload.
 
+Invalid or direct-public visibility should return a stable `invalid_visibility` rejection.
+
 ## Accepted Result Package Versions
 
 For the MVP:

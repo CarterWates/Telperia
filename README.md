@@ -95,6 +95,8 @@ Completed foundation work includes:
 - Windows RTX 5070 seed results under `datasets/results/`.
 - Repeatability and energy confidence guidance for local testing.
 - A local ingestion validator that checks schema validity, privacy rules, score math, IPW math, and raw telemetry consistency.
+- A local Phase 6 API skeleton that wraps the validator and models backend ingestion responses.
+- A result validation CLI for checking packages before hosted upload exists.
 - Public-safe Observatory row fixtures for future website and API testing.
 - A Phase 6 backend design, result ingestion contract, API contract, Supabase setup guide, and draft migration.
 - Security guidance for secrets, uploads, raw JSON privacy, public review, and release checks.
@@ -130,10 +132,10 @@ Phase 6 is active. The focus is private-by-default result ingestion before live 
 
 The next major implementation work is to turn the Phase 6 backend design into a working service that can:
 
-- Accept a local result package.
-- Validate schema, privacy, math, and telemetry consistency.
+- Add a runtime HTTP wrapper around the local ingestion service.
+- Connect authenticated requests to Supabase.
 - Store raw JSON privately.
-- Extract a public-safe summary row.
+- Persist public-safe summary rows.
 - Keep public submission as an explicit opt-in review flow.
 
 After Phase 6, the next major product step is the Observatory website: public comparison pages for model, hardware, TCI, Factual Reliability, Local IPW, energy confidence, verification level, and methodology version.
@@ -160,6 +162,7 @@ Run these from the repository root:
 python3 -m unittest discover -s tests -q
 python3 -m compileall -q evaluation-runner tests
 python3 evaluation-runner/evaluate.py --help
+python3 evaluation-runner/validate_result.py tests/fixtures/ingestion/valid_private_upload.json
 ```
 
 ## Running Local Evaluations

@@ -26,7 +26,7 @@ This folder is organized so a new reader can move from the project purpose to th
 1. `docs/phase-6-backend-design.md`: backend data model and access model.
 2. `docs/result-ingestion-contract.md`: validation, privacy, duplicate, and storage contract.
 3. `docs/result-ingestion-api.md`: request and response shapes for `POST /api/results/ingest`.
-4. `apps/api/README.md`: how the future API service wraps validation, Storage, summaries, and public review.
+4. `apps/api/README.md`: how the local API skeleton wraps validation and how the future service connects Storage, summaries, and public review.
 5. `docs/supabase-setup.md`: setup, environment variables, migration safety, and advisor checks.
 6. `supabase/migrations/20260823000000_phase_6_result_ingestion.sql`: draft migration.
 
@@ -49,4 +49,4 @@ python3 -m compileall -q evaluation-runner tests
 
 Phase 6 is focused on private-by-default result ingestion. The repo currently has local validation, API and backend contracts, a Supabase migration draft, setup guidance, test fixtures, and public-safe Observatory row examples.
 
-Live Supabase deployment and a running hosted API are not implemented yet.
+The repo now includes a local API skeleton and `evaluation-runner/validate_result.py` for backend-shaped validation without network access. Live Supabase deployment and a running hosted API are not implemented yet.

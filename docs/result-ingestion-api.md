@@ -4,7 +4,7 @@
 
 Phase 6 API contract draft. This document defines the first backend-facing result ingestion interface before any hosted endpoint is deployed.
 
-The API should wrap the local validator in `evaluation-runner/telperia_runner/ingestion.py`, then perform authentication, duplicate checks, private raw package storage, and summary writes.
+The local skeleton in `apps/api/telperia_api/ingestion_service.py` wraps the validator in `evaluation-runner/telperia_runner/ingestion.py` and implements the request/response shape without network or Supabase access. The future hosted API should add real authentication, duplicate persistence, private raw package storage, and summary writes.
 
 ## Endpoint
 
@@ -207,6 +207,7 @@ Response status: `401 Unauthorized`
 
 - `unauthenticated`
 - `invalid_request_body`
+- `invalid_visibility`
 - `invalid_schema`
 - `unsupported_schema_version`
 - `unsupported_methodology_version`

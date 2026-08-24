@@ -2,7 +2,7 @@
 
 ## Status
 
-Design stub for the future Telperia backend API. This folder does not contain a running service yet.
+Local Phase 6 API skeleton for result ingestion. This folder now contains a storage-free, network-free service module that wraps the local result validator and returns the same response shape expected by the future hosted endpoint.
 
 The Phase 6 API should wrap the local result validator, write private raw packages to Supabase Storage, store queryable summaries in Postgres, and create public review requests only when the user explicitly asks for them.
 
@@ -17,7 +17,7 @@ The Phase 6 API should wrap the local result validator, write private raw packag
 
 ## Recommended Shape
 
-The first service should expose:
+The future hosted service should expose:
 
 ```text
 POST /api/results/ingest
@@ -29,6 +29,25 @@ The endpoint should accept one result package and an optional visibility mode:
 - `submit_for_public_review`
 
 It must reject direct `public` visibility. Public publishing is a review state, not an upload setting.
+
+## Local Skeleton
+
+The local service lives in:
+
+```text
+apps/api/telperia_api/ingestion_service.py
+```
+
+It currently provides:
+
+- `ingest_result_request`: backend-shaped request handling for one result package.
+- `InMemoryIngestionStore`: local duplicate handling for tests and CLI usage.
+- Canonical package hashing.
+- Private Storage path generation.
+- Local validation through `evaluation-runner/telperia_runner/ingestion.py`.
+- Public-safe Observatory summary extraction for accepted records.
+
+It does not open a network port or write to Supabase. That keeps Phase 6 implementation testable on a Mac before live infrastructure is connected.
 
 ## Ingestion Flow
 
@@ -86,7 +105,7 @@ The public Observatory should only read approved public summaries.
 
 ## Not Implemented Yet
 
-- Runtime service framework.
+- Runtime HTTP framework.
 - Supabase client wiring.
 - Auth/session handling.
 - Live Storage writes.

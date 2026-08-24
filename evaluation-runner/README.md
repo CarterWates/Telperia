@@ -28,6 +28,24 @@ Use `--max-output-tokens` to cap each task response and keep local experiment ru
 
 The runner only measures local inference hardware. It does not estimate data-center energy for hosted API calls from client-device power draw.
 
+## Validate Result Packages
+
+Use `validate_result.py` to run backend-shaped validation against an existing result package without uploading anything:
+
+```bash
+python3 validate_result.py ../datasets/results/example.json
+```
+
+The command prints a JSON response with `ingestion_status`, `run_id`, `visibility`, validation warnings, and any stable rejection code.
+
+To validate the public-review request mode locally:
+
+```bash
+python3 validate_result.py ../datasets/results/example.json --submit-for-public-review
+```
+
+This is a local dry run only. It does not contact Supabase, upload raw JSON, or publish a result.
+
 ## Platform Notes
 
 ### Linux NVIDIA
