@@ -161,7 +161,7 @@
           </p>
           <p class="directory-fields">
             Provider / Open status / TCI v0.1 / Factual Reliability / Available Local IPW /
-            Verification Level / Methodology Version
+            Verification Level / Methodology Version / View profile
           </p>
         </div>
         <div class="model-directory-panel">
@@ -171,6 +171,44 @@
           </div>
           <div class="model-directory" id="model-directory" aria-label="Public model directory"></div>
           <div class="model-summary" id="model-summary" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="model-profile-section" id="model-profile" aria-labelledby="profile-title">
+        <div class="profile-intro">
+          <p class="section-label">Model Profile</p>
+          <h2 id="profile-title">Selected model profile</h2>
+          <p>
+            Model profiles aggregate available public seed runs without exposing raw private packages.
+            They show TCI Breakdown, Factual Reliability Breakdown, TRI: Not yet scored,
+            Transparency Evidence, hardware-specific Local IPW, Latency, Throughput,
+            Energy, Verification Level, Methodology Version, and Limitations.
+          </p>
+          <p class="directory-fields">
+            Result package download behavior is disabled until reviewed public package access exists.
+          </p>
+          <a class="button secondary is-disabled" id="profile-download" href="#model-profile" aria-disabled="true">
+            Result package download unavailable
+          </a>
+        </div>
+        <div class="profile-panel" aria-live="polite">
+          <div class="profile-summary" id="profile-summary"></div>
+          <div class="profile-block">
+            <h3>TCI Breakdown</h3>
+            <div class="profile-breakdown" id="profile-tci-breakdown"></div>
+          </div>
+          <div class="profile-block">
+            <h3>Factual Reliability Breakdown</h3>
+            <div class="profile-breakdown" id="profile-factual-breakdown"></div>
+          </div>
+          <div class="profile-block">
+            <h3>Hardware-specific Local IPW</h3>
+            <div class="profile-run-list" id="profile-ipw-runs"></div>
+          </div>
+          <div class="profile-block">
+            <h3>Limitations</h3>
+            <ul class="profile-limitations" id="profile-limitations"></ul>
+          </div>
         </div>
       </section>
 
@@ -324,6 +362,7 @@ VISIBILITY      public-safe summary</code></pre>
     </footer>
 
     <script src="public-results.js"></script>
+    <script src="public-model-profiles.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

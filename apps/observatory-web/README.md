@@ -14,13 +14,16 @@ Or double-click `index.html` from Finder.
 
 - Company/home positioning.
 - Public model directory grouped from seed result rows.
+- Public model profile view with TCI category breakdowns, factual reliability breakdowns, hardware-specific Local IPW runs, throughput, energy, verification, methodology, limitations, and safe download status.
 - Public Observatory seed results table.
 - Clickable result detail view.
 - Methodology overview.
 - MVP status section.
-- Local seed result data in `public-results.js` shaped like `docs/observatory-data-shape.md` and derived from `datasets/results/`.
+- Local seed result data in `public-results.js` and `public-model-profiles.js` shaped like `docs/observatory-data-shape.md` and derived from `datasets/results/`.
 
 Local IPW is shown primarily as the unscaled `TCI/Wh` value. The scaled value remains available as an explicitly labeled display score in result details.
+
+Model profile package downloads are shown as a disabled placeholder until public reviewed download behavior exists. The static shell does not expose raw private result paths.
 
 ## What It Does Not Include Yet
 

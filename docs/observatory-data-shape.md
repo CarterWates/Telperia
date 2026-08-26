@@ -235,3 +235,22 @@ The future Phase 7 Observatory website can use this contract to build:
 - Methodology and verification badges.
 
 Public-safe fixture rows for future website and API tests live in `tests/fixtures/observatory/public_rows.json`.
+
+## Public Model Profile Projection
+
+Phase 7 model profiles aggregate public comparison rows by model. A profile may expose:
+
+- Model name.
+- Conservative provider and open-status metadata, using `unknown` until curated metadata exists.
+- Representative TCI v0.1.
+- TCI category scores and weights when available from approved result packages.
+- Factual Reliability counts and rates.
+- TRI status as `not_yet_scored` until methodology approval.
+- Transparency Evidence fields, such as model revision, runtime, hardware profile count, verification level, and public summary count.
+- Hardware-specific Local IPW rows with unscaled `TCI/Wh`, optionally labeled display score, GPU energy, energy confidence, verification level, methodology version, latency when available, and throughput when available.
+- Known limitations for the current profile evidence.
+- Download status for result packages.
+
+Public model profile projections still must not expose raw private result packages, private Storage paths, prompt text, response text, uploaded filenames, hostnames, serial numbers, owner identifiers, emails, secrets, passwords, or private keys.
+
+For the static MVP shell, profile fixture data lives in `tests/fixtures/observatory/model_profiles.json` and `apps/observatory-web/public-model-profiles.js`. Public raw package downloads are represented as a disabled placeholder until reviewed public package access is implemented.

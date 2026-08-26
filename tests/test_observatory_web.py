@@ -11,6 +11,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 WEB_ROOT = PROJECT_ROOT / "apps" / "observatory-web"
 FIXTURE_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "public_rows.json"
+PROFILE_FIXTURE_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "model_profiles.json"
 
 REQUIRED_RESULT_FIELDS = {
     "result_id",
@@ -40,6 +41,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "styles.css",
             "app.js",
             "public-results.js",
+            "public-model-profiles.js",
             "README.md",
             "assets/telperia-logo.png",
         ]:
@@ -66,6 +68,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
             'id="home"',
             'id="observatory"',
             'id="models"',
+            'id="model-profile"',
             'id="methodology"',
             'id="benchmarks"',
             'id="research"',
@@ -73,6 +76,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
             'id="status"',
             'id="result-detail"',
             "public-results.js",
+            "public-model-profiles.js",
             "app.js",
         ]:
             self.assertIn(expected, html)
@@ -86,6 +90,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "data-summary=\"model-count\"",
             "id=\"model-directory\"",
             "id=\"model-summary\"",
+            "View profile",
             "Provider",
             "Open status",
             "Transparency Evidence",
@@ -98,6 +103,40 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "tri score",
             "universal winner",
             "overall winner",
+        ]:
+            self.assertNotIn(forbidden, lower_html)
+
+    def test_index_includes_public_model_profile_view_without_deferred_scores(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        lower_html = html.lower()
+
+        for expected in [
+            "Model Profile",
+            "id=\"profile-title\"",
+            "id=\"profile-summary\"",
+            "id=\"profile-tci-breakdown\"",
+            "id=\"profile-factual-breakdown\"",
+            "id=\"profile-ipw-runs\"",
+            "id=\"profile-limitations\"",
+            "id=\"profile-download\"",
+            "TCI Breakdown",
+            "Factual Reliability Breakdown",
+            "TRI: Not yet scored",
+            "Transparency Evidence",
+            "Hardware-specific Local IPW",
+            "Latency",
+            "Throughput",
+            "Energy",
+            "Verification Level",
+            "Methodology Version",
+            "Limitations",
+            "Result package download",
+        ]:
+            self.assertIn(expected, html)
+
+        for forbidden in [
+            "transparency score",
+            "tri score",
         ]:
             self.assertNotIn(forbidden, lower_html)
 
@@ -145,6 +184,32 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertLessEqual(row["factual_attempted_accuracy"], 1)
             self.assertEqual(row["verification_level"], 0)
 
+    def test_public_model_profile_data_matches_fixture_and_stays_public_safe(self) -> None:
+        fixture_profiles = json.loads(PROFILE_FIXTURE_PATH.read_text())
+        web_profiles = load_public_model_profiles()
+
+        self.assertEqual(web_profiles, fixture_profiles)
+        self.assertGreaterEqual(len(web_profiles), 5)
+
+        rows = load_public_results()
+        self.assertEqual(
+            sorted(profile["model_name"] for profile in web_profiles),
+            sorted({row["model_name"] for row in rows}),
+        )
+
+        for profile in web_profiles:
+            self.assertEqual(profile["provider"], "unknown")
+            self.assertEqual(profile["open_status"], "unknown")
+            self.assertGreaterEqual(profile["run_count"], 1)
+            self.assertTrue(profile["tci_breakdown"])
+            self.assertTrue(profile["hardware_specific_ipw_runs"])
+            self.assertEqual(profile["tri"]["status"], "not_yet_scored")
+            self.assertEqual(profile["download"]["status"], "placeholder")
+            self.assertIn("not yet scored", profile["tri"]["label"].lower())
+            self.assertIn("result package download", profile["download"]["label"].lower())
+            self.assertTrue(profile["limitations"])
+            self.assert_public_safe(profile)
+
     def test_app_renders_expected_observatory_fields(self) -> None:
         script = (WEB_ROOT / "app.js").read_text()
 
@@ -170,6 +235,43 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertIn(expected, script)
 
         self.assertNotIn("innerHTML", script)
+
+    def test_app_renders_public_model_profiles(self) -> None:
+        script = (WEB_ROOT / "app.js").read_text()
+
+        for expected in [
+            "TELPERIA_MODEL_PROFILES",
+            "renderModelProfile",
+            "modelProfiles",
+            "profileTitle",
+            "profileSummary",
+            "profileTciBreakdown",
+            "profileFactualBreakdown",
+            "profileIpwRuns",
+            "profileLimitations",
+            "profileDownload",
+            "TRI: Not yet scored",
+            "Transparency Evidence",
+            "Latency",
+            "Throughput",
+            "Energy",
+            "Verification Level",
+            "Methodology Version",
+            "profile.download.label",
+            "formatLatency",
+            "formatThroughput",
+        ]:
+            self.assertIn(expected, script)
+
+        for forbidden in [
+            "transparency_score",
+            "tri_score",
+            "owner",
+            "storage_path",
+            ".prompt",
+            ".response",
+        ]:
+            self.assertNotIn(forbidden, script)
 
     def test_primary_ipw_display_uses_unscaled_value_with_units(self) -> None:
         html = (WEB_ROOT / "index.html").read_text()
@@ -213,8 +315,8 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "tri_score",
             "owner",
             "storage_path",
-            "prompt",
-            "response",
+            ".prompt",
+            ".response",
         ]:
             self.assertNotIn(forbidden, script)
 
@@ -255,6 +357,48 @@ def load_public_results() -> list[dict]:
     if match is None:
         raise AssertionError("public-results.js must assign window.TELPERIA_PUBLIC_RESULTS")
     return json.loads(match.group(1))
+
+
+def load_public_model_profiles() -> list[dict]:
+    text = (WEB_ROOT / "public-model-profiles.js").read_text()
+    match = re.fullmatch(r"window\.TELPERIA_MODEL_PROFILES = (.*);\n?", text, re.DOTALL)
+    if match is None:
+        raise AssertionError("public-model-profiles.js must assign window.TELPERIA_MODEL_PROFILES")
+    return json.loads(match.group(1))
+
+
+def assert_no_public_private_fields(test_case: unittest.TestCase, value: object) -> None:
+    forbidden_keys = {
+        "prompt",
+        "prompt_text",
+        "response",
+        "response_text",
+        "filename",
+        "file_path",
+        "hostname",
+        "serial_number",
+        "owner",
+        "user_id",
+        "email",
+        "storage_path",
+        "api_key",
+        "password",
+        "secret",
+    }
+
+    def walk(item: object) -> None:
+        if isinstance(item, dict):
+            for key, child in item.items():
+                test_case.assertNotIn(key.lower(), forbidden_keys)
+                walk(child)
+        elif isinstance(item, list):
+            for child in item:
+                walk(child)
+
+    walk(value)
+
+
+ObservatoryWebShellTests.assert_public_safe = assert_no_public_private_fields
 
 
 def count_png_alpha_states(path: Path) -> tuple[int, int]:

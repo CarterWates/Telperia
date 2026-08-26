@@ -75,4 +75,6 @@ Phase 7 Step 21 homepage wording now explains Telperia, why capability alone is 
 
 Phase 7 Step 22 model directory work groups public result rows by model and shows model name, conservative provider/open-status placeholders, representative TCI v0.1, Factual Reliability, Transparency Evidence, available Local IPW, verification level, and methodology version.
 
+Phase 7 Step 23 model profile work adds a public-safe profile view for each model. Profiles aggregate approved seed evidence into TCI category breakdowns, Factual Reliability breakdowns, hardware-specific Local IPW runs, throughput, energy, verification, methodology, limitations, and a disabled result-package download placeholder until reviewed public package access exists.
+
 This shell is not deployed and does not read from Supabase yet. It should become the public Observatory frontend after Phase 6 backend ingestion can persist and expose approved summary rows.

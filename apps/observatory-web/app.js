@@ -1,5 +1,6 @@
 (function () {
   const results = window.TELPERIA_PUBLIC_RESULTS || [];
+  const modelProfiles = window.TELPERIA_MODEL_PROFILES || [];
   const resultsBody = document.querySelector("#results-body");
   const detailGrid = document.querySelector("#detail-grid");
   const detailTitle = document.querySelector("#detail-title");
@@ -8,6 +9,13 @@
   const modelCount = document.querySelector('[data-summary="model-count"]');
   const modelDirectory = document.querySelector("#model-directory");
   const modelSummary = document.querySelector("#model-summary");
+  const profileTitle = document.querySelector("#profile-title");
+  const profileSummary = document.querySelector("#profile-summary");
+  const profileTciBreakdown = document.querySelector("#profile-tci-breakdown");
+  const profileFactualBreakdown = document.querySelector("#profile-factual-breakdown");
+  const profileIpwRuns = document.querySelector("#profile-ipw-runs");
+  const profileLimitations = document.querySelector("#profile-limitations");
+  const profileDownload = document.querySelector("#profile-download");
   const heroFields = document.querySelectorAll("[data-hero]");
   const models = summarizeModels(results);
 
@@ -70,6 +78,20 @@
       return "Deferred";
     }
     return `${formatNumber(value)} TCI/Wh`;
+  }
+
+  function formatLatency(value) {
+    if (value === null || value === undefined) {
+      return "Deferred";
+    }
+    return `${formatNumber(value)} ms`;
+  }
+
+  function formatThroughput(value) {
+    if (value === null || value === undefined) {
+      return "Deferred";
+    }
+    return `${formatNumber(value)} tok/s`;
   }
 
   function formatVerification(row) {
@@ -195,10 +217,12 @@
 
       const title = document.createElement("strong");
       const meta = document.createElement("span");
+      const profileHint = document.createElement("small");
       const metrics = document.createElement("div");
 
       title.textContent = summary.modelName;
       meta.textContent = `Provider ${summary.provider} / Open status ${summary.openStatus}`;
+      profileHint.textContent = "View profile";
       metrics.className = "model-entry-metrics";
 
       appendMeta(metrics, "TCI v0.1", formatNumber(summary.representativeTci));
@@ -208,7 +232,7 @@
       appendMeta(metrics, "Methodology Version", summary.methodologyVersions.join(", "));
       appendMeta(metrics, "Transparency Evidence", `${summary.hardwareCount} hardware profile(s)`);
 
-      button.append(title, meta, metrics);
+      button.append(title, meta, profileHint, metrics);
       button.addEventListener("click", () => selectModel(summary.modelName));
       modelDirectory.appendChild(button);
     });
@@ -245,7 +269,90 @@
     appendMeta(facts, "Transparency Evidence", `${summary.hardwareCount} hardware profile(s), runtime metadata, and verification metadata`);
 
     modelSummary.append(heading, note, facts);
+    renderModelProfile(summary.modelName);
     selectResult(summary.representativeResultId);
+  }
+
+  function renderModelProfile(modelName) {
+    const profile = modelProfiles.find((item) => item.model_name === modelName);
+    if (!profile || !profileTitle || !profileSummary || !profileTciBreakdown || !profileFactualBreakdown || !profileIpwRuns || !profileLimitations) {
+      return;
+    }
+
+    profileTitle.textContent = `${profile.model_name} profile`;
+    profileSummary.replaceChildren();
+    profileTciBreakdown.replaceChildren();
+    profileFactualBreakdown.replaceChildren();
+    profileIpwRuns.replaceChildren();
+    profileLimitations.replaceChildren();
+
+    const summaryGrid = document.createElement("div");
+    summaryGrid.className = "model-summary-grid";
+    appendMeta(summaryGrid, "Provider", profile.provider);
+    appendMeta(summaryGrid, "Open status", profile.open_status);
+    appendMeta(summaryGrid, "Run count", String(profile.run_count));
+    appendMeta(summaryGrid, "Representative TCI", formatNumber(profile.representative_tci_v0_1));
+    appendMeta(summaryGrid, "Best Local IPW", formatIpwValue(profile.best_local_ipw_unscaled));
+    appendMeta(summaryGrid, "Average Local IPW", formatIpwValue(profile.average_local_ipw_unscaled));
+    appendMeta(summaryGrid, "Throughput", formatThroughput(profile.average_tokens_per_second));
+    appendMeta(summaryGrid, "Latency", "Deferred");
+    appendMeta(summaryGrid, "Energy", `${formatNumber(profile.average_gpu_energy_wh)} Wh average`);
+    appendMeta(summaryGrid, "Verification Level", `L${profile.verification_levels.join(", L")}`);
+    appendMeta(summaryGrid, "Methodology Version", profile.methodology_versions.join(", "));
+    appendMeta(summaryGrid, "TRI: Not yet scored", profile.tri.note);
+    appendMeta(summaryGrid, "Transparency Evidence", `${profile.transparency_evidence.public_summary_rows} public summary row(s), ${profile.transparency_evidence.hardware_profile_count} hardware profile(s)`);
+    profileSummary.appendChild(summaryGrid);
+
+    if (profileDownload) {
+      profileDownload.textContent = profile.download.label;
+      profileDownload.title = profile.download.note;
+      profileDownload.setAttribute("aria-disabled", "true");
+    }
+
+    profile.tci_breakdown.forEach((category) => {
+      const row = document.createElement("div");
+      appendMeta(row, category.category.replaceAll("_", " "), `${formatNumber(category.average_category_score)} score / weight ${formatNumber(category.category_weight)} / ${category.run_count} run(s)`);
+      profileTciBreakdown.appendChild(row);
+    });
+
+    [
+      ["Correct responses", String(profile.factual_reliability.correct_responses)],
+      ["Incorrect responses", String(profile.factual_reliability.incorrect_responses)],
+      ["Abstentions", String(profile.factual_reliability.abstentions)],
+      ["Total questions", String(profile.factual_reliability.total_questions)],
+      ["Correctness rate", formatPercent(profile.factual_reliability.correctness_rate)],
+      ["Incorrect answer rate", formatPercent(profile.factual_reliability.incorrect_answer_rate)],
+      ["Abstention rate", formatPercent(profile.factual_reliability.abstention_rate)],
+      ["Attempted accuracy", formatPercent(profile.factual_reliability.attempted_accuracy)],
+    ].forEach(([label, value]) => {
+      const row = document.createElement("div");
+      appendMeta(row, label, value);
+      profileFactualBreakdown.appendChild(row);
+    });
+
+    profile.hardware_specific_ipw_runs.forEach((run) => {
+      const item = document.createElement("article");
+      const title = document.createElement("strong");
+      const facts = document.createElement("div");
+      title.textContent = run.hardware_label;
+      facts.className = "profile-run-grid";
+      appendMeta(facts, "Local IPW", run.local_ipw_status === "calculated" ? formatIpwValue(run.local_ipw_unscaled) : "Deferred");
+      appendMeta(facts, "IPW Display Score", run.local_ipw_displayed === null ? "Deferred" : `${formatNumber(run.local_ipw_displayed)} display score`);
+      appendMeta(facts, "Latency", formatLatency(run.latency_ms));
+      appendMeta(facts, "Throughput", formatThroughput(run.tokens_per_second));
+      appendMeta(facts, "Energy", `${formatNumber(run.gpu_energy_wh)} Wh`);
+      appendMeta(facts, "Energy Confidence", run.energy_confidence || "unavailable");
+      appendMeta(facts, "Verification Level", run.verification_level === 0 ? "Level 0 means local/self-run evidence" : `Level ${run.verification_level}`);
+      appendMeta(facts, "Methodology Version", run.methodology_version);
+      item.append(title, facts);
+      profileIpwRuns.appendChild(item);
+    });
+
+    profile.limitations.forEach((limitation) => {
+      const item = document.createElement("li");
+      item.textContent = limitation;
+      profileLimitations.appendChild(item);
+    });
   }
 
   function renderResultsTable(rows) {

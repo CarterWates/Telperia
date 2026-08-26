@@ -103,7 +103,7 @@ Completed foundation work includes:
 - A local approved-results read path for future Observatory list and detail views.
 - A result validation CLI for checking packages before hosted upload exists.
 - Public-safe Observatory row fixtures for future website and API testing.
-- A static Observatory website shell with home, model directory, methodology, results table, and result detail views.
+- A static Observatory website shell with home, model directory, model profile, methodology, results table, and result detail views.
 - A Phase 6 backend design, result ingestion contract, API contract, Supabase setup guide, and draft migration.
 - Security guidance for secrets, uploads, raw JSON privacy, public review, and release checks.
 
@@ -134,7 +134,7 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 ## Current Phase
 
-Phase 7 Step 22 is active on top of the completed local Phase 6 backend foundation. The current focus is turning public-safe seed summaries into useful Observatory views before live backend deployment and the later agent work.
+Phase 7 Step 24 is next on top of the completed local Phase 6 backend foundation. The current focus is turning public-safe seed summaries into useful Observatory views before live backend deployment and the later agent work.
 
 The repo now includes a runnable local HTTP API wrapper around the ingestion validator, a SQLite-backed persistence path for accepted uploads, and an approved-only public read path. It can:
 
@@ -145,11 +145,11 @@ The repo now includes a runnable local HTTP API wrapper around the ingestion val
 
 The next major backend work is to connect these persistence and read boundaries to Supabase with real authentication, private Storage writes, Postgres summary writes, and RLS-backed public reads.
 
-The first static Observatory shell now exists under `apps/observatory-web/`. It includes homepage positioning, a public model directory, seed results, and result detail views. The next website step is model profile pages, then connecting frontend reads to persisted public summaries after live Supabase ingestion is ready.
+The first static Observatory shell now exists under `apps/observatory-web/`. It includes homepage positioning, a public model directory, public-safe model profile views, seed results, and result detail views. The next website step is the comparison page, then connecting frontend reads to persisted public summaries after live Supabase ingestion is ready.
 
 ## Repository Map
 
-- `apps/observatory-web/`: planned public Observatory website.
+- `apps/observatory-web/`: static public Observatory shell with seed result, model directory, and model profile views.
 - `apps/api/`: planned backend API and ingestion service.
 - `evaluation-runner/`: local benchmark runner and telemetry tooling.
 - `agent/`: planned lightweight telemetry agent for normal model use.
@@ -210,7 +210,7 @@ See `evaluation-runner/README.md`, `docs/phase-5-local-experiments.md`, and `doc
 - Local backend persistence uses SQLite for development; live Supabase Storage/Postgres wiring is not connected yet.
 - Public read endpoints currently use local approved SQLite summaries; hosted Supabase public reads are not connected yet.
 - The backend migration is drafted but not applied to a live Supabase project yet.
-- The public Observatory website and community submission flow are planned but not live.
+- The public Observatory website shell exists locally, but it is not hosted and the community submission flow is not live.
 
 ## How To Explain Telperia
 

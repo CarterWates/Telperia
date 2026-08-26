@@ -1,0 +1,692 @@
+[
+  {
+    "model_name": "gemma2:9b",
+    "provider": "unknown",
+    "open_status": "unknown",
+    "representative_result_id": "seed-result-004",
+    "run_count": 3,
+    "hardware_profile_count": 1,
+    "methodology_versions": [
+      "0.1"
+    ],
+    "verification_levels": [
+      0
+    ],
+    "representative_tci_v0_1": 56.0,
+    "best_local_ipw_unscaled": 502.957676987049,
+    "average_local_ipw_unscaled": 341.715415919774,
+    "average_gpu_energy_wh": 0.182534612814,
+    "average_tokens_per_second": 34.741766099332,
+    "tci_breakdown": [
+      {
+        "category": "coding",
+        "average_category_score": 60.0,
+        "category_weight": 0.25,
+        "run_count": 3
+      },
+      {
+        "category": "factual_knowledge",
+        "average_category_score": 80.0,
+        "category_weight": 0.15,
+        "run_count": 3
+      },
+      {
+        "category": "instruction_adherence",
+        "average_category_score": 100.0,
+        "category_weight": 0.15,
+        "run_count": 3
+      },
+      {
+        "category": "mathematics",
+        "average_category_score": 20.0,
+        "category_weight": 0.2,
+        "run_count": 3
+      },
+      {
+        "category": "reasoning",
+        "average_category_score": 33.333333333333,
+        "category_weight": 0.25,
+        "run_count": 3
+      }
+    ],
+    "factual_reliability": {
+      "correct_responses": 12,
+      "incorrect_responses": 3,
+      "abstentions": 0,
+      "total_questions": 15,
+      "correctness_rate": 0.8,
+      "incorrect_answer_rate": 0.2,
+      "abstention_rate": 0.0,
+      "attempted_accuracy": 0.8
+    },
+    "tri": {
+      "status": "not_yet_scored",
+      "label": "TRI: Not yet scored",
+      "note": "TRI remains methodology-pending and is not published as a numeric MVP score."
+    },
+    "transparency_evidence": {
+      "model_revision_values": [
+        "unknown"
+      ],
+      "runtime_engines": [
+        "ollama"
+      ],
+      "runtime_versions": [
+        "0.32.15"
+      ],
+      "hardware_profile_count": 1,
+      "verification_levels": [
+        0
+      ],
+      "public_summary_rows": 3,
+      "raw_package_download": "not_public_yet"
+    },
+    "hardware_specific_ipw_runs": [
+      {
+        "result_id": "seed-result-002",
+        "run_id": "3534abb0-b81a-4fab-944f-6cf67f33590d",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 190.8213828771413,
+        "local_ipw_displayed": 190821.3828771413,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.26726564513388895,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 7.159005660585487
+      },
+      {
+        "result_id": "seed-result-003",
+        "run_id": "d62976b7-ee2d-449a-a2d4-6e9f95c68218",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 331.3671878951324,
+        "local_ipw_displayed": 331367.1878951324,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.16899681696222224,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 39.740544716419
+      },
+      {
+        "result_id": "seed-result-004",
+        "run_id": "e5be1eab-4507-433d-9974-bb110c1f6b54",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 502.95767698704947,
+        "local_ipw_displayed": 502957.67698704946,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.11134137634694445,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 57.32574792099195
+      }
+    ],
+    "limitations": [
+      "Profile metrics reflect available public seed runs only and may change with more evidence.",
+      "Local IPW is hardware-specific and should be compared with hardware context visible.",
+      "Verification Level 0 means local/self-run evidence, not a model quality penalty.",
+      "Provider and open-status metadata remain unknown until curated model metadata is added.",
+      "Public raw package downloads are disabled until reviewed package-download behavior is implemented."
+    ],
+    "download": {
+      "status": "placeholder",
+      "label": "Result package download unavailable",
+      "note": "Public raw downloads are disabled until reviewed package access is implemented."
+    }
+  },
+  {
+    "model_name": "llama3.1:8b",
+    "provider": "unknown",
+    "open_status": "unknown",
+    "representative_result_id": "seed-result-001",
+    "run_count": 4,
+    "hardware_profile_count": 2,
+    "methodology_versions": [
+      "0.1"
+    ],
+    "verification_levels": [
+      0
+    ],
+    "representative_tci_v0_1": 50.0,
+    "best_local_ipw_unscaled": 248.372755845027,
+    "average_local_ipw_unscaled": 241.244657549969,
+    "average_gpu_energy_wh": 0.131485339531,
+    "average_tokens_per_second": 49.527068345815,
+    "tci_breakdown": [
+      {
+        "category": "coding",
+        "average_category_score": 40.0,
+        "category_weight": 0.25,
+        "run_count": 4
+      },
+      {
+        "category": "factual_knowledge",
+        "average_category_score": 95.0,
+        "category_weight": 0.15,
+        "run_count": 4
+      },
+      {
+        "category": "instruction_adherence",
+        "average_category_score": 100.0,
+        "category_weight": 0.15,
+        "run_count": 4
+      },
+      {
+        "category": "mathematics",
+        "average_category_score": 0.0,
+        "category_weight": 0.2,
+        "run_count": 4
+      },
+      {
+        "category": "reasoning",
+        "average_category_score": 20.0,
+        "category_weight": 0.25,
+        "run_count": 4
+      }
+    ],
+    "factual_reliability": {
+      "correct_responses": 19,
+      "incorrect_responses": 1,
+      "abstentions": 0,
+      "total_questions": 20,
+      "correctness_rate": 0.95,
+      "incorrect_answer_rate": 0.05,
+      "abstention_rate": 0.0,
+      "attempted_accuracy": 0.95
+    },
+    "tri": {
+      "status": "not_yet_scored",
+      "label": "TRI: Not yet scored",
+      "note": "TRI remains methodology-pending and is not published as a numeric MVP score."
+    },
+    "transparency_evidence": {
+      "model_revision_values": [
+        "unknown"
+      ],
+      "runtime_engines": [
+        "ollama"
+      ],
+      "runtime_versions": [
+        "0.31.1",
+        "0.32.15"
+      ],
+      "hardware_profile_count": 2,
+      "verification_levels": [
+        0
+      ],
+      "public_summary_rows": 4,
+      "raw_package_download": "not_public_yet"
+    },
+    "hardware_specific_ipw_runs": [
+      {
+        "result_id": "seed-result-001",
+        "run_id": "df235fe4-4baf-4329-b5c8-c24c82ad5f6d",
+        "hardware_label": "unavailable / Darwin / DISABLED",
+        "gpu": "unavailable",
+        "operating_system": "Darwin",
+        "monitor_backend": "disabled",
+        "local_ipw_unscaled": null,
+        "local_ipw_displayed": null,
+        "local_ipw_status": "deferred",
+        "gpu_energy_wh": 0,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 1.40958905450801
+      },
+      {
+        "result_id": "seed-result-005",
+        "run_id": "03337530-04fd-4d35-a025-a6d71ed4d953",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 239.51077488210592,
+        "local_ipw_displayed": 239510.7748821059,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.1878829878202778,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 63.13745840075933
+      },
+      {
+        "result_id": "seed-result-006",
+        "run_id": "71a97eeb-30ce-42fb-8a9e-c47b27db2283",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 248.37275584502697,
+        "local_ipw_displayed": 248372.755845027,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.18117929177416667,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 40.97500202489357
+      },
+      {
+        "result_id": "seed-result-007",
+        "run_id": "9b53859c-58c2-46a2-86eb-96b947623bf2",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 235.85044192277323,
+        "local_ipw_displayed": 235850.44192277323,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.1568790785311111,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 92.58622390309843
+      }
+    ],
+    "limitations": [
+      "Profile metrics reflect available public seed runs only and may change with more evidence.",
+      "Local IPW is hardware-specific and should be compared with hardware context visible.",
+      "Verification Level 0 means local/self-run evidence, not a model quality penalty.",
+      "Provider and open-status metadata remain unknown until curated model metadata is added.",
+      "Public raw package downloads are disabled until reviewed package-download behavior is implemented."
+    ],
+    "download": {
+      "status": "placeholder",
+      "label": "Result package download unavailable",
+      "note": "Public raw downloads are disabled until reviewed package access is implemented."
+    }
+  },
+  {
+    "model_name": "llama3.2:3b",
+    "provider": "unknown",
+    "open_status": "unknown",
+    "representative_result_id": "seed-result-008",
+    "run_count": 1,
+    "hardware_profile_count": 1,
+    "methodology_versions": [
+      "0.1"
+    ],
+    "verification_levels": [
+      0
+    ],
+    "representative_tci_v0_1": 31.0,
+    "best_local_ipw_unscaled": 418.61521367882,
+    "average_local_ipw_unscaled": 418.61521367882,
+    "average_gpu_energy_wh": 0.074053686983,
+    "average_tokens_per_second": 111.504199792107,
+    "tci_breakdown": [
+      {
+        "category": "coding",
+        "average_category_score": 20.0,
+        "category_weight": 0.25,
+        "run_count": 1
+      },
+      {
+        "category": "factual_knowledge",
+        "average_category_score": 60.0,
+        "category_weight": 0.15,
+        "run_count": 1
+      },
+      {
+        "category": "instruction_adherence",
+        "average_category_score": 80.0,
+        "category_weight": 0.15,
+        "run_count": 1
+      },
+      {
+        "category": "mathematics",
+        "average_category_score": 0.0,
+        "category_weight": 0.2,
+        "run_count": 1
+      },
+      {
+        "category": "reasoning",
+        "average_category_score": 20.0,
+        "category_weight": 0.25,
+        "run_count": 1
+      }
+    ],
+    "factual_reliability": {
+      "correct_responses": 3,
+      "incorrect_responses": 2,
+      "abstentions": 0,
+      "total_questions": 5,
+      "correctness_rate": 0.6,
+      "incorrect_answer_rate": 0.4,
+      "abstention_rate": 0.0,
+      "attempted_accuracy": 0.6
+    },
+    "tri": {
+      "status": "not_yet_scored",
+      "label": "TRI: Not yet scored",
+      "note": "TRI remains methodology-pending and is not published as a numeric MVP score."
+    },
+    "transparency_evidence": {
+      "model_revision_values": [
+        "unknown"
+      ],
+      "runtime_engines": [
+        "ollama"
+      ],
+      "runtime_versions": [
+        "0.32.15"
+      ],
+      "hardware_profile_count": 1,
+      "verification_levels": [
+        0
+      ],
+      "public_summary_rows": 1,
+      "raw_package_download": "not_public_yet"
+    },
+    "hardware_specific_ipw_runs": [
+      {
+        "result_id": "seed-result-008",
+        "run_id": "11ebfc37-2daa-42c3-b88b-443127422243",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 418.61521367882045,
+        "local_ipw_displayed": 418615.21367882047,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.07405368698277777,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 111.50419979210685
+      }
+    ],
+    "limitations": [
+      "Profile metrics reflect available public seed runs only and may change with more evidence.",
+      "Local IPW is hardware-specific and should be compared with hardware context visible.",
+      "Verification Level 0 means local/self-run evidence, not a model quality penalty.",
+      "Provider and open-status metadata remain unknown until curated model metadata is added.",
+      "Public raw package downloads are disabled until reviewed package-download behavior is implemented."
+    ],
+    "download": {
+      "status": "placeholder",
+      "label": "Result package download unavailable",
+      "note": "Public raw downloads are disabled until reviewed package access is implemented."
+    }
+  },
+  {
+    "model_name": "mistral:7b",
+    "provider": "unknown",
+    "open_status": "unknown",
+    "representative_result_id": "seed-result-009",
+    "run_count": 1,
+    "hardware_profile_count": 1,
+    "methodology_versions": [
+      "0.1"
+    ],
+    "verification_levels": [
+      0
+    ],
+    "representative_tci_v0_1": 25.0,
+    "best_local_ipw_unscaled": 69.17389713984,
+    "average_local_ipw_unscaled": 69.17389713984,
+    "average_gpu_energy_wh": 0.361408002638,
+    "average_tokens_per_second": 96.581770427895,
+    "tci_breakdown": [
+      {
+        "category": "coding",
+        "average_category_score": 0.0,
+        "category_weight": 0.25,
+        "run_count": 1
+      },
+      {
+        "category": "factual_knowledge",
+        "average_category_score": 40.0,
+        "category_weight": 0.15,
+        "run_count": 1
+      },
+      {
+        "category": "instruction_adherence",
+        "average_category_score": 60.0,
+        "category_weight": 0.15,
+        "run_count": 1
+      },
+      {
+        "category": "mathematics",
+        "average_category_score": 0.0,
+        "category_weight": 0.2,
+        "run_count": 1
+      },
+      {
+        "category": "reasoning",
+        "average_category_score": 40.0,
+        "category_weight": 0.25,
+        "run_count": 1
+      }
+    ],
+    "factual_reliability": {
+      "correct_responses": 2,
+      "incorrect_responses": 3,
+      "abstentions": 0,
+      "total_questions": 5,
+      "correctness_rate": 0.4,
+      "incorrect_answer_rate": 0.6,
+      "abstention_rate": 0.0,
+      "attempted_accuracy": 0.4
+    },
+    "tri": {
+      "status": "not_yet_scored",
+      "label": "TRI: Not yet scored",
+      "note": "TRI remains methodology-pending and is not published as a numeric MVP score."
+    },
+    "transparency_evidence": {
+      "model_revision_values": [
+        "unknown"
+      ],
+      "runtime_engines": [
+        "ollama"
+      ],
+      "runtime_versions": [
+        "0.32.15"
+      ],
+      "hardware_profile_count": 1,
+      "verification_levels": [
+        0
+      ],
+      "public_summary_rows": 1,
+      "raw_package_download": "not_public_yet"
+    },
+    "hardware_specific_ipw_runs": [
+      {
+        "result_id": "seed-result-009",
+        "run_id": "f584ad5b-d4c9-4f9a-b752-644d266bb55b",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 69.17389713984034,
+        "local_ipw_displayed": 69173.89713984034,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.36140800263805556,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 96.58177042789528
+      }
+    ],
+    "limitations": [
+      "Profile metrics reflect available public seed runs only and may change with more evidence.",
+      "Local IPW is hardware-specific and should be compared with hardware context visible.",
+      "Verification Level 0 means local/self-run evidence, not a model quality penalty.",
+      "Provider and open-status metadata remain unknown until curated model metadata is added.",
+      "Public raw package downloads are disabled until reviewed package-download behavior is implemented."
+    ],
+    "download": {
+      "status": "placeholder",
+      "label": "Result package download unavailable",
+      "note": "Public raw downloads are disabled until reviewed package access is implemented."
+    }
+  },
+  {
+    "model_name": "qwen2.5:7b",
+    "provider": "unknown",
+    "open_status": "unknown",
+    "representative_result_id": "seed-result-012",
+    "run_count": 3,
+    "hardware_profile_count": 1,
+    "methodology_versions": [
+      "0.1"
+    ],
+    "verification_levels": [
+      0
+    ],
+    "representative_tci_v0_1": 50.0,
+    "best_local_ipw_unscaled": 502.422232994063,
+    "average_local_ipw_unscaled": 420.818675023297,
+    "average_gpu_energy_wh": 0.121051042524,
+    "average_tokens_per_second": 47.468307688521,
+    "tci_breakdown": [
+      {
+        "category": "coding",
+        "average_category_score": 40.0,
+        "category_weight": 0.25,
+        "run_count": 3
+      },
+      {
+        "category": "factual_knowledge",
+        "average_category_score": 100.0,
+        "category_weight": 0.15,
+        "run_count": 3
+      },
+      {
+        "category": "instruction_adherence",
+        "average_category_score": 100.0,
+        "category_weight": 0.15,
+        "run_count": 3
+      },
+      {
+        "category": "mathematics",
+        "average_category_score": 0.0,
+        "category_weight": 0.2,
+        "run_count": 3
+      },
+      {
+        "category": "reasoning",
+        "average_category_score": 40.0,
+        "category_weight": 0.25,
+        "run_count": 3
+      }
+    ],
+    "factual_reliability": {
+      "correct_responses": 15,
+      "incorrect_responses": 0,
+      "abstentions": 0,
+      "total_questions": 15,
+      "correctness_rate": 1.0,
+      "incorrect_answer_rate": 0.0,
+      "abstention_rate": 0.0,
+      "attempted_accuracy": 1.0
+    },
+    "tri": {
+      "status": "not_yet_scored",
+      "label": "TRI: Not yet scored",
+      "note": "TRI remains methodology-pending and is not published as a numeric MVP score."
+    },
+    "transparency_evidence": {
+      "model_revision_values": [
+        "unknown"
+      ],
+      "runtime_engines": [
+        "ollama"
+      ],
+      "runtime_versions": [
+        "0.32.15"
+      ],
+      "hardware_profile_count": 1,
+      "verification_levels": [
+        0
+      ],
+      "public_summary_rows": 3,
+      "raw_package_download": "not_public_yet"
+    },
+    "hardware_specific_ipw_runs": [
+      {
+        "result_id": "seed-result-010",
+        "run_id": "4d1509d1-61bb-42aa-879a-ab45dbc890e5",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 363.6496642425805,
+        "local_ipw_displayed": 363649.66424258053,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.13749497089222223,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 17.743012070538363
+      },
+      {
+        "result_id": "seed-result-011",
+        "run_id": "2a2d3762-565a-488d-9820-f6b2cc10ed4f",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 396.38412783324867,
+        "local_ipw_displayed": 396384.1278332487,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.12614026770777778,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 39.04609377120789
+      },
+      {
+        "result_id": "seed-result-012",
+        "run_id": "8783c9ea-9a3b-445c-9a2f-4f46cc402ce0",
+        "hardware_label": "NVIDIA GeForce RTX 5070 / Windows / NVML",
+        "gpu": "NVIDIA GeForce RTX 5070",
+        "operating_system": "Windows",
+        "monitor_backend": "nvml",
+        "local_ipw_unscaled": 502.422232994063,
+        "local_ipw_displayed": 502422.232994063,
+        "local_ipw_status": "calculated",
+        "gpu_energy_wh": 0.09951788897166666,
+        "energy_confidence": null,
+        "verification_level": 0,
+        "methodology_version": "0.1",
+        "latency_ms": null,
+        "tokens_per_second": 85.61581722381665
+      }
+    ],
+    "limitations": [
+      "Profile metrics reflect available public seed runs only and may change with more evidence.",
+      "Local IPW is hardware-specific and should be compared with hardware context visible.",
+      "Verification Level 0 means local/self-run evidence, not a model quality penalty.",
+      "Provider and open-status metadata remain unknown until curated model metadata is added.",
+      "Public raw package downloads are disabled until reviewed package-download behavior is implemented."
+    ],
+    "download": {
+      "status": "placeholder",
+      "label": "Result package download unavailable",
+      "note": "Public raw downloads are disabled until reviewed package access is implemented."
+    }
+  }
+]
