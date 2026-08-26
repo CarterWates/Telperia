@@ -19,12 +19,13 @@ Or double-click `index.html` from Finder.
 - Public Observatory seed results table.
 - Clickable result detail view.
 - Official methodology sections for TCI v0.1, Factual Reliability v0.1, Local IPW v0.1, Verification Levels, Privacy Policy, Known Limitations, and deferred TRI/Transparency Score language.
+- In-page methodology terminology explanations for core scoring, reliability, energy, verification, privacy, and result-package terms.
 - MVP status section.
 - Local seed result data in `public-results.js` and `public-model-profiles.js` shaped like `docs/observatory-data-shape.md` and derived from `datasets/results/`.
 
 Local IPW is shown primarily as the unscaled `TCI/Wh` value. The scaled value remains available as an explicitly labeled display score in result details.
 
-Score-like labels in the table, detail, model profile, and comparison views link to methodology anchors so public metrics stay tied to their versioned definitions.
+Score-like labels in the table, detail, model profile, and comparison views link to methodology anchors so public metrics stay tied to their versioned definitions. The methodology section also links key terms to plain-English explanations for readers who need more context.
 
 Model profile package downloads are shown as a disabled placeholder until public reviewed download behavior exists. The static shell does not expose raw private result paths.
 

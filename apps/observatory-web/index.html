@@ -287,37 +287,158 @@
         </div>
         <div class="method-rows">
           <article id="methodology-tci-v0-1">
-            <span><a class="method-link" href="../../methodology/TCI-v0.1.md">TCI v0.1</a></span>
+            <span><a class="method-link" href="../../methodology/TCI-v0.1.md">TCI v0.1</a> / <a class="method-link" href="#term-tci">term</a></span>
             <p>Current MVP capability score. TCI v0.1 combines reasoning, coding, mathematics, factual knowledge, and instruction adherence using documented category weights. TCI v0.1 is early MVP methodology and should not be treated as universal model quality.</p>
           </article>
           <article id="methodology-factual-reliability-v0-1">
-            <span><a class="method-link" href="../../methodology/factual-reliability-v0.1.md">Factual Reliability v0.1</a></span>
+            <span><a class="method-link" href="../../methodology/factual-reliability-v0.1.md">Factual Reliability v0.1</a> / <a class="method-link" href="#term-factual-reliability">term</a></span>
             <p>Factual Reliability v0.1 preserves correct responses, incorrect responses, abstentions, total questions, correctness rate, incorrect answer rate, abstention rate, and attempted accuracy.</p>
           </article>
           <article id="methodology-ipw-v0-1">
-            <span><a class="method-link" href="../../methodology/IPW-v0.1.md">Local IPW v0.1</a></span>
+            <span><a class="method-link" href="../../methodology/IPW-v0.1.md">Local IPW v0.1</a> / <a class="method-link" href="#term-local-ipw">term</a></span>
             <p>Local IPW v0.1 measures capability per watt-hour of local inference hardware energy. It is hardware-specific, energy confidence varies by run duration and sample count, and it does not estimate facility or data-center power use.</p>
           </article>
           <article id="methodology-tri-v0-1">
-            <span><a class="method-link" href="../../methodology/TRI-v0.1.md">TRI v0.1</a></span>
+            <span><a class="method-link" href="../../methodology/TRI-v0.1.md">TRI v0.1</a> / <a class="method-link" href="#term-tri">term</a></span>
             <p>TRI v0.1 is planned/not yet scored. It is reserved for future reliability evidence around consistency, operational stability, completion behavior, and repeatability after the methodology is approved.</p>
           </article>
           <article id="methodology-transparency-score-v0-1">
-            <span><a class="method-link" href="../../methodology/transparency-score-v0.1.md">Transparency Score v0.1</a></span>
+            <span><a class="method-link" href="../../methodology/transparency-score-v0.1.md">Transparency Score v0.1</a> / <a class="method-link" href="#term-transparency-score">term</a></span>
             <p>Transparency Score v0.1 is planned/not yet scored. Current MVP pages show Transparency Evidence instead: model revision, runtime, hardware metadata, public summary count, package availability status, and verification metadata.</p>
           </article>
           <article id="methodology-verification-levels">
-            <span><a class="method-link" href="../../methodology/verification-levels.md">Verification Levels</a></span>
+            <span><a class="method-link" href="../../methodology/verification-levels.md">Verification Levels</a> / <a class="method-link" href="#term-verification-level">term</a></span>
             <p>Verification levels describe evidence quality, not model capability. verification level 0 means local/self-run evidence and should not be read as a model quality penalty.</p>
           </article>
           <article id="methodology-privacy-policy">
-            <span><a class="method-link" href="../../methodology/privacy-policy.md">Privacy Policy</a></span>
+            <span><a class="method-link" href="../../methodology/privacy-policy.md">Privacy Policy</a> / <a class="method-link" href="#term-public-summary">terms</a></span>
             <p>Telperia is local-first. Uploads are private by default, public contribution requires explicit public review submission, and the Observatory exposes approved public summaries only. Public views do not collect prompt or response content, secrets, local filenames, hostnames, serial numbers, owner IDs, or private storage paths.</p>
           </article>
           <article id="methodology-known-limitations">
-            <span><a class="method-link" href="../../methodology/limitations.md">Known Limitations</a></span>
+            <span><a class="method-link" href="../../methodology/limitations.md">Known Limitations</a> / <a class="method-link" href="#term-methodology-version">terms</a></span>
             <p>TCI v0.1 is early, Local IPW is hardware-specific, provider/open-status metadata may be unknown until curated, and latency and peak VRAM are deferred unless collected by future runner versions.</p>
           </article>
+        </div>
+        <div class="terminology-panel" id="methodology-terminology" aria-labelledby="terminology-title">
+          <div class="terminology-head">
+            <p class="section-label">Terminology</p>
+            <h3 id="terminology-title">Methodology terminology.</h3>
+            <p>
+              These definitions explain the public words Telperia uses around scores,
+              result packages, energy scope, verification, and privacy. They are
+              written for readers who want the plain meaning before opening the full
+              methodology documents.
+            </p>
+          </div>
+          <nav class="terminology-index" aria-label="Methodology terminology index">
+            <a href="#term-tci">TCI</a>
+            <a href="#term-tci-category-score">TCI category score</a>
+            <a href="#term-raw-benchmark-score">Raw benchmark score</a>
+            <a href="#term-normalized-benchmark-score">Normalized benchmark score</a>
+            <a href="#term-category-weight">Category weight</a>
+            <a href="#term-factual-reliability">Factual Reliability</a>
+            <a href="#term-correctness-rate">Correctness rate</a>
+            <a href="#term-incorrect-answer-rate">Incorrect answer rate</a>
+            <a href="#term-abstention-rate">Abstention rate</a>
+            <a href="#term-attempted-accuracy">Attempted accuracy</a>
+            <a href="#term-local-ipw">Local IPW</a>
+            <a href="#term-gpu-energy-wh">GPU energy in Wh</a>
+            <a href="#term-completion-ratio">Completion ratio</a>
+            <a href="#term-energy-confidence">Energy confidence</a>
+            <a href="#term-verification-level">Verification level</a>
+            <a href="#term-tri">TRI</a>
+            <a href="#term-transparency-evidence">Transparency Evidence</a>
+            <a href="#term-transparency-score">Transparency Score</a>
+            <a href="#term-public-summary">Public summary</a>
+            <a href="#term-raw-result-package">Raw result package</a>
+            <a href="#term-methodology-version">Methodology version</a>
+          </nav>
+          <div class="terminology-grid">
+            <article id="term-tci">
+              <span>TCI</span>
+              <p>TCI means Telperia Capability Index. It is the active MVP capability score for a controlled evaluation suite, combining category performance into one versioned number while preserving the underlying category evidence.</p>
+            </article>
+            <article id="term-tci-category-score">
+              <span>TCI category score</span>
+              <p>A TCI category score is the normalized score for one capability area, such as reasoning, coding, mathematics, factual knowledge, or instruction adherence. It helps show where a model is strong or weak.</p>
+            </article>
+            <article id="term-raw-benchmark-score">
+              <span>Raw benchmark score</span>
+              <p>A raw benchmark score is the direct task-level result before normalization or weighting. Telperia preserves raw benchmark scores so a final result can be inspected instead of only trusted as a summary.</p>
+            </article>
+            <article id="term-normalized-benchmark-score">
+              <span>Normalized benchmark score</span>
+              <p>A normalized benchmark score converts a raw task score onto the shared 0 to 100 TCI scale. This lets different task outcomes contribute consistently before category aggregation and weighting.</p>
+            </article>
+            <article id="term-category-weight">
+              <span>Category weight</span>
+              <p>A category weight defines how much one TCI category contributes to the final TCI v0.1 score. The weight is stored with the score so readers can audit how the aggregate was produced.</p>
+            </article>
+            <article id="term-factual-reliability">
+              <span>Factual Reliability</span>
+              <p>Factual Reliability measures how a model performs on factual questions by preserving correct responses, incorrect responses, abstentions, and attempted accuracy. It is not presented as a complete hallucination measure.</p>
+            </article>
+            <article id="term-correctness-rate">
+              <span>Correctness rate</span>
+              <p>Correctness rate is correct factual responses divided by total factual questions. It answers the simple question of how often the model produced the expected factual answer in the evaluation suite.</p>
+            </article>
+            <article id="term-incorrect-answer-rate">
+              <span>Incorrect answer rate</span>
+              <p>Incorrect answer rate is incorrect factual responses divided by total factual questions. It is shown separately from abstention so readers can distinguish wrong answers from cases where the model did not attempt.</p>
+            </article>
+            <article id="term-abstention-rate">
+              <span>Abstention rate</span>
+              <p>Abstention rate is abstentions divided by total factual questions. An abstention is tracked separately because choosing not to answer is different from answering incorrectly in reliability analysis.</p>
+            </article>
+            <article id="term-attempted-accuracy">
+              <span>Attempted accuracy</span>
+              <p>Attempted accuracy is correct responses divided by attempted responses, where attempted responses are correct plus incorrect. Abstentions are excluded so attempted accuracy describes answer quality after the model chooses to answer.</p>
+            </article>
+            <article id="term-local-ipw">
+              <span>Local IPW</span>
+              <p>Local IPW means local Intelligence per Watt-hour. It measures capability per watt-hour of local inference hardware energy for the machine doing the run, and it should be compared with hardware context visible.</p>
+            </article>
+            <article id="term-gpu-energy-wh">
+              <span>GPU energy in Wh</span>
+              <p>GPU energy in Wh is the watt-hour total calculated from local GPU power samples during the evaluation window. Current NVIDIA runs use NVML telemetry and preserve raw samples for verification.</p>
+            </article>
+            <article id="term-completion-ratio">
+              <span>Completion ratio</span>
+              <p>Completion ratio is completed evaluation tasks divided by total tasks. Local IPW uses completion ratio so an efficient-looking run does not receive the same treatment if it failed to complete the suite.</p>
+            </article>
+            <article id="term-energy-confidence">
+              <span>Energy confidence</span>
+              <p>Energy confidence describes the quality of the local energy measurement behind an IPW result. It considers sample count, measured duration, telemetry availability, warning codes, and whether the run is gross measured energy.</p>
+            </article>
+            <article id="term-verification-level">
+              <span>Verification level</span>
+              <p>Verification level describes the evidence behind a result rather than the model capability itself. verification level 0 means local/self-run evidence and should not be interpreted as a bad model.</p>
+            </article>
+            <article id="term-tri">
+              <span>TRI</span>
+              <p>TRI is planned/not yet scored. It is reserved for a future Telperia Reliability Index covering repeated-run stability, operational consistency, completion behavior, and other reliability evidence after methodology approval.</p>
+            </article>
+            <article id="term-transparency-evidence">
+              <span>Transparency Evidence</span>
+              <p>Transparency Evidence is the current MVP way to show what is known about a result, including methodology version, model revision, runtime, hardware metadata, raw evidence availability, and verification metadata.</p>
+            </article>
+            <article id="term-transparency-score">
+              <span>Transparency Score</span>
+              <p>Transparency Score is planned/not yet scored. Telperia does not publish a numeric transparency value yet, so the Observatory shows Transparency Evidence fields directly until a scoring methodology is approved.</p>
+            </article>
+            <article id="term-public-summary">
+              <span>Public summary</span>
+              <p>A Public summary is the approved, public-safe row shown by the Observatory. It contains comparison fields and methodology metadata, while private uploads by default require explicit review before appearing publicly.</p>
+            </article>
+            <article id="term-raw-result-package">
+              <span>Raw result package</span>
+              <p>A Raw result package is the full local evaluation output used for validation and review. It remains separate from public summaries and should not expose prompts, responses, secrets, hostnames, serial numbers, or private paths.</p>
+            </article>
+            <article id="term-methodology-version">
+              <span>Methodology version</span>
+              <p>Methodology version identifies the scoring and validation rules used for a result. Every public score should keep this version visible so old results are not silently reinterpreted after methods change.</p>
+            </article>
+          </div>
         </div>
       </section>
 

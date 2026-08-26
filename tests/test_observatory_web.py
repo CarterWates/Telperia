@@ -33,6 +33,30 @@ REQUIRED_RESULT_FIELDS = {
     "completion_ratio",
 }
 
+REQUIRED_TERMINOLOGY = {
+    "TCI": "term-tci",
+    "TCI category score": "term-tci-category-score",
+    "Raw benchmark score": "term-raw-benchmark-score",
+    "Normalized benchmark score": "term-normalized-benchmark-score",
+    "Category weight": "term-category-weight",
+    "Factual Reliability": "term-factual-reliability",
+    "Correctness rate": "term-correctness-rate",
+    "Incorrect answer rate": "term-incorrect-answer-rate",
+    "Abstention rate": "term-abstention-rate",
+    "Attempted accuracy": "term-attempted-accuracy",
+    "Local IPW": "term-local-ipw",
+    "GPU energy in Wh": "term-gpu-energy-wh",
+    "Completion ratio": "term-completion-ratio",
+    "Energy confidence": "term-energy-confidence",
+    "Verification level": "term-verification-level",
+    "TRI": "term-tri",
+    "Transparency Evidence": "term-transparency-evidence",
+    "Transparency Score": "term-transparency-score",
+    "Public summary": "term-public-summary",
+    "Raw result package": "term-raw-result-package",
+    "Methodology version": "term-methodology-version",
+}
+
 
 class ObservatoryWebShellTests(unittest.TestCase):
     def test_static_shell_files_exist(self) -> None:
@@ -214,6 +238,45 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "methodology version",
         ]:
             self.assertIn(expected, script)
+
+    def test_methodology_terms_link_to_detailed_explanations(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        lower_html = html.lower()
+
+        self.assertIn('id="methodology-terminology"', html)
+        self.assertIn("Methodology terminology", html)
+
+        for term, anchor in REQUIRED_TERMINOLOGY.items():
+            self.assertIn(f'href="#{anchor}"', html, term)
+            self.assertIn(f'id="{anchor}"', html, term)
+
+            section_match = re.search(
+                rf'<article id="{re.escape(anchor)}">(?P<body>.*?)</article>',
+                html,
+                flags=re.DOTALL,
+            )
+            self.assertIsNotNone(section_match, term)
+            section_text = re.sub(r"<[^>]+>", " ", section_match.group("body"))
+            self.assertIn(term, section_text)
+            self.assertGreaterEqual(len(section_text.split()), 22, term)
+
+        self.assertIn("TRI is planned/not yet scored", html)
+        self.assertIn("Transparency Score is planned/not yet scored", html)
+        self.assertIn("local inference hardware energy", html)
+        self.assertIn("verification level 0 means local/self-run evidence", html)
+        self.assertIn("private uploads by default", html)
+        self.assertIn("approved public summaries only", html)
+
+        for forbidden in [
+            "carbon neutral",
+            "full data-center energy",
+            "full datacenter energy",
+            "numeric tri",
+            "numeric transparency score",
+            "prompt text is collected",
+            "response text is collected",
+        ]:
+            self.assertNotIn(forbidden, lower_html)
 
     def test_index_includes_public_model_profile_view_without_deferred_scores(self) -> None:
         html = (WEB_ROOT / "index.html").read_text()
