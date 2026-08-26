@@ -79,6 +79,10 @@ This matters because a short run with only a few GPU power samples is less relia
 
 Verification levels describe how much evidence supports a result. MVP result packages preserve verification metadata so public readers can tell the difference between a local self-run, a reviewed result, and future higher-confidence submissions.
 
+### Deferred Metrics
+
+TRI and Transparency Score are planned methodology areas, not active MVP scores. Phase 7 pages may explain TRI as a planned reliability metric and may show Transparency Evidence fields, but they should not display numeric TRI or Transparency Score values until those methodologies are approved.
+
 ## What Is Built Today
 
 Telperia is currently in Phase 6 of the MVP roadmap.
@@ -202,6 +206,7 @@ See `evaluation-runner/README.md`, `docs/phase-5-local-experiments.md`, and `doc
 - Mac machines can generate valid capability result packages, but measured NVIDIA GPU energy is deferred unless compatible telemetry exists.
 - TCI v0.1 is an MVP benchmark and should be interpreted as an early methodology, not a final intelligence measure.
 - TCI v0.2 is a proposal only and is not implemented in current result packages.
+- TRI and Transparency Score are deferred and should be presented as methodology-pending concepts, not live scores.
 - Local backend persistence uses SQLite for development; live Supabase Storage/Postgres wiring is not connected yet.
 - Public read endpoints currently use local approved SQLite summaries; hosted Supabase public reads are not connected yet.
 - The backend migration is drafted but not applied to a live Supabase project yet.
@@ -230,6 +235,7 @@ Founder-style version:
 - `methodology/IPW-v0.1.md`: current Local IPW formula and caveats.
 - `methodology/factual-reliability-v0.1.md`: factual reliability metrics.
 - `methodology/verification-levels.md`: evidence quality levels.
+- `methodology/deferred-metrics.md`: guidance for TRI, Transparency Score, and other deferred metrics.
 - `docs/phase-6-backend-design.md`: backend design for private-by-default ingestion.
 - `docs/result-ingestion-contract.md`: ingestion rules and validation expectations.
 - `docs/observatory-data-shape.md`: public comparison fields.

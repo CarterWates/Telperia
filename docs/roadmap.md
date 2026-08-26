@@ -51,6 +51,8 @@ The repository now includes early seed result packages, including Windows RTX 50
 
 TCI v0.1 remains the active MVP capability score. A separate TCI v0.2 proposal exists in `methodology/TCI-v0.2-proposal.md` for future benchmark and scoring improvements, but it is not implemented and should not be used for current result packages.
 
+TRI v0.1 and Transparency Score v0.1 are deferred. Phase 7 website work may explain TRI as a planned reliability metric and may show Transparency Evidence fields, but it must not publish numeric TRI or Transparency Score values until those methodologies are approved. See `methodology/deferred-metrics.md`.
+
 ## Phase 6 Entry Gate
 
 Backend work may begin because `main` now contains validated Windows NVIDIA result packages with nonzero GPU energy, raw power samples, Local IPW, methodology metadata, and verification metadata. New runner output also includes energy confidence metadata for future ingested runs. Supabase/backend ingestion should preserve private-by-default uploads and explicit public opt-in.

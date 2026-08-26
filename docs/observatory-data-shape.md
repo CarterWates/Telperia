@@ -125,6 +125,7 @@ A result detail page may include:
 
 - TCI category scores and weights.
 - Factual Reliability counts.
+- Reliability evidence, with TRI labeled as not yet scored until methodology approval.
 - Completion ratio.
 - Token counts.
 - Latency summary when available.
@@ -134,8 +135,11 @@ A result detail page may include:
 - Evaluation suite.
 - Runner version.
 - Methodology document links.
+- Transparency evidence fields such as model revision, runtime version, hardware metadata, raw package availability, raw telemetry availability, and verification level.
 
 The detail page should still avoid prompt text, response text, owner email, private Storage paths, filenames, hostnames, serial numbers, tokens, and secrets.
+
+Do not expose numeric TRI or Transparency Score values until those methodologies are approved. Use `methodology/deferred-metrics.md` for MVP presentation language.
 
 ## Fields Not Exposed Publicly
 

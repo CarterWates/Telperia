@@ -22,6 +22,10 @@ DOCS_README_PATH = PROJECT_ROOT / "docs" / "README.md"
 SECURITY_PATH = PROJECT_ROOT / "SECURITY.md"
 OBSERVATORY_FIXTURE_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "public_rows.json"
 OBSERVATORY_README_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "README.md"
+DEFERRED_METRICS_PATH = PROJECT_ROOT / "methodology" / "deferred-metrics.md"
+TRI_METHODOLOGY_PATH = PROJECT_ROOT / "methodology" / "TRI-v0.1.md"
+TRANSPARENCY_METHODOLOGY_PATH = PROJECT_ROOT / "methodology" / "transparency-score-v0.1.md"
+TELPERIA_METHODOLOGY_PATH = PROJECT_ROOT / "docs" / "telperia-methodology-v0.1.md"
 
 OBSERVATORY_REQUIRED_FIELDS = {
     "result_id",
@@ -258,6 +262,32 @@ class DocumentationNavigationTests(unittest.TestCase):
             self.assertIn(expected, document)
 
 
+class DeferredMetricsPolicyTests(unittest.TestCase):
+    def test_deferred_metrics_policy_keeps_tri_and_transparency_out_of_active_scores(self) -> None:
+        policy = DEFERRED_METRICS_PATH.read_text()
+        telperia_methodology = TELPERIA_METHODOLOGY_PATH.read_text()
+        tri_methodology = TRI_METHODOLOGY_PATH.read_text()
+        transparency_methodology = TRANSPARENCY_METHODOLOGY_PATH.read_text()
+
+        for expected in [
+            "This document does not introduce new score formulas.",
+            "TCI v0.1",
+            "Factual Reliability v0.1",
+            "Local IPW v0.1",
+            "TRI v0.1",
+            "Transparency Score v0.1",
+            "Transparency Evidence",
+            "Runner, backend, and website code must not calculate or publish numeric TRI or Transparency Score values",
+        ]:
+            self.assertIn(expected, policy)
+
+        self.assertIn("methodology/deferred-metrics.md", telperia_methodology)
+        self.assertIn("Deferred metric", tri_methodology)
+        self.assertIn("Do not implement TRI calculations", tri_methodology)
+        self.assertIn("Deferred metric", transparency_methodology)
+        self.assertIn("Do not implement transparency scoring", transparency_methodology)
+
+
 class SecurityChecklistTests(unittest.TestCase):
     def test_security_checklist_covers_telperia_risks(self) -> None:
         document = SECURITY_PATH.read_text()
@@ -279,6 +309,18 @@ class SecurityChecklistTests(unittest.TestCase):
 
 
 class ObservatoryFixtureTests(unittest.TestCase):
+    def test_public_rows_do_not_include_deferred_numeric_scores(self) -> None:
+        rows = json.loads(OBSERVATORY_FIXTURE_PATH.read_text())
+        serialized = json.dumps(rows).lower()
+
+        for forbidden in [
+            "tri_v0_1",
+            "tri_score",
+            "transparency_score_v0_1",
+            "transparency_score",
+        ]:
+            self.assertNotIn(forbidden, serialized)
+
     def test_public_rows_fixture_matches_public_data_shape(self) -> None:
         rows = json.loads(OBSERVATORY_FIXTURE_PATH.read_text())
 

@@ -169,7 +169,7 @@ TRI is reserved for reliability behavior across repeated or operational use. It 
 
 ### Implementation Rule
 
-Do not calculate or publish TRI values until Telperia has an approved TRI methodology version.
+Do not calculate or publish TRI values until Telperia has an approved TRI methodology version. The MVP website may use the deferred presentation language in `methodology/deferred-metrics.md`.
 
 ## Local IPW v0.1: Intelligence Per Watt-Hour
 
@@ -327,7 +327,7 @@ Transparency may consider:
 
 ### Implementation Rule
 
-Do not calculate Transparency Score values until the evidence categories and scoring rules are approved. Public results should still expose the underlying evidence fields wherever available.
+Do not calculate Transparency Score values until the evidence categories and scoring rules are approved. Public results should still expose the underlying evidence fields wherever available. The MVP website should present this as Transparency Evidence using the guidance in `methodology/deferred-metrics.md`.
 
 ## Bias Evaluation v0.1
 

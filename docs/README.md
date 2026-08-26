@@ -19,7 +19,8 @@ This folder is organized so a new reader can move from the project purpose to th
 3. `methodology/factual-reliability-v0.1.md`: factual reliability metrics.
 4. `methodology/IPW-v0.1.md`: Local Intelligence-per-Watt formula and energy caveats.
 5. `methodology/verification-levels.md`: evidence quality levels.
-6. `methodology/TCI-v0.2-proposal.md`: proposal only, not current production scoring.
+6. `methodology/deferred-metrics.md`: how to present TRI, Transparency Score, and other deferred metrics.
+7. `methodology/TCI-v0.2-proposal.md`: proposal only, not current production scoring.
 
 ## Backend Work
 
