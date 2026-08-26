@@ -85,8 +85,10 @@ This shell is not deployed and does not read from Supabase yet. It should become
 
 ## Phase 8 Agent Foundation
 
-Phase 8 Step 26 separates the Telperia Agent from the Evaluation Runner. The Evaluation Runner remains responsible for controlled benchmark sessions and result packages. The Agent is now a separate local-first scaffold under `agent/` for normal-use, non-content inference events.
+Phase 8 Step 26 separates the Telperia Agent from the Evaluation Runner. The Evaluation Runner remains responsible for controlled benchmark sessions and result packages. The Agent is now a separate local-first program under `agent/` for normal-use, non-content inference and telemetry records.
 
 The first Agent CLI can write one schema-valid inference event to a local JSONL file. It defaults to private/local-only behavior, does not connect to Supabase, does not upload data, and keeps Research Contribution Mode disabled. The Agent imports shared telemetry types from `evaluation-runner/telperia_telemetry` so hardware telemetry structures can be reused without turning the runner into a continuous background process.
 
-Step 27 should build the next layer of Agent behavior: a local event loop or monitor boundary, explicit privacy modes, and a clearer path for future opt-in contribution without collecting prompt or response content.
+Phase 8 Step 27 adds the first Agent v0.1 local collection records. The Agent can now write local JSONL snapshots containing a non-content inference event, a hardware telemetry sample, and environment metadata such as operating system, inference engine, runtime version, quantization, and GPU/driver/CUDA fields when known. Unsupported GPU telemetry is represented as unavailable rather than inferred, which keeps Mac and non-NVIDIA records honest.
+
+Step 28 should build the next layer of Agent behavior: a local event loop or monitor boundary, explicit privacy modes, and a clearer path for future opt-in contribution without collecting prompt or response content.
