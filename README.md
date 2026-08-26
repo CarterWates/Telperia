@@ -81,11 +81,11 @@ Verification levels describe how much evidence supports a result. MVP result pac
 
 ### Deferred Metrics
 
-TRI and Transparency Score are planned methodology areas, not active MVP scores. Phase 7 pages may explain TRI as a planned reliability metric and may show Transparency Evidence fields, but they should not display numeric TRI or Transparency Score values until those methodologies are approved.
+TRI and Transparency Score are planned methodology areas, not active MVP scores. The Observatory website explains TRI as a planned reliability metric and shows Transparency Evidence fields, but it does not display numeric TRI or Transparency Score values until those methodologies are approved.
 
 ## What Is Built Today
 
-Telperia is currently moving from the local Phase 6 backend foundation into Phase 7 Observatory website work.
+Telperia has completed the local Phase 6 backend foundation and the first Phase 7 static Observatory website shell. The next planned roadmap focus is Phase 8: separating the continuously running Telperia Agent from the controlled Evaluation Runner.
 
 Completed foundation work includes:
 
@@ -103,7 +103,7 @@ Completed foundation work includes:
 - A local approved-results read path for future Observatory list and detail views.
 - A result validation CLI for checking packages before hosted upload exists.
 - Public-safe Observatory row fixtures for future website and API testing.
-- A static Observatory website shell with home, model directory, model profile, comparison, methodology, results table, and result detail views.
+- A static Observatory website shell with home, model directory, model profile, comparison, methodology, terminology, results table, and result detail views.
 - A Phase 6 backend design, result ingestion contract, API contract, Supabase setup guide, and draft migration.
 - Security guidance for secrets, uploads, raw JSON privacy, public review, and release checks.
 
@@ -134,7 +134,7 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 ## Current Phase
 
-Phase 7 Step 25 is complete on top of the completed local Phase 6 backend foundation. The current focus is turning public-safe seed summaries into useful Observatory views before live backend deployment and the later agent work.
+Phase 7 Step 25 is complete on top of the completed local Phase 6 backend foundation. The current focus is preparing Phase 8 Agent work while keeping the runner, backend contracts, and Observatory website aligned.
 
 The repo now includes a runnable local HTTP API wrapper around the ingestion validator, a SQLite-backed persistence path for accepted uploads, and an approved-only public read path. It can:
 
@@ -143,16 +143,18 @@ The repo now includes a runnable local HTTP API wrapper around the ingestion val
 - Keep public submission as an explicit opt-in review flow.
 - Return only approved public summaries for future Observatory pages.
 
-The next major backend work is to connect these persistence and read boundaries to Supabase with real authentication, private Storage writes, Postgres summary writes, and RLS-backed public reads.
+The next major backend work is to connect these persistence and read boundaries to Supabase with real authentication, private Storage writes, Postgres summary writes, and RLS-backed public reads. That can wait until the local agent and contribution boundaries are clearer.
 
-The first static Observatory shell now exists under `apps/observatory-web/`. It includes homepage positioning, a public model directory, public-safe model profile views, a two-to-four configuration comparison view, seed results, result detail views, and official methodology sections for the active and deferred MVP metrics. Score labels link back to their methodology anchors so public numbers stay tied to versioned definitions.
+The first static Observatory shell now exists under `apps/observatory-web/`. It includes homepage positioning, a public model directory, public-safe model profile views, a two-to-four configuration comparison view, seed results, result detail views, official methodology sections, and in-page terminology explanations for the active and deferred MVP metrics. Score labels link back to methodology anchors so public numbers stay tied to versioned definitions.
+
+Phase 8 starts with Step 26: separating the Telperia Agent from the Evaluation Runner. The runner performs controlled benchmark sessions. The agent will be a separate local-first program for non-content telemetry during normal model use. They should share telemetry code where appropriate, but they should remain separate programs with separate responsibilities.
 
 ## Repository Map
 
 - `apps/observatory-web/`: static public Observatory shell with seed result, model directory, model profile, and comparison views.
 - `apps/api/`: planned backend API and ingestion service.
 - `evaluation-runner/`: local benchmark runner and telemetry tooling.
-- `agent/`: planned lightweight telemetry agent for normal model use.
+- `agent/`: planned local-first Telperia Agent for non-content telemetry during normal model use.
 - `methodology/`: versioned methodology, limitations, privacy, and scoring documents.
 - `schemas/`: JSON schemas for result packages, telemetry samples, and inference events.
 - `datasets/`: benchmark data and seed result packages.
