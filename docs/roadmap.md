@@ -59,7 +59,7 @@ Backend work may begin because `main` now contains validated Windows NVIDIA resu
 
 ## Phase 6 Backend Design
 
-Phase 6 is active. It begins with the backend design in `docs/phase-6-backend-design.md`. The first backend implementation should validate local result packages, store raw JSON privately, extract public-safe summaries, and keep public submission as an explicit opt-in workflow.
+Phase 6 local backend foundation is in place. It began with the backend design in `docs/phase-6-backend-design.md`. The first backend implementation validates local result packages, stores raw JSON separately in local persistence, extracts public-safe summaries, and keeps public submission as an explicit opt-in workflow.
 
 The result ingestion contract is defined in `docs/result-ingestion-contract.md`. Backend implementation should follow that contract before adding public Observatory reads.
 

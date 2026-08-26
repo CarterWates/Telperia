@@ -4,9 +4,9 @@
 
 # Telperia
 
-Telperia is an open AI measurement project for comparing AI model configurations with transparent methodology, reproducible result packages, hardware metadata, verification levels, and energy-aware scoring.
+Telperia is an open, energy-aware AI measurement project for comparing AI model configurations with transparent methodology, reproducible result packages, hardware metadata, verification levels, and local efficiency scoring.
 
-The long-term goal is to build an AI Observatory: a public place where builders, researchers, companies, and local AI users can understand how models perform, how reliable they are, how much local GPU energy they use, and how much evidence supports each result.
+The long-term goal is to build an AI Observatory: a public place where builders, researchers, companies, and local AI users can understand what models can do, how reliable they are, what intelligence costs to run on real hardware, and how much evidence supports each result.
 
 This repository contains the MVP foundation for that system: methodology documents, schemas, a local evaluation runner, NVIDIA telemetry collection, early Windows and Mac result packages, ingestion validation, local backend persistence, backend design docs, and a draft Supabase migration.
 
@@ -23,7 +23,7 @@ Telperia is designed around a different standard:
 - Prompt and response content should not be collected by default.
 - Public submission should be explicit, not automatic.
 
-In plain English: Telperia is trying to make AI performance and efficiency claims easier to inspect, compare, and challenge.
+In plain English: Telperia is trying to make AI performance, hardware-specific efficiency, and local inference energy claims easier to inspect, compare, and challenge.
 
 ## What Telperia Measures
 
@@ -85,7 +85,7 @@ TRI and Transparency Score are planned methodology areas, not active MVP scores.
 
 ## What Is Built Today
 
-Telperia is currently in Phase 6 of the MVP roadmap.
+Telperia is currently moving from the local Phase 6 backend foundation into Phase 7 Observatory website work.
 
 Completed foundation work includes:
 

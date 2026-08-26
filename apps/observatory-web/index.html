@@ -29,11 +29,12 @@
     <main>
       <section class="hero" id="home">
         <div class="hero-copy">
-          <p class="section-label">AI measurement infrastructure</p>
+          <p class="section-label">Energy-aware AI measurement</p>
           <h1>A measurement layer for AI systems.</h1>
           <p class="hero-deck">
             Telperia measures model capability, factual reliability, hardware behavior,
-            and local energy consumption through reproducible benchmark runs. Capability alone is not enough context.
+            and local inference energy through reproducible benchmark runs. The goal is
+            to show what intelligence costs to run, not capability alone. Capability alone is not enough context.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="button primary" href="#observatory">Explore Observatory</a>
@@ -92,7 +93,7 @@
       <section class="measurement-frame" aria-labelledby="frame-title">
         <div class="frame-heading">
           <p class="section-label">Measurement philosophy</p>
-          <h2 id="frame-title">AI performance should not collapse into one unexplained number.</h2>
+          <h2 id="frame-title">AI performance should include what the model costs to run.</h2>
         </div>
         <div class="frame-matrix">
           <div>
@@ -108,7 +109,7 @@
           <div>
             <span>03</span>
             <strong>Efficiency</strong>
-            <p>What local GPU energy was consumed to produce that measured capability?</p>
+            <p>What local GPU energy was consumed, and how much capability per watt-hour did it produce?</p>
           </div>
         </div>
       </section>
@@ -116,11 +117,11 @@
       <section class="observatory-section" id="observatory" aria-labelledby="observatory-title">
         <div class="observatory-intro">
           <p class="section-label">Telperia Observatory</p>
-          <h2 id="observatory-title">A public record of model and hardware evaluation results.</h2>
+          <h2 id="observatory-title">A public record of model capability and hardware-specific efficiency.</h2>
           <p>
             The Observatory is the public comparison layer for approved result summaries:
-            model, hardware, capability, factual reliability, energy confidence, verification,
-            methodology version, and transparency evidence.
+            model, hardware, capability, factual reliability, local energy use, energy
+            confidence, verification, methodology version, and transparency evidence.
           </p>
         </div>
         <div class="table-panel">
@@ -167,7 +168,7 @@
           <p>
             Telperia scores are useful only when the measurement process is visible.
             Current MVP packages preserve methodology version, benchmark suite, hardware,
-            telemetry source, energy scope, and verification level.
+            telemetry source, energy scope, local inference energy, and verification level.
           </p>
         </div>
         <div class="method-rows">
@@ -181,7 +182,7 @@
           </article>
           <article>
             <span>Local IPW v0.1</span>
-            <p>Capability per watt-hour of local GPU energy. Hosted and data-center IPW remain separate future work.</p>
+            <p>Local IPW measures capability per watt-hour of local GPU energy. Hosted and data-center IPW remain separate future work.</p>
           </article>
           <article>
             <span>TRI: Not yet scored</span>
@@ -215,8 +216,9 @@ VISIBILITY      public-safe summary</code></pre>
           <p class="section-label">Hardware-aware evaluation</p>
           <h2 id="hardware-title">The machine is part of the result.</h2>
           <p>
-            Telperia treats hardware, monitor backend, operating system, and energy scope as
-            first-class metadata. Current measured seed results use a Windows RTX 5070 with NVML.
+            Telperia treats hardware, monitor backend, operating system, energy scope,
+            and local power telemetry as first-class metadata. Current measured seed
+            results use a Windows RTX 5070 with NVML.
           </p>
         </div>
         <div class="hardware-table" role="table" aria-label="Hardware support status">
@@ -247,7 +249,7 @@ VISIBILITY      public-safe summary</code></pre>
         <div class="service-lines">
           <article>
             <span>01</span>
-            <p>Model and hardware comparison reports for local deployment decisions.</p>
+            <p>Model and hardware comparison reports for local deployment and energy-efficiency decisions.</p>
           </article>
           <article>
             <span>02</span>
@@ -277,8 +279,9 @@ VISIBILITY      public-safe summary</code></pre>
         <p class="section-label">About</p>
         <h2 id="about-title">Independent infrastructure for understanding AI systems.</h2>
         <p>
-          Telperia is building toward transparent model comparison, reproducible benchmark runs,
-          hardware-aware evaluation, and public AI measurement datasets.
+          Telperia is building toward transparent model comparison, reproducible benchmark
+          runs, hardware-aware evaluation, energy-aware AI measurement, and public AI
+          measurement datasets.
         </p>
         <div class="about-actions">
           <a class="button primary" href="#observatory">Explore Observatory</a>

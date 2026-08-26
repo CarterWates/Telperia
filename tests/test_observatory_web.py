@@ -76,6 +76,29 @@ class ObservatoryWebShellTests(unittest.TestCase):
         ]:
             self.assertIn(expected, html)
 
+    def test_index_positions_telperia_as_energy_aware_without_overclaiming(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        lower_html = html.lower()
+
+        for expected in [
+            "energy-aware AI measurement",
+            "what intelligence costs to run",
+            "capability per watt-hour",
+            "hardware-specific efficiency",
+            "local inference energy",
+        ]:
+            self.assertIn(expected, html)
+
+        for forbidden in [
+            "carbon neutral",
+            "carbon footprint",
+            "data-center energy measurement",
+            "datacenter energy measurement",
+            "full data-center energy",
+            "full datacenter energy",
+        ]:
+            self.assertNotIn(forbidden, lower_html)
+
     def test_public_results_data_matches_observatory_fixture_shape(self) -> None:
         fixture_rows = json.loads(FIXTURE_PATH.read_text())
         web_rows = load_public_results()
