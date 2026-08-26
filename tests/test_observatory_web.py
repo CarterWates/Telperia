@@ -157,15 +157,38 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "factual_incorrect_answer_rate",
             "factual_abstention_rate",
             "factual_attempted_accuracy",
+            "local_ipw_unscaled",
             "local_ipw_displayed",
             "energy_confidence",
             "verification_level",
             "methodology_version",
             "Level 0 means local/self-run evidence",
+            "formatIpwDisplayScore",
+            "IPW Display Score",
+            "chooseHeroResult",
         ]:
             self.assertIn(expected, script)
 
         self.assertNotIn("innerHTML", script)
+
+    def test_primary_ipw_display_uses_unscaled_value_with_units(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        script = (WEB_ROOT / "app.js").read_text()
+
+        self.assertIn('data-hero="local_ipw_unscaled"', html)
+        self.assertIn("local_ipw_unscaled", script)
+        self.assertIn('return `${formatNumber(row.local_ipw_unscaled)} TCI/Wh`;', script)
+        self.assertIn('["IPW Display Score", formatIpwDisplayScore(row)]', script)
+        self.assertNotIn('key === "local_ipw_displayed"', script)
+
+    def test_homepage_hero_selects_richer_seed_result(self) -> None:
+        script = (WEB_ROOT / "app.js").read_text()
+
+        self.assertIn("const heroResult = chooseHeroResult(results);", script)
+        self.assertIn("row.local_ipw_status === \"calculated\"", script)
+        self.assertIn("row.factual_incorrect_answer_rate > 0", script)
+        self.assertIn("row.gpu_energy_wh > 0", script)
+        self.assertIn("updateHeroSpecimen(heroResult);", script)
 
     def test_app_groups_public_rows_into_model_directory(self) -> None:
         script = (WEB_ROOT / "app.js").read_text()

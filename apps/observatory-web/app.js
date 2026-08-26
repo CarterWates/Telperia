@@ -30,7 +30,7 @@
         field.textContent = formatNumber(value);
       } else if (key === "gpu_energy_wh") {
         field.textContent = `${formatNumber(value)} Wh`;
-      } else if (key === "local_ipw_displayed") {
+      } else if (key === "local_ipw_unscaled") {
         field.textContent = formatIpw(row);
       } else if (key === "monitor_backend") {
         field.textContent = String(value || "unavailable").toUpperCase();
@@ -55,7 +55,21 @@
     if (row.local_ipw_status !== "calculated") {
       return "Deferred";
     }
-    return formatNumber(row.local_ipw_displayed);
+    return `${formatNumber(row.local_ipw_unscaled)} TCI/Wh`;
+  }
+
+  function formatIpwDisplayScore(row) {
+    if (row.local_ipw_status !== "calculated") {
+      return "Deferred";
+    }
+    return `${formatNumber(row.local_ipw_displayed)} display score`;
+  }
+
+  function formatIpwValue(value) {
+    if (value === null || value === undefined) {
+      return "Deferred";
+    }
+    return `${formatNumber(value)} TCI/Wh`;
   }
 
   function formatVerification(row) {
@@ -83,6 +97,35 @@
     return Array.from(new Set(values.filter((value) => value !== null && value !== undefined))).sort();
   }
 
+  function chooseHeroResult(rows) {
+    return [...rows].sort((left, right) => {
+      const score = (row) => {
+        let value = 0;
+        if (row.local_ipw_status === "calculated") {
+          value += 1000;
+        }
+        if (row.gpu_energy_wh > 0) {
+          value += 500;
+        }
+        if (row.monitor_backend && row.monitor_backend !== "disabled") {
+          value += 250;
+        }
+        if (row.factual_correctness_rate > 0) {
+          value += 100;
+        }
+        if (row.factual_incorrect_answer_rate > 0) {
+          value += 50;
+        }
+        return value + Number(row.tci_v0_1 || 0);
+      };
+      const priorityDifference = score(right) - score(left);
+      if (priorityDifference !== 0) {
+        return priorityDifference;
+      }
+      return Number(right.local_ipw_unscaled || 0) - Number(left.local_ipw_unscaled || 0);
+    })[0];
+  }
+
   function summarizeModels(rows) {
     const grouped = new Map();
     rows.forEach((row) => {
@@ -99,7 +142,7 @@
           if (tciDifference !== 0) {
             return tciDifference;
           }
-          return Number(right.local_ipw_displayed || 0) - Number(left.local_ipw_displayed || 0);
+          return Number(right.local_ipw_unscaled || 0) - Number(left.local_ipw_unscaled || 0);
         })[0];
 
         return {
@@ -112,7 +155,7 @@
           factualIncorrect: average(modelRows.map((row) => row.factual_incorrect_answer_rate)),
           availableIpwCount: calculatedIpwRows.length,
           totalRunCount: modelRows.length,
-          bestLocalIpw: maxValue(calculatedIpwRows.map((row) => row.local_ipw_displayed)),
+          bestLocalIpw: maxValue(calculatedIpwRows.map((row) => row.local_ipw_unscaled)),
           verificationLevels: uniqueValues(modelRows.map((row) => row.verification_level)),
           methodologyVersions: uniqueValues(modelRows.map((row) => row.methodology_version)),
           hardwareCount: uniqueValues(modelRows.map((row) => row.hardware_label)).length,
@@ -196,7 +239,7 @@
     appendMeta(facts, "Representative TCI", formatNumber(summary.representativeTci));
     appendMeta(facts, "Factual Reliability", `${formatPercent(summary.factualCorrectness)} correct / ${formatPercent(summary.factualIncorrect)} incorrect`);
     appendMeta(facts, "Available Local IPW", `${summary.availableIpwCount} calculated run(s)`);
-    appendMeta(facts, "Best Local IPW", formatNumber(summary.bestLocalIpw));
+    appendMeta(facts, "Best Local IPW", formatIpwValue(summary.bestLocalIpw));
     appendMeta(facts, "Verification Level", `L${summary.verificationLevels.join(", L")}`);
     appendMeta(facts, "Methodology Version", summary.methodologyVersions.join(", "));
     appendMeta(facts, "Transparency Evidence", `${summary.hardwareCount} hardware profile(s), runtime metadata, and verification metadata`);
@@ -268,6 +311,7 @@
       ["Abstention Rate", formatPercent(row.factual_abstention_rate)],
       ["Attempted Accuracy", formatPercent(row.factual_attempted_accuracy)],
       ["Local IPW", formatIpw(row)],
+      ["IPW Display Score", formatIpwDisplayScore(row)],
       ["GPU Energy Wh", formatNumber(row.gpu_energy_wh)],
       ["Energy Confidence", row.energy_confidence || "unavailable"],
       ["Verification Level", formatVerification(row)],
@@ -309,7 +353,8 @@
 
   renderResultsTable(results);
   renderModelDirectory(models);
-  updateHeroSpecimen(results[0]);
+  const heroResult = chooseHeroResult(results);
+  updateHeroSpecimen(heroResult);
   if (models[0]) {
     selectModel(models[0].modelName);
   } else {

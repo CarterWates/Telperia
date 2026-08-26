@@ -20,6 +20,8 @@ Or double-click `index.html` from Finder.
 - MVP status section.
 - Local seed result data in `public-results.js` shaped like `docs/observatory-data-shape.md` and derived from `datasets/results/`.
 
+Local IPW is shown primarily as the unscaled `TCI/Wh` value. The scaled value remains available as an explicitly labeled display score in result details.
+
 ## What It Does Not Include Yet
 
 - Hosted deployment.
