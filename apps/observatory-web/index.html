@@ -33,7 +33,7 @@
           <h1>A measurement layer for AI systems.</h1>
           <p class="hero-deck">
             Telperia measures model capability, factual reliability, hardware behavior,
-            and local energy consumption through reproducible benchmark runs.
+            and local energy consumption through reproducible benchmark runs. Capability alone is not enough context.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="button primary" href="#observatory">Explore Observatory</a>
@@ -103,7 +103,7 @@
           <div>
             <span>02</span>
             <strong>Trust</strong>
-            <p>How reliable are its factual answers, and what evidence backs the run?</p>
+            <p>How reliable are its factual answers, what remains unscored, and what evidence backs the run?</p>
           </div>
           <div>
             <span>03</span>
@@ -120,7 +120,7 @@
           <p>
             The Observatory is the public comparison layer for approved result summaries:
             model, hardware, capability, factual reliability, energy confidence, verification,
-            and methodology version.
+            methodology version, and transparency evidence.
           </p>
         </div>
         <div class="table-panel">
@@ -182,6 +182,14 @@
           <article>
             <span>Local IPW v0.1</span>
             <p>Capability per watt-hour of local GPU energy. Hosted and data-center IPW remain separate future work.</p>
+          </article>
+          <article>
+            <span>TRI: Not yet scored</span>
+            <p>Planned reliability index for consistency, operational stability, completion behavior, and repeatability.</p>
+          </article>
+          <article>
+            <span>Transparency Evidence</span>
+            <p>Shown as inspectable metadata for model revision, runtime, hardware, raw package availability, and verification.</p>
           </article>
         </div>
       </section>
@@ -258,8 +266,10 @@ VISIBILITY      public-safe summary</code></pre>
         <ol class="status-list">
           <li>Local runner, telemetry, schemas, and result validation are implemented.</li>
           <li>Local API skeleton exists; live Supabase writes are not connected yet.</li>
-          <li>The public Observatory is a static shell using seed public-safe data.</li>
-          <li>Community submissions, auth, and reviewer workflows come after ingestion.</li>
+          <li>The public Observatory is a static shell using seed public-safe data from local result packages.</li>
+          <li>Local-first contribution keeps uploads private by default, with explicit public review submission for approved public summaries.</li>
+          <li>Prompt and response content is not collected for public results.</li>
+          <li>Community auth and reviewer workflows come after ingestion.</li>
         </ol>
       </section>
 

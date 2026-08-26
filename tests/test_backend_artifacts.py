@@ -22,6 +22,7 @@ DOCS_README_PATH = PROJECT_ROOT / "docs" / "README.md"
 SECURITY_PATH = PROJECT_ROOT / "SECURITY.md"
 OBSERVATORY_FIXTURE_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "public_rows.json"
 OBSERVATORY_README_PATH = PROJECT_ROOT / "tests" / "fixtures" / "observatory" / "README.md"
+DATASET_RESULTS_ROOT = PROJECT_ROOT / "datasets" / "results"
 DEFERRED_METRICS_PATH = PROJECT_ROOT / "methodology" / "deferred-metrics.md"
 TRI_METHODOLOGY_PATH = PROJECT_ROOT / "methodology" / "TRI-v0.1.md"
 TRANSPARENCY_METHODOLOGY_PATH = PROJECT_ROOT / "methodology" / "transparency-score-v0.1.md"
@@ -337,19 +338,26 @@ class ObservatoryFixtureTests(unittest.TestCase):
             self.assertGreaterEqual(row["completion_ratio"], 0)
             self.assertLessEqual(row["completion_ratio"], 1)
 
-    def test_public_rows_fixture_matches_extracted_ingestion_summaries(self) -> None:
+    def test_public_rows_fixture_matches_extracted_dataset_summaries(self) -> None:
         rows = json.loads(OBSERVATORY_FIXTURE_PATH.read_text())
-        packages = [
-            load_fixture("valid_private_upload.json"),
-            load_fixture("low_energy_confidence_warning.json"),
-            load_fixture("duplicate_run_id_original.json"),
+        result_paths = [
+            path
+            for path in sorted(DATASET_RESULTS_ROOT.glob("*.json"))
+            if path.name != "README.md"
         ]
-        expected = [
-            extract_observatory_row(package, result_id=f"public-fixture-{index}", published_at="2026-08-23T00:00:00Z")
-            for index, package in enumerate(packages, start=1)
-        ]
+        expected = []
+        for index, path in enumerate(result_paths, start=1):
+            package = json.loads(path.read_text())
+            expected.append(
+                extract_observatory_row(
+                    package,
+                    result_id=f"seed-result-{index:03d}",
+                    published_at=package["timestamp"],
+                )
+            )
 
         self.assertEqual(rows, expected)
+        self.assertGreaterEqual(len(rows), 10)
 
     def test_observatory_fixture_readme_links_data_shape_contract(self) -> None:
         readme = OBSERVATORY_README_PATH.read_text()

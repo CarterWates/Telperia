@@ -69,6 +69,8 @@ The local API skeleton, local SQLite persistence path, local approved-results re
 
 ## Phase 7 Static Shell
 
-An initial static Observatory shell exists in `apps/observatory-web/`. It includes homepage positioning, methodology overview, seed result comparison, result detail, and current status sections using local public-safe fixture data.
+An initial static Observatory shell exists in `apps/observatory-web/`. It includes homepage positioning, methodology overview, seed result comparison, result detail, and current status sections using local public-safe fixture data derived from `datasets/results/`.
+
+Phase 7 Step 21 homepage wording now explains Telperia, why capability alone is insufficient, TCI, Factual Reliability, Local IPW, verification levels, planned TRI, Transparency Evidence, and the private-by-default contribution flow.
 
 This shell is not deployed and does not read from Supabase yet. It should become the public Observatory frontend after Phase 6 backend ingestion can persist and expose approved summary rows.

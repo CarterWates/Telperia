@@ -134,7 +134,7 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 ## Current Phase
 
-Phase 6 is active. The focus is private-by-default result ingestion before live backend deployment.
+Phase 7 Step 21 is active on top of the completed local Phase 6 backend foundation. The current focus is making the public Observatory shell clear and accurate before live backend deployment and the later agent work.
 
 The repo now includes a runnable local HTTP API wrapper around the ingestion validator, a SQLite-backed persistence path for accepted uploads, and an approved-only public read path. It can:
 
@@ -145,7 +145,7 @@ The repo now includes a runnable local HTTP API wrapper around the ingestion val
 
 The next major backend work is to connect these persistence and read boundaries to Supabase with real authentication, private Storage writes, Postgres summary writes, and RLS-backed public reads.
 
-The first static Observatory shell now exists under `apps/observatory-web/`. The next website step is connecting it to persisted public summaries after Phase 6 backend ingestion is live.
+The first static Observatory shell now exists under `apps/observatory-web/`. The next website step is the public model directory, then connecting frontend reads to persisted public summaries after live Supabase ingestion is ready.
 
 ## Repository Map
 

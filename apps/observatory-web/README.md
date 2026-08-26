@@ -17,7 +17,7 @@ Or double-click `index.html` from Finder.
 - Clickable result detail view.
 - Methodology overview.
 - MVP status section.
-- Local mock data in `public-results.js` shaped like `docs/observatory-data-shape.md`.
+- Local seed result data in `public-results.js` shaped like `docs/observatory-data-shape.md` and derived from `datasets/results/`.
 
 ## What It Does Not Include Yet
 

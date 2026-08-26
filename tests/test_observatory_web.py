@@ -16,14 +16,20 @@ REQUIRED_RESULT_FIELDS = {
     "result_id",
     "run_id",
     "model_name",
+    "model_revision",
     "hardware_label",
     "tci_v0_1",
     "factual_correctness_rate",
+    "factual_incorrect_answer_rate",
+    "factual_abstention_rate",
+    "factual_attempted_accuracy",
     "local_ipw_displayed",
     "local_ipw_status",
     "energy_confidence",
     "verification_level",
     "methodology_version",
+    "evaluation_suite",
+    "completion_ratio",
 }
 
 
@@ -45,6 +51,12 @@ class ObservatoryWebShellTests(unittest.TestCase):
         for expected in [
             "assets/telperia-logo.png",
             "A measurement layer for AI systems.",
+            "Capability alone is not enough context.",
+            "TRI: Not yet scored",
+            "Transparency Evidence",
+            "Local-first contribution",
+            "private by default",
+            "approved public summaries",
             "Benchmark specimen",
             "Every measurement has provenance.",
             "The machine is part of the result.",
@@ -69,10 +81,21 @@ class ObservatoryWebShellTests(unittest.TestCase):
         web_rows = load_public_results()
 
         self.assertEqual(web_rows, fixture_rows)
+        self.assertGreaterEqual(len(web_rows), 10)
+        self.assertGreaterEqual(len({row["model_name"] for row in web_rows}), 5)
         for row in web_rows:
             self.assertTrue(REQUIRED_RESULT_FIELDS.issubset(row))
             self.assertNotIn("prompt", row)
             self.assertNotIn("response", row)
+            self.assertGreaterEqual(row["factual_correctness_rate"], 0)
+            self.assertLessEqual(row["factual_correctness_rate"], 1)
+            self.assertGreaterEqual(row["factual_incorrect_answer_rate"], 0)
+            self.assertLessEqual(row["factual_incorrect_answer_rate"], 1)
+            self.assertGreaterEqual(row["factual_abstention_rate"], 0)
+            self.assertLessEqual(row["factual_abstention_rate"], 1)
+            self.assertGreaterEqual(row["factual_attempted_accuracy"], 0)
+            self.assertLessEqual(row["factual_attempted_accuracy"], 1)
+            self.assertEqual(row["verification_level"], 0)
 
     def test_app_renders_expected_observatory_fields(self) -> None:
         script = (WEB_ROOT / "app.js").read_text()
@@ -83,10 +106,14 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "hardware_label",
             "tci_v0_1",
             "factual_correctness_rate",
+            "factual_incorrect_answer_rate",
+            "factual_abstention_rate",
+            "factual_attempted_accuracy",
             "local_ipw_displayed",
             "energy_confidence",
             "verification_level",
             "methodology_version",
+            "Level 0 means local/self-run evidence",
         ]:
             self.assertIn(expected, script)
 

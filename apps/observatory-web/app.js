@@ -50,6 +50,13 @@
     return formatNumber(row.local_ipw_displayed);
   }
 
+  function formatVerification(row) {
+    if (row.verification_level === 0) {
+      return "Level 0 means local/self-run evidence";
+    }
+    return `Level ${row.verification_level}`;
+  }
+
   function appendCell(tr, value) {
     const td = document.createElement("td");
     td.textContent = value;
@@ -117,11 +124,12 @@
       ["TCI", formatNumber(row.tci_v0_1)],
       ["Factual Correctness", formatPercent(row.factual_correctness_rate)],
       ["Incorrect Answer Rate", formatPercent(row.factual_incorrect_answer_rate)],
+      ["Abstention Rate", formatPercent(row.factual_abstention_rate)],
       ["Attempted Accuracy", formatPercent(row.factual_attempted_accuracy)],
       ["Local IPW", formatIpw(row)],
       ["GPU Energy Wh", formatNumber(row.gpu_energy_wh)],
       ["Energy Confidence", row.energy_confidence || "unavailable"],
-      ["Verification Level", `Level ${row.verification_level}`],
+      ["Verification Level", formatVerification(row)],
       ["Methodology Version", row.methodology_version],
       ["Evaluation Suite", row.evaluation_suite],
     ].forEach(([label, value]) => {
