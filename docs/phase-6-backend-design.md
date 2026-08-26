@@ -2,7 +2,7 @@
 
 ## Status
 
-Phase 6 backend design for the Telperia MVP. The local API wrapper, SQLite persistence path, and first Supabase migration foundation exist in the repo, but the migration has not been applied to a live Supabase project.
+Phase 6 backend design for the Telperia MVP. The local API wrapper, SQLite persistence path, approved-results read path, and first Supabase migration foundation exist in the repo, but the migration has not been applied to a live Supabase project.
 
 The Phase 6 backend should accept local evaluation result packages, keep uploads private by default, validate every package before ingestion, and expose only explicitly public results to the future Observatory.
 
@@ -241,6 +241,8 @@ The first reusable local implementation is `evaluation-runner/telperia_runner/in
 
 The local API can now persist accepted uploads through `SQLiteIngestionStore` for development and tests. This stores raw package JSON separately from normalized upload, model, hardware, run, score, and public-review summary tables. Supabase Storage/Postgres wiring remains a future hosted-backend step.
 
+The local API also exposes approved-only public summary reads for Observatory development. Private uploads, pending public-review uploads, and rejected public submissions are hidden from those public reads.
+
 The future API wrapper responsibilities are summarized in `apps/api/README.md`.
 
 ## Validation Rules
@@ -321,8 +323,8 @@ The detailed public comparison shape is defined in `docs/observatory-data-shape.
 6. Add tests with valid and rejected result packages. Done for local API and SQLite persistence.
 7. Add a private upload path. Done locally with generated `result-packages/users/{user_id}/runs/{run_id}.json` paths.
 8. Add public submission request and review status. Done locally with pending-review records.
-9. Add a read-only public summary query for Phase 7 Observatory work.
-10. Shape approved public summaries according to `docs/observatory-data-shape.md`.
+9. Add a read-only public summary query for Phase 7 Observatory work. Done locally through SQLite public read methods and local HTTP endpoints.
+10. Shape approved public summaries according to `docs/observatory-data-shape.md`. Done locally for the MVP public comparison fields.
 
 The implementation sequence is tracked in `docs/superpowers/plans/2026-08-23-phase-6-backend-ingestion.md`.
 

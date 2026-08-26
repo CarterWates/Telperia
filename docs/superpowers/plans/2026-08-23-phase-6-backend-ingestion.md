@@ -84,9 +84,9 @@
 
 - [x] Create a public submission record only after validation succeeds.
 - [x] Start submissions as `pending_review`.
-- [ ] Add a read-only public summary query using fields from `docs/observatory-data-shape.md`.
-- [ ] Ensure public summaries never read private raw Storage URLs.
-- [ ] Include energy confidence and verification level in every public row.
+- [x] Add a read-only public summary query using fields from `docs/observatory-data-shape.md`.
+- [x] Ensure public summaries never read private raw Storage URLs.
+- [x] Include energy confidence and verification level in every public row.
 
 ## Task 8: Verification
 

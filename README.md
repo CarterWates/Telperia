@@ -96,6 +96,7 @@ Completed foundation work includes:
 - Repeatability and energy confidence guidance for local testing.
 - A local ingestion validator that checks schema validity, privacy rules, score math, IPW math, and raw telemetry consistency.
 - A local Phase 6 API skeleton that wraps the validator, models backend ingestion responses, and can persist accepted uploads to SQLite for development.
+- A local approved-results read path for future Observatory list and detail views.
 - A result validation CLI for checking packages before hosted upload exists.
 - Public-safe Observatory row fixtures for future website and API testing.
 - A static Observatory website shell with home, methodology, results table, and result detail views.
@@ -131,13 +132,14 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 Phase 6 is active. The focus is private-by-default result ingestion before live backend deployment.
 
-The repo now includes a runnable local HTTP API wrapper around the ingestion validator and a SQLite-backed persistence path for accepted uploads. It can:
+The repo now includes a runnable local HTTP API wrapper around the ingestion validator, a SQLite-backed persistence path for accepted uploads, and an approved-only public read path. It can:
 
 - Store raw JSON privately.
 - Persist public-safe summary rows.
 - Keep public submission as an explicit opt-in review flow.
+- Return only approved public summaries for future Observatory pages.
 
-The next major backend work is to connect this persistence boundary to Supabase with real authentication, private Storage writes, and Postgres summary writes.
+The next major backend work is to connect these persistence and read boundaries to Supabase with real authentication, private Storage writes, Postgres summary writes, and RLS-backed public reads.
 
 The first static Observatory shell now exists under `apps/observatory-web/`. The next website step is connecting it to persisted public summaries after Phase 6 backend ingestion is live.
 
@@ -201,6 +203,7 @@ See `evaluation-runner/README.md`, `docs/phase-5-local-experiments.md`, and `doc
 - TCI v0.1 is an MVP benchmark and should be interpreted as an early methodology, not a final intelligence measure.
 - TCI v0.2 is a proposal only and is not implemented in current result packages.
 - Local backend persistence uses SQLite for development; live Supabase Storage/Postgres wiring is not connected yet.
+- Public read endpoints currently use local approved SQLite summaries; hosted Supabase public reads are not connected yet.
 - The backend migration is drafted but not applied to a live Supabase project yet.
 - The public Observatory website and community submission flow are planned but not live.
 

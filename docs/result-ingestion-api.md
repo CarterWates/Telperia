@@ -247,6 +247,27 @@ Rules:
 - Public Observatory rows use extracted summaries, not raw Storage URLs.
 - Failed validation writes no accepted summary records.
 
+## Public Approved Results
+
+The local API also exposes an approved-only public read shape for Observatory development:
+
+```text
+GET /api/public/results
+GET /api/public/results/{result_id_or_run_id}
+```
+
+These endpoints return public-safe summary fields shaped by `docs/observatory-data-shape.md`.
+
+Rules:
+
+- Private uploads are not returned.
+- Pending public-review uploads are not returned.
+- Rejected public submissions are not returned.
+- Approved public submissions may be returned.
+- Raw result packages and private Storage paths are never returned.
+- Owner user ids, emails, prompt text, response text, filenames, hostnames, serial numbers, environment variables, tokens, passwords, API keys, and secrets are never returned.
+- The API does not declare one universal winner; comparison and ranking logic belongs in explicit Observatory UI flows.
+
 ## Security Notes
 
 - Do not accept prompt text or response text.

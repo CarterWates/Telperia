@@ -63,7 +63,7 @@ The result ingestion contract is defined in `docs/result-ingestion-contract.md`.
 
 The public Observatory comparison data shape is defined in `docs/observatory-data-shape.md`, including model, hardware, TCI, Factual Reliability, Local IPW, energy confidence, verification level, and methodology version fields.
 
-The local API skeleton, local SQLite persistence path, and core Supabase migration foundation are in place for review. The backend can validate an upload, store raw JSON separately from public-safe summaries, persist normalized model and hardware rows, persist accepted run and score summaries, and create a pending public submission request. It does not connect to live Supabase yet, and the migration has not been applied to a live Supabase project.
+The local API skeleton, local SQLite persistence path, local approved-results read path, and core Supabase migration foundation are in place for review. The backend can validate an upload, store raw JSON separately from public-safe summaries, persist normalized model and hardware rows, persist accepted run and score summaries, create a pending public submission request, and return only approved public summaries for Observatory development. It does not connect to live Supabase yet, and the migration has not been applied to a live Supabase project.
 
 ## Phase 7 Static Shell
 

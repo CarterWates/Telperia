@@ -14,6 +14,7 @@ from telperia_api.persistence import SQLiteIngestionStore
 
 DEFAULT_USER_ID = "local-dev-user"
 INGEST_PATH = "/api/results/ingest"
+PUBLIC_RESULTS_PATH = "/api/public/results"
 
 
 @dataclass(frozen=True)
@@ -64,6 +65,17 @@ def handle_local_request(
             store=config.store,
         )
         return LocalHttpResponse(status_code=response.status_code, payload=response.payload)
+
+    if normalized_method == "GET" and route == PUBLIC_RESULTS_PATH:
+        results = _list_public_results(config)
+        return LocalHttpResponse(status_code=200, payload={"results": results, "count": len(results)})
+
+    if normalized_method == "GET" and route.startswith(f"{PUBLIC_RESULTS_PATH}/"):
+        result_id_or_run_id = route.removeprefix(f"{PUBLIC_RESULTS_PATH}/").strip("/")
+        result = _get_public_result(config, result_id_or_run_id)
+        if result is None:
+            return _rejected(404, "not_found", "Public result not found.")
+        return LocalHttpResponse(status_code=200, payload={"result": result})
 
     return _rejected(404, "not_found", "Endpoint not found.")
 
@@ -152,6 +164,20 @@ def _local_user_id(headers: Mapping[str, str], config: LocalApiConfig) -> str:
         if key.lower() == "x-telperia-user-id" and value.strip():
             return value.strip()
     return config.default_user_id
+
+
+def _list_public_results(config: LocalApiConfig) -> list[dict[str, Any]]:
+    list_results = getattr(config.store, "list_public_results", None)
+    if list_results is None:
+        return []
+    return list_results()
+
+
+def _get_public_result(config: LocalApiConfig, result_id_or_run_id: str) -> dict[str, Any] | None:
+    get_result = getattr(config.store, "get_public_result", None)
+    if get_result is None:
+        return None
+    return get_result(result_id_or_run_id)
 
 
 def _rejected(status_code: int, error_code: str, message: str) -> LocalHttpResponse:

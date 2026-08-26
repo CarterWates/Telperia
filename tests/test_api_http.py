@@ -107,6 +107,69 @@ class LocalHttpApiTests(unittest.TestCase):
             self.assertEqual(health.payload["storage"], "sqlite")
             self.assertEqual(store.table_count("result_uploads"), 1)
 
+    def test_public_results_endpoint_returns_only_approved_rows(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+            config = LocalApiConfig(schema_path=SCHEMA_PATH, store=store, storage_mode="sqlite")
+            pending_package = load_fixture("valid_private_upload.json")
+            approved_package = load_fixture("duplicate_run_id_changed.json")
+
+            pending = handle_local_request(
+                "POST",
+                "/api/results/ingest",
+                {},
+                encode_json({"result_package": pending_package, "visibility": "submit_for_public_review"}),
+                config,
+            )
+            approved = handle_local_request(
+                "POST",
+                "/api/results/ingest",
+                {},
+                encode_json({"result_package": approved_package, "visibility": "submit_for_public_review"}),
+                config,
+            )
+            self.assertEqual(pending.status_code, 201)
+            self.assertEqual(approved.status_code, 201)
+
+            store.approve_public_submission(approved_package["run_id"])
+            response = handle_local_request("GET", "/api/public/results", {}, b"", config)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(len(response.payload["results"]), 1)
+            self.assertEqual(response.payload["results"][0]["run_id"], approved_package["run_id"])
+            self.assertEqual(response.payload["count"], 1)
+            serialized = json.dumps(response.payload).lower()
+            self.assertNotIn("raw_results", serialized)
+            self.assertNotIn("storage_path", serialized)
+            self.assertNotIn("user_id", serialized)
+            self.assertNotIn("prompt", serialized)
+            self.assertNotIn("response", serialized)
+
+    def test_public_result_detail_endpoint_returns_approved_result_only(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+            config = LocalApiConfig(schema_path=SCHEMA_PATH, store=store, storage_mode="sqlite")
+            package = load_fixture("valid_private_upload.json")
+
+            upload = handle_local_request(
+                "POST",
+                "/api/results/ingest",
+                {},
+                encode_json({"result_package": package, "visibility": "submit_for_public_review"}),
+                config,
+            )
+            self.assertEqual(upload.status_code, 201)
+
+            hidden = handle_local_request("GET", f"/api/public/results/{package['run_id']}", {}, b"", config)
+            self.assertEqual(hidden.status_code, 404)
+
+            store.approve_public_submission(package["run_id"])
+            visible = handle_local_request("GET", f"/api/public/results/{package['run_id']}", {}, b"", config)
+
+            self.assertEqual(visible.status_code, 200)
+            self.assertEqual(visible.payload["result"]["run_id"], package["run_id"])
+            self.assertIn("methodology_version", visible.payload["result"])
+
     def test_ingest_endpoint_rejects_malformed_json(self) -> None:
         response = handle_local_request("POST", "/api/results/ingest", {}, b"{", self.config)
 

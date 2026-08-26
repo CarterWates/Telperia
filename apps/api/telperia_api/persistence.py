@@ -207,57 +207,44 @@ class SQLiteIngestionStore:
 
     def summary_row_for_run(self, run_id: str) -> dict[str, Any]:
         with closing(self._connect()) as connection:
-            row = connection.execute(
-                """
-                select
-                  evaluation_runs.id as result_id,
-                  evaluation_runs.run_id,
-                  model_configs.model_name,
-                  model_configs.model_revision,
-                  model_configs.quantization,
-                  model_configs.runtime_engine,
-                  model_configs.runtime_version,
-                  hardware_profiles.gpu,
-                  hardware_profiles.gpu_count,
-                  hardware_profiles.operating_system,
-                  hardware_profiles.monitor_backend,
-                  run_scores.tci_v0_1,
-                  run_scores.factual_correctness_rate,
-                  run_scores.factual_incorrect_answer_rate,
-                  run_scores.factual_abstention_rate,
-                  run_scores.factual_attempted_accuracy,
-                  run_scores.local_ipw_unscaled,
-                  run_scores.local_ipw_displayed,
-                  run_scores.local_ipw_status,
-                  run_scores.gpu_energy_wh,
-                  run_scores.energy_confidence,
-                  run_scores.energy_warning_codes,
-                  evaluation_runs.verification_level,
-                  evaluation_runs.methodology_version,
-                  evaluation_runs.evaluation_suite,
-                  evaluation_runs.completed_tasks,
-                  evaluation_runs.total_tasks,
-                  evaluation_runs.completion_ratio,
-                  evaluation_runs.error_count,
-                  evaluation_runs.result_timestamp,
-                  evaluation_runs.created_at as published_at
-                from evaluation_runs
-                join model_configs on model_configs.id = evaluation_runs.model_config_id
-                join hardware_profiles on hardware_profiles.id = evaluation_runs.hardware_profile_id
-                join run_scores on run_scores.evaluation_run_id = evaluation_runs.id
-                where evaluation_runs.run_id = ?
-                """,
-                (run_id,),
-            ).fetchone()
+            row = connection.execute(_SUMMARY_SELECT + " where evaluation_runs.run_id = ?", (run_id,)).fetchone()
             if row is None:
                 raise KeyError(run_id)
 
-            summary = dict(row)
-            summary["hardware_label"] = (
-                f"{summary['gpu']} / {summary['operating_system']} / {summary['monitor_backend'].upper()}"
-            )
-            summary["energy_warning_codes"] = json.loads(summary["energy_warning_codes"])
-            return summary
+            return _public_summary_from_row(row)
+
+    def list_public_results(self) -> list[dict[str, Any]]:
+        with closing(self._connect()) as connection:
+            rows = connection.execute(
+                _SUMMARY_SELECT
+                + """
+                join public_submissions on public_submissions.evaluation_run_id = evaluation_runs.id
+                where evaluation_runs.is_public = 1
+                  and public_submissions.status = 'approved'
+                order by evaluation_runs.result_timestamp desc, evaluation_runs.id
+                """
+            ).fetchall()
+            return [_public_summary_from_row(row) for row in rows]
+
+    def get_public_result(self, result_id_or_run_id: str) -> dict[str, Any] | None:
+        with closing(self._connect()) as connection:
+            row = connection.execute(
+                _SUMMARY_SELECT
+                + """
+                join public_submissions on public_submissions.evaluation_run_id = evaluation_runs.id
+                where evaluation_runs.is_public = 1
+                  and public_submissions.status = 'approved'
+                  and (evaluation_runs.id = ? or evaluation_runs.run_id = ?)
+                """,
+                (result_id_or_run_id, result_id_or_run_id),
+            ).fetchone()
+            return _public_summary_from_row(row) if row is not None else None
+
+    def approve_public_submission(self, run_id: str) -> None:
+        self._set_public_submission_status(run_id, "approved", is_public=1)
+
+    def reject_public_submission(self, run_id: str) -> None:
+        self._set_public_submission_status(run_id, "rejected", is_public=0)
 
     def table_count(self, table_name: str) -> int:
         if table_name not in _TABLE_NAMES:
@@ -364,11 +351,44 @@ class SQLiteIngestionStore:
         )
         return hardware_profile_id
 
+    def _set_public_submission_status(self, run_id: str, status: str, *, is_public: int) -> None:
+        with closing(self._connect()) as connection:
+            try:
+                connection.execute("begin")
+                row = connection.execute("select id from evaluation_runs where run_id = ?", (run_id,)).fetchone()
+                if row is None:
+                    raise KeyError(run_id)
+                connection.execute(
+                    """
+                    update public_submissions
+                    set status = ?, reviewed_at = datetime('now')
+                    where evaluation_run_id = ?
+                    """,
+                    (status, row["id"]),
+                )
+                if connection.total_changes == 0:
+                    raise KeyError(run_id)
+                connection.execute(
+                    "update evaluation_runs set is_public = ? where id = ?",
+                    (is_public, row["id"]),
+                )
+                connection.commit()
+            except sqlite3.Error:
+                connection.rollback()
+                raise
+
 
 def _request_visibility(stored_visibility: str) -> str:
     if stored_visibility == "submitted_for_public_review":
         return "submit_for_public_review"
     return stored_visibility
+
+
+def _public_summary_from_row(row: sqlite3.Row) -> dict[str, Any]:
+    summary = dict(row)
+    summary["hardware_label"] = f"{summary['gpu']} / {summary['operating_system']} / {summary['monitor_backend'].upper()}"
+    summary["energy_warning_codes"] = json.loads(summary["energy_warning_codes"])
+    return summary
 
 
 _TABLE_NAMES = {
@@ -481,9 +501,49 @@ create table if not exists public_submissions (
   id text primary key,
   evaluation_run_id text not null unique references evaluation_runs(id) on delete cascade,
   submitted_by text not null,
-  status text not null check (status = 'pending_review'),
+  status text not null check (status in ('pending_review', 'approved', 'rejected')),
   review_notes text,
   created_at text not null default (datetime('now')),
   reviewed_at text
 );
+"""
+
+
+_SUMMARY_SELECT = """
+select
+  evaluation_runs.id as result_id,
+  evaluation_runs.run_id,
+  model_configs.model_name,
+  model_configs.model_revision,
+  model_configs.quantization,
+  model_configs.runtime_engine,
+  model_configs.runtime_version,
+  hardware_profiles.gpu,
+  hardware_profiles.gpu_count,
+  hardware_profiles.operating_system,
+  hardware_profiles.monitor_backend,
+  run_scores.tci_v0_1,
+  run_scores.factual_correctness_rate,
+  run_scores.factual_incorrect_answer_rate,
+  run_scores.factual_abstention_rate,
+  run_scores.factual_attempted_accuracy,
+  run_scores.local_ipw_unscaled,
+  run_scores.local_ipw_displayed,
+  run_scores.local_ipw_status,
+  run_scores.gpu_energy_wh,
+  run_scores.energy_confidence,
+  run_scores.energy_warning_codes,
+  evaluation_runs.verification_level,
+  evaluation_runs.methodology_version,
+  evaluation_runs.evaluation_suite,
+  evaluation_runs.completed_tasks,
+  evaluation_runs.total_tasks,
+  evaluation_runs.completion_ratio,
+  evaluation_runs.error_count,
+  evaluation_runs.result_timestamp,
+  evaluation_runs.created_at as published_at
+from evaluation_runs
+join model_configs on model_configs.id = evaluation_runs.model_config_id
+join hardware_profiles on hardware_profiles.id = evaluation_runs.hardware_profile_id
+join run_scores on run_scores.evaluation_run_id = evaluation_runs.id
 """

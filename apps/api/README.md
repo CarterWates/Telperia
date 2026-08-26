@@ -58,6 +58,8 @@ It exposes:
 
 - `GET /health`
 - `POST /api/results/ingest`
+- `GET /api/public/results`
+- `GET /api/public/results/{result_id_or_run_id}`
 
 It does not write to Supabase. Accepted uploads can be stored in memory or in a local SQLite database. SQLite mode keeps Phase 6 persistence testable on a Mac before live infrastructure is connected.
 
@@ -135,6 +137,23 @@ Rules:
 
 In SQLite development mode, raw package JSON is stored in `raw_result_packages`; queryable upload, model, hardware, run, score, and review fields are stored in separate summary tables. This mirrors the future Supabase separation without requiring credentials.
 
+## Public Read Path
+
+The local public read path returns approved Observatory summaries only:
+
+```bash
+curl http://127.0.0.1:8000/api/public/results
+curl http://127.0.0.1:8000/api/public/results/<result-id-or-run-id>
+```
+
+Rules:
+
+- Private uploads are hidden.
+- Pending public-review uploads are hidden.
+- Rejected public submissions are hidden.
+- Approved submissions return public-safe fields from `docs/observatory-data-shape.md`.
+- Public responses never include raw result packages, private Storage paths, owner ids, prompt text, response text, filenames, hostnames, serial numbers, environment variables, tokens, passwords, API keys, or secrets.
+
 ## Database Access
 
 The migration draft enables RLS and keeps trusted summary writes behind the future backend path. The local SQLite adapter mirrors the same table responsibilities for development and tests, but it is not a replacement for Supabase RLS.
@@ -165,7 +184,7 @@ The public Observatory should only read approved public summaries.
 - Auth/session handling.
 - Live Storage writes.
 - Reviewer/admin workflow.
-- Public Observatory read endpoint.
+- Live Supabase public Observatory read endpoint.
 - FastAPI or deployed hosted wrapper.
 
 Those pieces should be added after the Supabase project is active and the migration has been tested locally or in staging.

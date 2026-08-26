@@ -323,6 +323,132 @@ class SQLitePersistenceTests(unittest.TestCase):
             self.assertEqual(second.payload["error_code"], "duplicate_run_id")
             self.assertEqual(store.table_count("result_uploads"), 1)
 
+    def test_public_results_list_returns_only_approved_public_summaries(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+            private_response = ingest_result_request(
+                {"result_package": package},
+                user_id="user-1",
+                schema_path=SCHEMA_PATH,
+                store=store,
+            )
+            self.assertEqual(private_response.status_code, 201)
+            self.assertEqual(store.list_public_results(), [])
+
+            public_package = load_fixture("duplicate_run_id_changed.json")
+            public_response = ingest_result_request(
+                {"result_package": public_package, "visibility": "submit_for_public_review"},
+                user_id="user-1",
+                schema_path=SCHEMA_PATH,
+                store=store,
+            )
+            self.assertEqual(public_response.status_code, 201)
+            self.assertEqual(store.list_public_results(), [])
+
+            store.approve_public_submission(public_package["run_id"])
+            public_results = store.list_public_results()
+
+            self.assertEqual(len(public_results), 1)
+            self.assertEqual(public_results[0]["run_id"], public_package["run_id"])
+            self.assert_public_summary_shape(public_results[0])
+
+    def test_rejected_public_submission_is_hidden(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+            response = ingest_result_request(
+                {"result_package": package, "visibility": "submit_for_public_review"},
+                user_id="user-1",
+                schema_path=SCHEMA_PATH,
+                store=store,
+            )
+            self.assertEqual(response.status_code, 201)
+
+            store.reject_public_submission(package["run_id"])
+
+            self.assertEqual(store.list_public_results(), [])
+            self.assertIsNone(store.get_public_result(package["run_id"]))
+
+    def test_public_detail_returns_approved_result_by_result_id_or_run_id_only(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+            response = ingest_result_request(
+                {"result_package": package, "visibility": "submit_for_public_review"},
+                user_id="user-1",
+                schema_path=SCHEMA_PATH,
+                store=store,
+            )
+            self.assertEqual(response.status_code, 201)
+            self.assertIsNone(store.get_public_result(package["run_id"]))
+
+            store.approve_public_submission(package["run_id"])
+            by_run_id = store.get_public_result(package["run_id"])
+            self.assertIsNotNone(by_run_id)
+            by_result_id = store.get_public_result(by_run_id["result_id"])
+
+            self.assertEqual(by_result_id, by_run_id)
+            self.assert_public_summary_shape(by_run_id)
+
+    def assert_public_summary_shape(self, summary: dict) -> None:
+        required_fields = {
+            "result_id",
+            "run_id",
+            "model_name",
+            "model_revision",
+            "quantization",
+            "runtime_engine",
+            "runtime_version",
+            "hardware_label",
+            "gpu",
+            "gpu_count",
+            "operating_system",
+            "monitor_backend",
+            "tci_v0_1",
+            "factual_correctness_rate",
+            "factual_incorrect_answer_rate",
+            "factual_abstention_rate",
+            "factual_attempted_accuracy",
+            "local_ipw_unscaled",
+            "local_ipw_displayed",
+            "local_ipw_status",
+            "gpu_energy_wh",
+            "energy_confidence",
+            "energy_warning_codes",
+            "verification_level",
+            "methodology_version",
+            "evaluation_suite",
+            "completed_tasks",
+            "total_tasks",
+            "completion_ratio",
+            "error_count",
+            "result_timestamp",
+            "published_at",
+        }
+        self.assertTrue(required_fields.issubset(summary.keys()))
+        serialized = json.dumps(summary).lower()
+        for forbidden in [
+            "raw_results",
+            "raw_result_packages",
+            "storage_path",
+            "user_id",
+            "submitted_by",
+            "prompt",
+            "response",
+            "filename",
+            "hostname",
+            "serial_number",
+            "api_key",
+            "token",
+            "password",
+            "secret",
+        ]:
+            self.assertNotIn(forbidden, serialized)
+
 
 class ValidateResultCliTests(unittest.TestCase):
     def test_cli_accepts_valid_result_file(self) -> None:
