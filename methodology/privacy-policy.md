@@ -12,3 +12,11 @@ Draft scaffold for MVP engineering constraints. This is not legal advice or a fi
 - Local evaluation must run without requiring an account or network connection.
 - Uploaded results must remain private unless the user explicitly chooses public submission.
 - Research Contribution Mode must be disabled by default.
+
+## Agent Privacy Modes
+
+- Private Mode is active and default. It writes local JSONL records only and does not upload data.
+- Personal Cloud Mode is planned for encrypted metrics in a user's private dashboard. It must remain blocked until backend authentication, encryption, and private storage support exist.
+- Research Contribution Mode is planned for selected anonymized aggregate research data. It must require explicit opt-in and must remain disabled by default.
+
+The current MVP has no Agent upload path for any mode.

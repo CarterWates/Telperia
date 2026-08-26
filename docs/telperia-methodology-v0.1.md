@@ -386,11 +386,11 @@ Telperia must not collect the following by default:
 
 ### Privacy Modes
 
-The Telperia Agent should eventually support:
+The Telperia Agent privacy modes are:
 
-- Private Mode: no cloud upload.
-- Personal Cloud Mode: encrypted metrics uploaded to the user's private dashboard.
-- Research Contribution Mode: selected anonymized data contributed to public aggregate research by explicit opt-in.
+- Private Mode: active default mode. No cloud upload, no account requirement, no network requirement, and local JSONL export only.
+- Personal Cloud Mode: planned mode for encrypted metrics uploaded to the user's private dashboard after backend support exists.
+- Research Contribution Mode: planned opt-in mode for selected anonymized data contributed to public aggregate research after backend support exists.
 
 Research Contribution Mode must be disabled by default.
 

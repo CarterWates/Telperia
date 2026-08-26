@@ -24,11 +24,13 @@ Machine identifiers must be user-chosen labels such as `linux-laptop` or `window
 
 The Evaluation Runner and Telperia Agent use different output contracts. The runner creates complete controlled benchmark result packages. The agent records normal-use inference event, hardware, and environment metadata and must not calculate benchmark scores or capture prompt and response content.
 
-Agent snapshot JSONL records wrap schema-valid payloads with a local `record_type` field:
+Agent local JSONL records wrap schema-valid payloads with a local `record_type` field and privacy metadata:
 
 - `inference_event` wraps `schemas/inference-event.schema.json`.
 - `hardware_sample` wraps `schemas/telemetry-sample.schema.json`.
 - `environment` records non-private environment metadata such as operating system, GPU model when available, driver version when available, CUDA version when available, inference engine, runtime version, and quantization.
+
+The wrapper privacy metadata records the selected Agent privacy mode and whether upload is enabled. In the current MVP, upload remains disabled for every mode.
 
 ## Versioning
 

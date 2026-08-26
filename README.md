@@ -105,6 +105,7 @@ Completed foundation work includes:
 - Public-safe Observatory row fixtures for future website and API testing.
 - A static Observatory website shell with home, model directory, model profile, comparison, methodology, terminology, results table, and result detail views.
 - A separate local-first Agent that can write non-content inference, hardware, and environment records to JSONL without uploads.
+- Agent privacy modes for Private Mode, planned Personal Cloud Mode, and planned Research Contribution Mode.
 - A Phase 6 backend design, result ingestion contract, API contract, Supabase setup guide, and draft migration.
 - Security guidance for secrets, uploads, raw JSON privacy, public review, and release checks.
 
@@ -135,7 +136,7 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 ## Current Phase
 
-Phase 8 Step 27 is complete on top of the completed local Phase 6 backend foundation and Phase 7 Observatory shell. The current focus is building the Agent carefully while keeping privacy, local-first behavior, and runner separation clear.
+Phase 8 Step 28 is complete on top of the completed local Phase 6 backend foundation and Phase 7 Observatory shell. The current focus is building the Agent carefully while keeping privacy, local-first behavior, and runner separation clear.
 
 The repo now includes a runnable local HTTP API wrapper around the ingestion validator, a SQLite-backed persistence path for accepted uploads, and an approved-only public read path. It can:
 
@@ -148,7 +149,7 @@ The next major backend work is to connect these persistence and read boundaries 
 
 The first static Observatory shell now exists under `apps/observatory-web/`. It includes homepage positioning, a public model directory, public-safe model profile views, a two-to-four configuration comparison view, seed results, result detail views, official methodology sections, and in-page terminology explanations for the active and deferred MVP metrics. Score labels link back to methodology anchors so public numbers stay tied to versioned definitions.
 
-Phase 8 started with Step 26: separating the Telperia Agent from the Evaluation Runner. The runner performs controlled benchmark sessions. The agent is now a separate local-first program for non-content telemetry during normal model use. Step 27 adds Agent v0.1 support for local inference events, hardware samples, and environment metadata. They share telemetry code where appropriate, but remain separate programs with separate responsibilities.
+Phase 8 started with Step 26: separating the Telperia Agent from the Evaluation Runner. The runner performs controlled benchmark sessions. The agent is now a separate local-first program for non-content telemetry during normal model use. Step 27 adds Agent v0.1 support for local inference events, hardware samples, and environment metadata. Step 28 adds explicit privacy modes. Private Mode is active and default; Personal Cloud Mode and Research Contribution Mode are recognized but blocked from upload until backend support exists. They share telemetry code where appropriate, but remain separate programs with separate responsibilities.
 
 ## Repository Map
 
@@ -173,6 +174,7 @@ python3 -m unittest discover -s tests -q
 python3 -m compileall -q evaluation-runner tests
 python3 evaluation-runner/evaluate.py --help
 python3 evaluation-runner/validate_result.py tests/fixtures/ingestion/valid_private_upload.json
+python3 agent/agent.py privacy-status
 python3 agent/agent.py record-once --output .local/telperia-agent/events.jsonl --model-id llama3.1:8b --latency-ms 250 --input-tokens 12 --output-tokens 18
 python3 agent/agent.py snapshot --output .local/telperia-agent/snapshot.jsonl --model-id llama3.1:8b --latency-ms 250 --input-tokens 12 --output-tokens 18 --inference-engine ollama --runtime-version 0.3.12 --quantization q4_K_M
 ```
@@ -216,6 +218,7 @@ See `evaluation-runner/README.md`, `docs/phase-5-local-experiments.md`, and `doc
 - Public read endpoints currently use local approved SQLite summaries; hosted Supabase public reads are not connected yet.
 - The backend migration is drafted but not applied to a live Supabase project yet.
 - The Telperia Agent is local-only and does not yet run continuously or submit data.
+- Personal Cloud Mode and Research Contribution Mode are planned privacy modes; neither uploads data in the current MVP.
 - Mac and non-NVIDIA agent snapshots may report GPU power, utilization, VRAM, temperature, driver, and CUDA metadata as unavailable until a compatible telemetry backend exists.
 - The public Observatory website shell exists locally, but it is not hosted and the community submission flow is not live.
 

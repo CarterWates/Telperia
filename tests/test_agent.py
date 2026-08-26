@@ -50,6 +50,59 @@ class TelperiaAgentTests(unittest.TestCase):
         self.assertTrue(AGENT_CLI_PATH.exists())
         self.assertEqual(agent_module.DEFAULT_MODE, "private")
 
+    def test_agent_privacy_mode_defaults_are_private_and_local_only(self) -> None:
+        from telperia_agent.privacy import resolve_privacy_settings
+
+        settings = resolve_privacy_settings()
+
+        self.assertEqual(settings.mode, "private")
+        self.assertEqual(settings.upload_policy, "disabled")
+        self.assertFalse(settings.upload_enabled)
+        self.assertFalse(settings.research_contribution_enabled)
+        self.assertEqual(settings.status, "active")
+        self.assert_public_safe(settings.to_dict())
+
+    def test_agent_planned_cloud_modes_are_recognized_but_block_upload(self) -> None:
+        from telperia_agent.privacy import resolve_privacy_settings
+
+        personal = resolve_privacy_settings("personal_cloud")
+        research = resolve_privacy_settings("research_contribution", research_contribution_enabled=True)
+
+        self.assertEqual(personal.mode, "personal_cloud")
+        self.assertEqual(personal.status, "planned_not_connected")
+        self.assertFalse(personal.upload_enabled)
+        self.assertEqual(personal.upload_policy, "blocked_until_backend_available")
+        self.assertFalse(personal.research_contribution_enabled)
+        self.assertEqual(research.mode, "research_contribution")
+        self.assertEqual(research.status, "planned_not_connected")
+        self.assertFalse(research.upload_enabled)
+        self.assertTrue(research.research_contribution_enabled)
+        self.assert_public_safe(personal.to_dict())
+        self.assert_public_safe(research.to_dict())
+
+    def test_agent_research_contribution_requires_explicit_opt_in(self) -> None:
+        from telperia_agent.privacy import PrivacyModeError, resolve_privacy_settings
+
+        with self.assertRaisesRegex(PrivacyModeError, "explicit opt-in"):
+            resolve_privacy_settings("research_contribution")
+
+    def test_agent_privacy_status_reports_private_mode_and_no_upload(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(AGENT_CLI_PATH), "privacy-status"],
+            cwd=PROJECT_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["mode"], "private")
+        self.assertEqual(payload["status"], "active")
+        self.assertFalse(payload["upload_enabled"])
+        self.assertFalse(payload["research_contribution_enabled"])
+        self.assert_public_safe(payload)
+
     def test_builds_schema_valid_non_content_event(self) -> None:
         from telperia_agent.events import build_inference_event
 
@@ -90,6 +143,8 @@ class TelperiaAgentTests(unittest.TestCase):
                     "12",
                     "--output-tokens",
                     "18",
+                    "--privacy-mode",
+                    "private",
                 ],
                 cwd=PROJECT_ROOT,
                 check=False,
@@ -101,9 +156,13 @@ class TelperiaAgentTests(unittest.TestCase):
             self.assertIn("upload disabled", completed.stdout.lower())
             lines = output.read_text().splitlines()
             self.assertEqual(len(lines), 1)
-            event = json.loads(lines[0])
+            record = json.loads(lines[0])
+            event = record["data"]
+            self.assertEqual(record["record_type"], "inference_event")
+            self.assertEqual(record["privacy"]["mode"], "private")
+            self.assertFalse(record["privacy"]["upload_enabled"])
             validate_result_package(event, SCHEMA_PATH)
-            self.assert_public_safe(event)
+            self.assert_public_safe(record)
 
     def test_agent_builds_schema_valid_hardware_record_from_shared_telemetry(self) -> None:
         from telperia_agent.hardware import build_hardware_sample
@@ -207,6 +266,8 @@ class TelperiaAgentTests(unittest.TestCase):
                     "0.3.12",
                     "--quantization",
                     "q4_K_M",
+                    "--privacy-mode",
+                    "private",
                 ],
                 cwd=PROJECT_ROOT,
                 check=False,
@@ -220,10 +281,44 @@ class TelperiaAgentTests(unittest.TestCase):
         self.assertEqual([record["record_type"] for record in records], ["inference_event", "hardware_sample", "environment"])
         validate_result_package(records[0]["data"], SCHEMA_PATH)
         validate_result_package(records[1]["data"], TELEMETRY_SCHEMA_PATH)
+        self.assertEqual(records[0]["privacy"]["mode"], "private")
+        self.assertFalse(records[0]["privacy"]["upload_enabled"])
         self.assertEqual(records[2]["data"]["inference_engine"], "ollama")
         self.assertIn("upload disabled", completed.stdout.lower())
         for record in records:
             self.assert_public_safe(record)
+
+    def test_agent_blocks_planned_upload_modes_for_local_exports(self) -> None:
+        with TemporaryDirectory() as directory:
+            output = Path(directory) / "events.jsonl"
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(AGENT_CLI_PATH),
+                    "record-once",
+                    "--output",
+                    str(output),
+                    "--model-id",
+                    "llama3.1:8b",
+                    "--latency-ms",
+                    "250",
+                    "--input-tokens",
+                    "12",
+                    "--output-tokens",
+                    "18",
+                    "--privacy-mode",
+                    "personal-cloud",
+                ],
+                cwd=PROJECT_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(completed.returncode, 2)
+            self.assertIn("not connected", completed.stderr.lower())
+            self.assertFalse(output.exists())
 
     def test_agent_rejects_private_content_fields_before_export(self) -> None:
         from telperia_agent.events import build_inference_event

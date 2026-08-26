@@ -10,8 +10,9 @@ The Telperia Agent is separate from the Evaluation Runner:
 
 ## Current Status
 
-Step 27 adds the first Agent v0.1 local collection records. It does not connect
-to Supabase, upload data, require an account, or run continuously yet.
+Step 28 adds explicit privacy modes on top of the Agent v0.1 local collection
+records. It does not connect to Supabase, upload data, require an account, or
+run continuously yet.
 
 Current defaults:
 
@@ -20,6 +21,30 @@ Current defaults:
 - Research Contribution Mode: disabled
 - Prompt capture: disabled
 - Response capture: disabled
+
+## Privacy Modes
+
+Private Mode is the only active mode today:
+
+- Local JSONL export only.
+- No cloud upload.
+- No account required.
+- No network required.
+- No prompt or response content collected.
+
+Personal Cloud Mode is planned for encrypted metrics in a user's private
+dashboard. It is recognized by the CLI, but upload is blocked until backend
+support exists.
+
+Research Contribution Mode is planned for selected anonymized data contributed
+to public aggregate research. It is disabled by default, requires an explicit
+opt-in flag to inspect, and still cannot upload data in the current MVP.
+
+Check the current default privacy settings:
+
+```bash
+python3 agent/agent.py privacy-status
+```
 
 ## Local Event Export
 
@@ -32,10 +57,12 @@ python3 agent/agent.py record-once \
   --model-id llama3.1:8b \
   --latency-ms 250 \
   --input-tokens 12 \
-  --output-tokens 18
+  --output-tokens 18 \
+  --privacy-mode private
 ```
 
-The output event follows `schemas/inference-event.schema.json` and contains:
+The exported record includes privacy metadata plus an inference event that
+follows `schemas/inference-event.schema.json` and contains:
 
 - Request id.
 - Start and end timestamps.
@@ -46,7 +73,7 @@ The output event follows `schemas/inference-event.schema.json` and contains:
 - Success status.
 - Error category.
 
-It does not contain prompt text, response text, filenames, environment values,
+It does not contain prompt text, response text, filenames, environment variables,
 API keys, tokens, passwords, hostnames, serial numbers, local usernames, or
 private conversation content.
 
@@ -64,7 +91,8 @@ python3 agent/agent.py snapshot \
   --output-tokens 18 \
   --inference-engine ollama \
   --runtime-version 0.3.12 \
-  --quantization q4_K_M
+  --quantization q4_K_M \
+  --privacy-mode private
 ```
 
 The snapshot contains:
@@ -72,6 +100,7 @@ The snapshot contains:
 - One inference event.
 - One hardware telemetry sample.
 - One environment metadata record.
+- Private Mode metadata showing upload is disabled.
 
 On Mac and non-NVIDIA machines, GPU power, utilization, VRAM, temperature,
 driver, and CUDA fields may be `unavailable`, `unknown`, `null`, or zero-valued

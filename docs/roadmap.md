@@ -91,4 +91,6 @@ The first Agent CLI can write one schema-valid inference event to a local JSONL 
 
 Phase 8 Step 27 adds the first Agent v0.1 local collection records. The Agent can now write local JSONL snapshots containing a non-content inference event, a hardware telemetry sample, and environment metadata such as operating system, inference engine, runtime version, quantization, and GPU/driver/CUDA fields when known. Unsupported GPU telemetry is represented as unavailable rather than inferred, which keeps Mac and non-NVIDIA records honest.
 
-Step 28 should build the next layer of Agent behavior: a local event loop or monitor boundary, explicit privacy modes, and a clearer path for future opt-in contribution without collecting prompt or response content.
+Phase 8 Step 28 adds explicit privacy modes. Private Mode is active and default. Personal Cloud Mode and Research Contribution Mode are recognized as planned modes, but neither can upload data until backend/cloud support is approved and connected. Research Contribution Mode remains disabled by default and requires explicit opt-in even to inspect its planned status.
+
+Step 29 should build the next layer of Agent behavior: a local event loop or monitor boundary, plus clearer local configuration for future opt-in contribution without collecting prompt or response content.

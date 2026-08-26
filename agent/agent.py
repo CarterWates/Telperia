@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -16,13 +17,25 @@ from telperia_agent import DEFAULT_MODE, DEFAULT_RESEARCH_CONTRIBUTION_ENABLED, 
 from telperia_agent.environment import build_environment_metadata
 from telperia_agent.events import build_inference_event
 from telperia_agent.exporters import append_jsonl
-from telperia_agent.hardware import build_unavailable_hardware_sample, hardware_sample_record
+from telperia_agent.hardware import build_unavailable_hardware_sample
+from telperia_agent.privacy import (
+    PrivacyModeError,
+    require_local_export_allowed,
+    resolve_privacy_settings,
+    wrap_local_record,
+)
 from telperia_runner.schema import SchemaValidationError, validate_result_package
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the local Telperia Agent stub.")
     subcommands = parser.add_subparsers(dest="command", required=True)
+
+    privacy_status = subcommands.add_parser(
+        "privacy-status",
+        help="Show current local Agent privacy mode settings.",
+    )
+    _add_privacy_arguments(privacy_status)
 
     record_once = subcommands.add_parser(
         "record-once",
@@ -42,6 +55,7 @@ def main() -> int:
         default=PROJECT_ROOT / "schemas" / "inference-event.schema.json",
         help="Path to schemas/inference-event.schema.json.",
     )
+    _add_privacy_arguments(record_once)
 
     snapshot = subcommands.add_parser(
         "snapshot",
@@ -74,8 +88,11 @@ def main() -> int:
         default=PROJECT_ROOT / "schemas" / "telemetry-sample.schema.json",
         help="Path to schemas/telemetry-sample.schema.json.",
     )
+    _add_privacy_arguments(snapshot)
 
     args = parser.parse_args()
+    if args.command == "privacy-status":
+        return _privacy_status(args)
     if args.command == "record-once":
         return _record_once(args)
     if args.command == "snapshot":
@@ -83,7 +100,44 @@ def main() -> int:
     return 2
 
 
+def _add_privacy_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--privacy-mode",
+        choices=["private", "personal-cloud", "personal_cloud", "research-contribution", "research_contribution"],
+        default="private",
+        help="Agent privacy mode. Only private mode is active in the MVP.",
+    )
+    parser.add_argument(
+        "--research-contribution-opt-in",
+        action="store_true",
+        help="Explicitly acknowledge Research Contribution Mode. Upload is still disabled.",
+    )
+
+
+def _privacy_status(args: argparse.Namespace) -> int:
+    try:
+        settings = resolve_privacy_settings(
+            args.privacy_mode,
+            research_contribution_enabled=args.research_contribution_opt_in,
+        )
+    except PrivacyModeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    print(json.dumps(settings.to_dict(), sort_keys=True), flush=True)
+    return 0
+
+
 def _record_once(args: argparse.Namespace) -> int:
+    try:
+        privacy_settings = resolve_privacy_settings(
+            args.privacy_mode,
+            research_contribution_enabled=args.research_contribution_opt_in,
+        )
+        require_local_export_allowed(privacy_settings)
+    except PrivacyModeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
     event = build_inference_event(
         request_id=args.request_id,
         model_id=args.model_id,
@@ -99,7 +153,7 @@ def _record_once(args: argparse.Namespace) -> int:
         print(f"Invalid inference event: {exc}", file=sys.stderr)
         return 1
 
-    append_jsonl(event, args.output)
+    append_jsonl(wrap_local_record("inference_event", event, privacy_settings), args.output)
     print(
         "Recorded one private/local-only inference event; upload disabled and research contribution disabled.",
         flush=True,
@@ -113,6 +167,16 @@ def _record_once(args: argparse.Namespace) -> int:
 
 
 def _snapshot(args: argparse.Namespace) -> int:
+    try:
+        privacy_settings = resolve_privacy_settings(
+            args.privacy_mode,
+            research_contribution_enabled=args.research_contribution_opt_in,
+        )
+        require_local_export_allowed(privacy_settings)
+    except PrivacyModeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
     event = build_inference_event(
         request_id=args.request_id,
         model_id=args.model_id,
@@ -146,9 +210,12 @@ def _snapshot(args: argparse.Namespace) -> int:
         print(f"Invalid agent snapshot: {exc}", file=sys.stderr)
         return 1
 
-    append_jsonl({"record_type": "inference_event", "data": event}, args.output)
-    append_jsonl(hardware_sample_record(hardware_sample), args.output)
-    append_jsonl({"record_type": "environment", "data": environment}, args.output)
+    append_jsonl(wrap_local_record("inference_event", event, privacy_settings), args.output)
+    append_jsonl(
+        wrap_local_record("hardware_sample", hardware_sample.to_dict(), privacy_settings),
+        args.output,
+    )
+    append_jsonl(wrap_local_record("environment", environment, privacy_settings), args.output)
     print(
         "Recorded one private/local-only agent snapshot; upload disabled and research contribution disabled.",
         flush=True,
