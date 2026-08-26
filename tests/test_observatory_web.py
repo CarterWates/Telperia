@@ -69,6 +69,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
             'id="observatory"',
             'id="models"',
             'id="model-profile"',
+            'id="compare"',
             'id="methodology"',
             'id="benchmarks"',
             'id="research"',
@@ -103,6 +104,45 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "tri score",
             "universal winner",
             "overall winner",
+        ]:
+            self.assertNotIn(forbidden, lower_html)
+
+    def test_index_includes_public_comparison_view_without_winner_language(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        lower_html = html.lower()
+
+        for expected in [
+            "Configuration Comparison",
+            "id=\"compare\"",
+            "id=\"comparison-selectors\"",
+            "id=\"comparison-table\"",
+            "Select 2 to 4 configurations",
+            "Model name",
+            "Hardware",
+            "TCI",
+            "Reasoning",
+            "Coding",
+            "Mathematics",
+            "Factual reliability",
+            "Incorrect answer rate",
+            "Abstention rate",
+            "Transparency Evidence",
+            "Local IPW",
+            "GPU energy",
+            "Latency",
+            "Tokens per second",
+            "Peak VRAM",
+            "Verification level",
+            "Methodology version",
+        ]:
+            self.assertIn(expected, html)
+
+        for forbidden in [
+            "transparency score",
+            "tri score",
+            "universal winner",
+            "overall winner",
+            "best model",
         ]:
             self.assertNotIn(forbidden, lower_html)
 
@@ -210,6 +250,31 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertTrue(profile["limitations"])
             self.assert_public_safe(profile)
 
+    def test_model_profiles_support_comparison_fields(self) -> None:
+        profiles = load_public_model_profiles()
+
+        for profile in profiles:
+            categories = {item["category"]: item for item in profile["tci_breakdown"]}
+            self.assertTrue({"reasoning", "coding", "mathematics"}.issubset(categories))
+            for category in ["reasoning", "coding", "mathematics"]:
+                self.assertIn("average_category_score", categories[category])
+                self.assertIn("category_weight", categories[category])
+
+            for run in profile["hardware_specific_ipw_runs"]:
+                for expected in [
+                    "result_id",
+                    "hardware_label",
+                    "local_ipw_unscaled",
+                    "gpu_energy_wh",
+                    "latency_ms",
+                    "tokens_per_second",
+                    "verification_level",
+                    "methodology_version",
+                ]:
+                    self.assertIn(expected, run)
+                self.assertIsNone(run["latency_ms"])
+                self.assert_public_safe(run)
+
     def test_app_renders_expected_observatory_fields(self) -> None:
         script = (WEB_ROOT / "app.js").read_text()
 
@@ -268,6 +333,53 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "tri_score",
             "owner",
             "storage_path",
+            ".prompt",
+            ".response",
+        ]:
+            self.assertNotIn(forbidden, script)
+
+    def test_app_renders_public_comparison_view(self) -> None:
+        script = (WEB_ROOT / "app.js").read_text()
+
+        for expected in [
+            "comparisonSelectors",
+            "comparisonTable",
+            "comparisonRows",
+            "comparisonSelectedIds",
+            "buildComparisonRows",
+            "chooseDefaultComparisonIds",
+            "renderComparisonControls",
+            "renderComparisonTable",
+            "toggleComparisonSelection",
+            "Select 2 to 4 configurations",
+            "Model name",
+            "Hardware",
+            "TCI",
+            "Reasoning",
+            "Coding",
+            "Mathematics",
+            "Factual reliability",
+            "Incorrect answer rate",
+            "Abstention rate",
+            "Transparency Evidence",
+            "Local IPW",
+            "GPU energy",
+            "Latency",
+            "Tokens per second",
+            "Peak VRAM",
+            "Verification level",
+            "Methodology version",
+            "Not collected yet",
+            "No single winner is assigned",
+            "TCI/Wh",
+        ]:
+            self.assertIn(expected, script)
+
+        for forbidden in [
+            "transparency_score",
+            "tri_score",
+            "overallWinner",
+            "bestModel",
             ".prompt",
             ".response",
         ]:

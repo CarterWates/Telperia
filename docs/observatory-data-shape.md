@@ -181,7 +181,7 @@ Recommended MVP sorts:
 - Result timestamp descending.
 - Verification level descending.
 
-Comparisons should default to grouping by similar hardware where possible. Cross-hardware comparisons are allowed only when the UI makes hardware differences obvious.
+Comparisons should default to grouping by similar hardware where possible. Cross-hardware comparisons are allowed only when the UI makes hardware differences obvious. The MVP comparison view should allow two to four configurations and should not declare one universal winner.
 
 ## Example Public Row
 
@@ -254,3 +254,22 @@ Phase 7 model profiles aggregate public comparison rows by model. A profile may 
 Public model profile projections still must not expose raw private result packages, private Storage paths, prompt text, response text, uploaded filenames, hostnames, serial numbers, owner identifiers, emails, secrets, passwords, or private keys.
 
 For the static MVP shell, profile fixture data lives in `tests/fixtures/observatory/model_profiles.json` and `apps/observatory-web/public-model-profiles.js`. Public raw package downloads are represented as a disabled placeholder until reviewed public package access is implemented.
+
+## Public Comparison View
+
+The static Phase 7 comparison view uses public result rows plus public model profile projections. It may display:
+
+- Model name and hardware label.
+- TCI v0.1 final score.
+- Reasoning, coding, and mathematics category scores.
+- Factual Reliability, incorrect answer rate, and abstention rate.
+- Transparency Evidence instead of a numeric Transparency Score.
+- Local IPW as the unscaled `TCI/Wh` value.
+- GPU energy in watt-hours.
+- Latency when collected.
+- Tokens per second when collected.
+- Peak VRAM when collected.
+- Verification level.
+- Methodology version.
+
+Current seed result packages include tokens per second but do not include latency or peak VRAM. Those fields should be shown as `Deferred` or `Not collected yet` rather than estimated.

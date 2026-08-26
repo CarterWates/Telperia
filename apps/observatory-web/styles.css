@@ -109,6 +109,7 @@ a {
 .observatory-section,
 .model-directory-section,
 .model-profile-section,
+.comparison-section,
 .detail-section,
 .method-section,
 .repro-section,
@@ -133,6 +134,7 @@ a {
 .observatory-section,
 .model-directory-section,
 .model-profile-section,
+.comparison-section,
 .detail-section,
 .method-section,
 .repro-section,
@@ -471,7 +473,8 @@ h3 {
   background: #fbfaf7;
 }
 
-.profile-intro p {
+.profile-intro p,
+.comparison-intro p {
   max-width: 620px;
   color: var(--ink-soft);
 }
@@ -555,6 +558,93 @@ h3 {
 
 .profile-limitations li + li {
   margin-top: 10px;
+}
+
+.comparison-section {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.34fr) minmax(0, 0.66fr);
+  gap: clamp(40px, 6vw, 72px);
+  align-items: start;
+}
+
+.comparison-panel {
+  border-top: 1px solid var(--black);
+}
+
+.comparison-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.comparison-toolbar strong,
+.comparison-toolbar span {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.comparison-toolbar span {
+  color: var(--ink-faint);
+}
+
+.comparison-selectors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.comparison-choice {
+  display: grid;
+  gap: 8px;
+  min-height: 88px;
+  padding: 16px 16px 16px 0;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.comparison-choice:hover,
+.comparison-choice:focus,
+.comparison-choice.is-selected {
+  background: #f0ede6;
+  outline: none;
+}
+
+.comparison-choice strong {
+  font-weight: 650;
+}
+
+.comparison-choice span {
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.comparison-wrap {
+  overflow-x: auto;
+}
+
+.comparison-table {
+  min-width: 820px;
+}
+
+.comparison-table th:first-child {
+  width: 190px;
+}
+
+.comparison-table td {
+  min-width: 170px;
+  overflow-wrap: anywhere;
 }
 
 .table-panel {
@@ -866,6 +956,7 @@ tbody tr.is-selected {
   .observatory-section,
   .model-directory-section,
   .model-profile-section,
+  .comparison-section,
   .detail-section,
   .method-section,
   .repro-section,
@@ -889,6 +980,7 @@ tbody tr.is-selected {
   .observatory-section,
   .model-directory-section,
   .model-profile-section,
+  .comparison-section,
   .detail-section,
   .method-section,
   .repro-section,
@@ -916,6 +1008,7 @@ tbody tr.is-selected {
   .model-summary-grid,
   .profile-breakdown,
   .profile-run-grid,
+  .comparison-selectors,
   .hardware-table div,
   .service-lines article,
   .table-toolbar {

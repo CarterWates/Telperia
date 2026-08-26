@@ -19,6 +19,7 @@
       <nav class="site-nav" aria-label="Primary navigation">
         <a href="#observatory">Observatory</a>
         <a href="#models">Models</a>
+        <a href="#compare">Compare</a>
         <a href="#methodology">Methodology</a>
         <a href="#benchmarks">Benchmarks</a>
         <a href="#research">Research</a>
@@ -208,6 +209,34 @@
           <div class="profile-block">
             <h3>Limitations</h3>
             <ul class="profile-limitations" id="profile-limitations"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="comparison-section" id="compare" aria-labelledby="comparison-title">
+        <div class="comparison-intro">
+          <p class="section-label">Configuration Comparison</p>
+          <h2 id="comparison-title">Compare model and hardware runs without flattening the tradeoffs.</h2>
+          <p>
+            Select 2 to 4 configurations from approved public seed rows. The comparison keeps
+            hardware visible and shows capability, reliability, local energy, throughput,
+            Verification level, and Methodology version side by side.
+          </p>
+          <p class="directory-fields">
+            Model name / Hardware / TCI / Reasoning / Coding / Mathematics /
+            Factual reliability / Incorrect answer rate / Abstention rate /
+            Transparency Evidence / Local IPW / GPU energy / Latency /
+            Tokens per second / Peak VRAM / Verification level / Methodology version
+          </p>
+        </div>
+        <div class="comparison-panel">
+          <div class="comparison-toolbar">
+            <strong>Select 2 to 4 configurations</strong>
+            <span id="comparison-status">No single winner is assigned.</span>
+          </div>
+          <div class="comparison-selectors" id="comparison-selectors" aria-label="Comparison configuration selectors"></div>
+          <div class="comparison-wrap">
+            <table class="comparison-table" id="comparison-table" aria-label="Selected configuration comparison"></table>
           </div>
         </div>
       </section>

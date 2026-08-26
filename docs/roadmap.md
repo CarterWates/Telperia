@@ -77,4 +77,6 @@ Phase 7 Step 22 model directory work groups public result rows by model and show
 
 Phase 7 Step 23 model profile work adds a public-safe profile view for each model. Profiles aggregate approved seed evidence into TCI category breakdowns, Factual Reliability breakdowns, hardware-specific Local IPW runs, throughput, energy, verification, methodology, limitations, and a disabled result-package download placeholder until reviewed public package access exists.
 
+Phase 7 Step 24 comparison work adds a public-safe comparison view for selecting two to four model/hardware configurations. It compares TCI, reasoning, coding, mathematics, Factual Reliability, incorrect and abstention rates, Transparency Evidence, Local IPW, GPU energy, latency, tokens per second, peak VRAM, verification level, and methodology version without assigning one universal winner. Latency and peak VRAM are marked deferred/not collected where current result packages do not include them.
+
 This shell is not deployed and does not read from Supabase yet. It should become the public Observatory frontend after Phase 6 backend ingestion can persist and expose approved summary rows.

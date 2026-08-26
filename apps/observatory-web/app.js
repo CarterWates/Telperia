@@ -16,8 +16,13 @@
   const profileIpwRuns = document.querySelector("#profile-ipw-runs");
   const profileLimitations = document.querySelector("#profile-limitations");
   const profileDownload = document.querySelector("#profile-download");
+  const comparisonSelectors = document.querySelector("#comparison-selectors");
+  const comparisonTable = document.querySelector("#comparison-table");
+  const comparisonStatus = document.querySelector("#comparison-status");
   const heroFields = document.querySelectorAll("[data-hero]");
   const models = summarizeModels(results);
+  const comparisonRows = buildComparisonRows(results, modelProfiles);
+  const comparisonSelectedIds = chooseDefaultComparisonIds(comparisonRows);
 
   if (resultCount) {
     resultCount.textContent = String(results.length);
@@ -49,6 +54,9 @@
   }
 
   function formatPercent(value) {
+    if (value === null || value === undefined) {
+      return "Deferred";
+    }
     return `${Math.round(Number(value) * 100)}%`;
   }
 
@@ -92,6 +100,13 @@
       return "Deferred";
     }
     return `${formatNumber(value)} tok/s`;
+  }
+
+  function formatPeakVram(value) {
+    if (value === null || value === undefined) {
+      return "Not collected yet";
+    }
+    return `${formatNumber(value)} GB`;
   }
 
   function formatVerification(row) {
@@ -186,6 +201,76 @@
       .sort((left, right) => left.modelName.localeCompare(right.modelName));
   }
 
+  function profileForResult(row, profiles) {
+    return profiles.find((profile) => profile.model_name === row.model_name);
+  }
+
+  function categoryScore(profile, categoryName) {
+    const category = profile
+      ? profile.tci_breakdown.find((item) => item.category === categoryName)
+      : null;
+    return category ? category.average_category_score : null;
+  }
+
+  function buildComparisonRows(rows, profiles) {
+    return rows.map((row) => {
+      const profile = profileForResult(row, profiles);
+      const profileRun = profile
+        ? profile.hardware_specific_ipw_runs.find((run) => run.result_id === row.result_id)
+        : null;
+      return {
+        result_id: row.result_id,
+        modelName: row.model_name,
+        hardware: row.hardware_label,
+        tci: row.tci_v0_1,
+        reasoning: categoryScore(profile, "reasoning"),
+        coding: categoryScore(profile, "coding"),
+        mathematics: categoryScore(profile, "mathematics"),
+        factualReliability: row.factual_correctness_rate,
+        incorrectAnswerRate: row.factual_incorrect_answer_rate,
+        abstentionRate: row.factual_abstention_rate,
+        transparencyEvidence: profile
+          ? `${profile.transparency_evidence.public_summary_rows} public summary row(s), ${profile.transparency_evidence.hardware_profile_count} hardware profile(s)`
+          : "Public summary metadata",
+        localIpw: row.local_ipw_status === "calculated" ? formatIpw(row) : "Deferred",
+        gpuEnergy: `${formatNumber(row.gpu_energy_wh)} Wh`,
+        latency: formatLatency(profileRun ? profileRun.latency_ms : null),
+        tokensPerSecond: formatThroughput(profileRun ? profileRun.tokens_per_second : null),
+        peakVram: formatPeakVram(null),
+        verificationLevel: formatVerification(row),
+        methodologyVersion: row.methodology_version,
+      };
+    });
+  }
+
+  function chooseDefaultComparisonIds(rows) {
+    const selected = [];
+    const seenModels = new Set();
+    const candidates = [...rows].sort((left, right) => {
+      const leftScore = left.localIpw === "Deferred" ? 0 : 1;
+      const rightScore = right.localIpw === "Deferred" ? 0 : 1;
+      if (leftScore !== rightScore) {
+        return rightScore - leftScore;
+      }
+      return Number(right.tci || 0) - Number(left.tci || 0);
+    });
+
+    candidates.forEach((row) => {
+      if (selected.length < 4 && !seenModels.has(row.modelName)) {
+        selected.push(row.result_id);
+        seenModels.add(row.modelName);
+      }
+    });
+
+    rows.forEach((row) => {
+      if (selected.length < 2 && !selected.includes(row.result_id)) {
+        selected.push(row.result_id);
+      }
+    });
+
+    return selected;
+  }
+
   function appendCell(tr, value) {
     const td = document.createElement("td");
     td.textContent = value;
@@ -201,6 +286,12 @@
     valueNode.textContent = value;
     item.append(labelNode, valueNode);
     parent.appendChild(item);
+  }
+
+  function appendComparisonCell(tr, value) {
+    const td = document.createElement("td");
+    td.textContent = value;
+    tr.appendChild(td);
   }
 
   function renderModelDirectory(modelSummaries) {
@@ -236,6 +327,93 @@
       button.addEventListener("click", () => selectModel(summary.modelName));
       modelDirectory.appendChild(button);
     });
+  }
+
+  function renderComparisonControls(rows) {
+    if (!comparisonSelectors) {
+      return;
+    }
+
+    comparisonSelectors.replaceChildren();
+    rows.forEach((row) => {
+      const button = document.createElement("button");
+      const title = document.createElement("strong");
+      const meta = document.createElement("span");
+      const selected = comparisonSelectedIds.includes(row.result_id);
+      button.className = "comparison-choice";
+      button.type = "button";
+      button.dataset.resultId = row.result_id;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+      title.textContent = row.modelName;
+      meta.textContent = row.hardware;
+      button.append(title, meta);
+      button.addEventListener("click", () => toggleComparisonSelection(row.result_id));
+      comparisonSelectors.appendChild(button);
+    });
+  }
+
+  function toggleComparisonSelection(resultId) {
+    const existingIndex = comparisonSelectedIds.indexOf(resultId);
+    if (existingIndex >= 0) {
+      if (comparisonSelectedIds.length <= 2) {
+        return;
+      }
+      comparisonSelectedIds.splice(existingIndex, 1);
+    } else {
+      if (comparisonSelectedIds.length >= 4) {
+        comparisonSelectedIds.shift();
+      }
+      comparisonSelectedIds.push(resultId);
+    }
+    renderComparisonControls(comparisonRows);
+    renderComparisonTable(comparisonRows);
+  }
+
+  function renderComparisonTable(rows) {
+    if (!comparisonTable) {
+      return;
+    }
+
+    const selectedRows = comparisonSelectedIds
+      .map((resultId) => rows.find((row) => row.result_id === resultId))
+      .filter(Boolean);
+    const tbody = document.createElement("tbody");
+
+    if (comparisonStatus) {
+      comparisonStatus.textContent = `Select 2 to 4 configurations. ${selectedRows.length} selected. No single winner is assigned.`;
+    }
+
+    comparisonTable.replaceChildren();
+    [
+      ["Model name", (row) => row.modelName],
+      ["Hardware", (row) => row.hardware],
+      ["TCI", (row) => formatNumber(row.tci)],
+      ["Reasoning", (row) => formatNumber(row.reasoning)],
+      ["Coding", (row) => formatNumber(row.coding)],
+      ["Mathematics", (row) => formatNumber(row.mathematics)],
+      ["Factual reliability", (row) => formatPercent(row.factualReliability)],
+      ["Incorrect answer rate", (row) => formatPercent(row.incorrectAnswerRate)],
+      ["Abstention rate", (row) => formatPercent(row.abstentionRate)],
+      ["Transparency Evidence", (row) => row.transparencyEvidence],
+      ["Local IPW", (row) => row.localIpw],
+      ["GPU energy", (row) => row.gpuEnergy],
+      ["Latency", (row) => row.latency],
+      ["Tokens per second", (row) => row.tokensPerSecond],
+      ["Peak VRAM", (row) => row.peakVram],
+      ["Verification level", (row) => row.verificationLevel],
+      ["Methodology version", (row) => row.methodologyVersion],
+    ].forEach(([label, valueForRow]) => {
+      const tr = document.createElement("tr");
+      const th = document.createElement("th");
+      th.scope = "row";
+      th.textContent = label;
+      tr.appendChild(th);
+      selectedRows.forEach((row) => appendComparisonCell(tr, valueForRow(row)));
+      tbody.appendChild(tr);
+    });
+
+    comparisonTable.appendChild(tbody);
   }
 
   function selectModel(modelName) {
@@ -460,6 +638,8 @@
 
   renderResultsTable(results);
   renderModelDirectory(models);
+  renderComparisonControls(comparisonRows);
+  renderComparisonTable(comparisonRows);
   const heroResult = chooseHeroResult(results);
   updateHeroSpecimen(heroResult);
   if (models[0]) {
