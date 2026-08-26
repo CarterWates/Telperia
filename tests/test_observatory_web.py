@@ -65,6 +65,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "Request Report",
             'id="home"',
             'id="observatory"',
+            'id="models"',
             'id="methodology"',
             'id="benchmarks"',
             'id="research"',
@@ -75,6 +76,30 @@ class ObservatoryWebShellTests(unittest.TestCase):
             "app.js",
         ]:
             self.assertIn(expected, html)
+
+    def test_index_includes_public_model_directory_without_numeric_transparency_score(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        lower_html = html.lower()
+
+        for expected in [
+            "Public Model Directory",
+            "data-summary=\"model-count\"",
+            "id=\"model-directory\"",
+            "id=\"model-summary\"",
+            "Provider",
+            "Open status",
+            "Transparency Evidence",
+            "Available Local IPW",
+        ]:
+            self.assertIn(expected, html)
+
+        for forbidden in [
+            "transparency score",
+            "tri score",
+            "universal winner",
+            "overall winner",
+        ]:
+            self.assertNotIn(forbidden, lower_html)
 
     def test_index_positions_telperia_as_energy_aware_without_overclaiming(self) -> None:
         html = (WEB_ROOT / "index.html").read_text()
@@ -141,6 +166,34 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertIn(expected, script)
 
         self.assertNotIn("innerHTML", script)
+
+    def test_app_groups_public_rows_into_model_directory(self) -> None:
+        script = (WEB_ROOT / "app.js").read_text()
+        rows = load_public_results()
+        expected_model_count = len({row["model_name"] for row in rows})
+
+        self.assertGreaterEqual(expected_model_count, 5)
+        for expected in [
+            "summarizeModels",
+            "renderModelDirectory",
+            "selectModel",
+            "provider: \"unknown\"",
+            "openStatus: \"unknown\"",
+            "Transparency Evidence",
+            "Available Local IPW",
+            "No universal winner",
+        ]:
+            self.assertIn(expected, script)
+
+        for forbidden in [
+            "transparency_score",
+            "tri_score",
+            "owner",
+            "storage_path",
+            "prompt",
+            "response",
+        ]:
+            self.assertNotIn(forbidden, script)
 
     def test_visual_system_avoids_ai_startup_cliches(self) -> None:
         css = (WEB_ROOT / "styles.css").read_text().lower()

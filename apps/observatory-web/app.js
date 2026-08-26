@@ -5,10 +5,18 @@
   const detailTitle = document.querySelector("#detail-title");
   const resultSearch = document.querySelector("#result-search");
   const resultCount = document.querySelector('[data-summary="result-count"]');
+  const modelCount = document.querySelector('[data-summary="model-count"]');
+  const modelDirectory = document.querySelector("#model-directory");
+  const modelSummary = document.querySelector("#model-summary");
   const heroFields = document.querySelectorAll("[data-hero]");
+  const models = summarizeModels(results);
 
   if (resultCount) {
     resultCount.textContent = String(results.length);
+  }
+
+  if (modelCount) {
+    modelCount.textContent = String(models.length);
   }
 
   function updateHeroSpecimen(row) {
@@ -57,11 +65,144 @@
     return `Level ${row.verification_level}`;
   }
 
+  function average(values) {
+    if (!values.length) {
+      return null;
+    }
+    return values.reduce((total, value) => total + Number(value), 0) / values.length;
+  }
+
+  function maxValue(values) {
+    if (!values.length) {
+      return null;
+    }
+    return Math.max(...values.map((value) => Number(value)));
+  }
+
+  function uniqueValues(values) {
+    return Array.from(new Set(values.filter((value) => value !== null && value !== undefined))).sort();
+  }
+
+  function summarizeModels(rows) {
+    const grouped = new Map();
+    rows.forEach((row) => {
+      const group = grouped.get(row.model_name) || [];
+      group.push(row);
+      grouped.set(row.model_name, group);
+    });
+
+    return Array.from(grouped.entries())
+      .map(([modelName, modelRows]) => {
+        const calculatedIpwRows = modelRows.filter((row) => row.local_ipw_status === "calculated");
+        const representative = [...modelRows].sort((left, right) => {
+          const tciDifference = Number(right.tci_v0_1) - Number(left.tci_v0_1);
+          if (tciDifference !== 0) {
+            return tciDifference;
+          }
+          return Number(right.local_ipw_displayed || 0) - Number(left.local_ipw_displayed || 0);
+        })[0];
+
+        return {
+          modelName,
+          provider: "unknown",
+          openStatus: "unknown",
+          representativeResultId: representative.result_id,
+          representativeTci: representative.tci_v0_1,
+          factualCorrectness: average(modelRows.map((row) => row.factual_correctness_rate)),
+          factualIncorrect: average(modelRows.map((row) => row.factual_incorrect_answer_rate)),
+          availableIpwCount: calculatedIpwRows.length,
+          totalRunCount: modelRows.length,
+          bestLocalIpw: maxValue(calculatedIpwRows.map((row) => row.local_ipw_displayed)),
+          verificationLevels: uniqueValues(modelRows.map((row) => row.verification_level)),
+          methodologyVersions: uniqueValues(modelRows.map((row) => row.methodology_version)),
+          hardwareCount: uniqueValues(modelRows.map((row) => row.hardware_label)).length,
+        };
+      })
+      .sort((left, right) => left.modelName.localeCompare(right.modelName));
+  }
+
   function appendCell(tr, value) {
     const td = document.createElement("td");
     td.textContent = value;
     tr.appendChild(td);
     return td;
+  }
+
+  function appendMeta(parent, label, value) {
+    const item = document.createElement("div");
+    const labelNode = document.createElement("span");
+    const valueNode = document.createElement("strong");
+    labelNode.textContent = label;
+    valueNode.textContent = value;
+    item.append(labelNode, valueNode);
+    parent.appendChild(item);
+  }
+
+  function renderModelDirectory(modelSummaries) {
+    if (!modelDirectory) {
+      return;
+    }
+
+    modelDirectory.replaceChildren();
+    modelSummaries.forEach((summary) => {
+      const button = document.createElement("button");
+      button.className = "model-entry";
+      button.type = "button";
+      button.dataset.modelName = summary.modelName;
+
+      const title = document.createElement("strong");
+      const meta = document.createElement("span");
+      const metrics = document.createElement("div");
+
+      title.textContent = summary.modelName;
+      meta.textContent = `Provider ${summary.provider} / Open status ${summary.openStatus}`;
+      metrics.className = "model-entry-metrics";
+
+      appendMeta(metrics, "TCI v0.1", formatNumber(summary.representativeTci));
+      appendMeta(metrics, "Factual Reliability", formatPercent(summary.factualCorrectness));
+      appendMeta(metrics, "Available Local IPW", `${summary.availableIpwCount}/${summary.totalRunCount}`);
+      appendMeta(metrics, "Verification Level", `L${summary.verificationLevels.join(", L")}`);
+      appendMeta(metrics, "Methodology Version", summary.methodologyVersions.join(", "));
+      appendMeta(metrics, "Transparency Evidence", `${summary.hardwareCount} hardware profile(s)`);
+
+      button.append(title, meta, metrics);
+      button.addEventListener("click", () => selectModel(summary.modelName));
+      modelDirectory.appendChild(button);
+    });
+  }
+
+  function selectModel(modelName) {
+    const summary = models.find((item) => item.modelName === modelName);
+    if (!summary || !modelSummary) {
+      return;
+    }
+
+    document.querySelectorAll(".model-entry").forEach((entry) => {
+      entry.classList.toggle("is-selected", entry.dataset.modelName === modelName);
+    });
+
+    modelSummary.replaceChildren();
+
+    const heading = document.createElement("h3");
+    const note = document.createElement("p");
+    const facts = document.createElement("div");
+    heading.textContent = summary.modelName;
+    note.textContent =
+      "No universal winner is selected here. Model summaries reflect available public seed results and can vary by hardware, run, and methodology version.";
+    facts.className = "model-summary-grid";
+
+    appendMeta(facts, "Provider", summary.provider);
+    appendMeta(facts, "Open status", summary.openStatus);
+    appendMeta(facts, "Representative TCI", formatNumber(summary.representativeTci));
+    appendMeta(facts, "Factual Reliability", `${formatPercent(summary.factualCorrectness)} correct / ${formatPercent(summary.factualIncorrect)} incorrect`);
+    appendMeta(facts, "Available Local IPW", `${summary.availableIpwCount} calculated run(s)`);
+    appendMeta(facts, "Best Local IPW", formatNumber(summary.bestLocalIpw));
+    appendMeta(facts, "Verification Level", `L${summary.verificationLevels.join(", L")}`);
+    appendMeta(facts, "Methodology Version", summary.methodologyVersions.join(", "));
+    appendMeta(facts, "Transparency Evidence", `${summary.hardwareCount} hardware profile(s), runtime metadata, and verification metadata`);
+
+    modelSummary.append(heading, note, facts);
+    selectResult(summary.representativeResultId);
   }
 
   function renderResultsTable(rows) {
@@ -167,6 +308,11 @@
   });
 
   renderResultsTable(results);
+  renderModelDirectory(models);
   updateHeroSpecimen(results[0]);
-  selectResult(results[0] ? results[0].result_id : null);
+  if (models[0]) {
+    selectModel(models[0].modelName);
+  } else {
+    selectResult(results[0] ? results[0].result_id : null);
+  }
 })();

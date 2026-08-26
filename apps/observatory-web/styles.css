@@ -107,6 +107,7 @@ a {
 .hero,
 .measurement-frame,
 .observatory-section,
+.model-directory-section,
 .detail-section,
 .method-section,
 .repro-section,
@@ -129,6 +130,7 @@ a {
 .hero-copy,
 .measurement-frame,
 .observatory-section,
+.model-directory-section,
 .detail-section,
 .method-section,
 .repro-section,
@@ -343,6 +345,112 @@ h3 {
   gap: clamp(40px, 6vw, 72px);
   align-items: start;
   background: #fbfaf7;
+}
+
+.model-directory-section {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.38fr) minmax(0, 0.62fr);
+  gap: clamp(40px, 6vw, 72px);
+  align-items: start;
+}
+
+.directory-fields {
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.model-directory-panel {
+  border-top: 1px solid var(--black);
+}
+
+.model-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.model-toolbar span::after {
+  content: " grouped models";
+}
+
+.model-directory {
+  border-bottom: 1px solid var(--rule);
+}
+
+.model-entry {
+  display: grid;
+  width: 100%;
+  gap: 14px;
+  padding: 20px 0;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.model-entry:hover,
+.model-entry:focus,
+.model-entry.is-selected {
+  background: #f0ede6;
+  outline: none;
+}
+
+.model-entry > strong {
+  font-size: 1.14rem;
+  font-weight: 650;
+}
+
+.model-entry > span {
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.model-entry-metrics,
+.model-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
+}
+
+.model-entry-metrics span,
+.model-summary-grid span {
+  display: block;
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+}
+
+.model-entry-metrics strong,
+.model-summary-grid strong {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  font-size: 0.92rem;
+  font-weight: 620;
+}
+
+.model-summary {
+  padding-top: 24px;
+}
+
+.model-summary p {
+  max-width: 720px;
+  color: var(--ink-soft);
 }
 
 .table-panel {
@@ -652,6 +760,7 @@ tbody tr.is-selected {
   .hero,
   .measurement-frame,
   .observatory-section,
+  .model-directory-section,
   .detail-section,
   .method-section,
   .repro-section,
@@ -696,6 +805,8 @@ tbody tr.is-selected {
   .detail-grid,
   .frame-matrix div,
   .method-rows article,
+  .model-entry-metrics,
+  .model-summary-grid,
   .hardware-table div,
   .service-lines article,
   .table-toolbar {

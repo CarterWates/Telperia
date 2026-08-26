@@ -13,6 +13,7 @@ Or double-click `index.html` from Finder.
 ## What It Includes
 
 - Company/home positioning.
+- Public model directory grouped from seed result rows.
 - Public Observatory seed results table.
 - Clickable result detail view.
 - Methodology overview.

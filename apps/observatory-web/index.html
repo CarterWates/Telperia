@@ -18,6 +18,7 @@
       </a>
       <nav class="site-nav" aria-label="Primary navigation">
         <a href="#observatory">Observatory</a>
+        <a href="#models">Models</a>
         <a href="#methodology">Methodology</a>
         <a href="#benchmarks">Benchmarks</a>
         <a href="#research">Research</a>
@@ -146,6 +147,30 @@
               <tbody id="results-body"></tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      <section class="model-directory-section" id="models" aria-labelledby="models-title">
+        <div class="model-directory-intro">
+          <p class="section-label">Public Model Directory</p>
+          <h2 id="models-title">Models grouped by available public evidence.</h2>
+          <p>
+            Directory entries summarize approved seed result packages by model. Scores
+            may vary by hardware and run, so Local IPW remains hardware-specific and
+            Transparency Evidence is shown instead of a numeric score.
+          </p>
+          <p class="directory-fields">
+            Provider / Open status / TCI v0.1 / Factual Reliability / Available Local IPW /
+            Verification Level / Methodology Version
+          </p>
+        </div>
+        <div class="model-directory-panel">
+          <div class="model-toolbar">
+            <span data-summary="model-count">0</span>
+            <strong>Model entries</strong>
+          </div>
+          <div class="model-directory" id="model-directory" aria-label="Public model directory"></div>
+          <div class="model-summary" id="model-summary" aria-live="polite"></div>
         </div>
       </section>
 
