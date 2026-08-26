@@ -72,6 +72,12 @@ All other public fields support filtering, detail pages, and audit context.
 
 ## Display Rules
 
+Score-like labels in public views should link to the relevant methodology version or
+methodology section. This includes TCI category labels, Factual Reliability rates,
+Local IPW, GPU energy and energy confidence, Verification Level, and Transparency
+Evidence. Deferred metrics should link to their planned methodology language rather
+than appearing as active numeric scores.
+
 ### Model
 
 Display `model_name` as the primary model label. Add revision, quantization, and runtime details in the expanded row or detail view.

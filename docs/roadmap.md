@@ -79,4 +79,6 @@ Phase 7 Step 23 model profile work adds a public-safe profile view for each mode
 
 Phase 7 Step 24 comparison work adds a public-safe comparison view for selecting two to four model/hardware configurations. It compares TCI, reasoning, coding, mathematics, Factual Reliability, incorrect and abstention rates, Transparency Evidence, Local IPW, GPU energy, latency, tokens per second, peak VRAM, verification level, and methodology version without assigning one universal winner. Latency and peak VRAM are marked deferred/not collected where current result packages do not include them.
 
+Phase 7 Step 25 methodology page work publishes official Observatory methodology sections for TCI v0.1, Factual Reliability v0.1, Local IPW v0.1, Verification Levels, Privacy Policy, and Known Limitations. It also describes TRI v0.1 and Transparency Score v0.1 as planned/not yet scored, keeps current public language on Transparency Evidence, and links score-like labels in the website back to methodology anchors.
+
 This shell is not deployed and does not read from Supabase yet. It should become the public Observatory frontend after Phase 6 backend ingestion can persist and expose approved summary rows.

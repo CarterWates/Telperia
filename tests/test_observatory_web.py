@@ -100,7 +100,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertIn(expected, html)
 
         for forbidden in [
-            "transparency score",
+            "numeric transparency score",
             "tri score",
             "universal winner",
             "overall winner",
@@ -138,13 +138,82 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertIn(expected, html)
 
         for forbidden in [
-            "transparency score",
+            "numeric transparency score",
             "tri score",
             "universal winner",
             "overall winner",
             "best model",
         ]:
             self.assertNotIn(forbidden, lower_html)
+
+    def test_index_publishes_official_methodology_sections(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        lower_html = html.lower()
+
+        for expected in [
+            'id="methodology-tci-v0-1"',
+            'id="methodology-tri-v0-1"',
+            'id="methodology-ipw-v0-1"',
+            'id="methodology-factual-reliability-v0-1"',
+            'id="methodology-transparency-score-v0-1"',
+            'id="methodology-verification-levels"',
+            'id="methodology-privacy-policy"',
+            'id="methodology-known-limitations"',
+            "TCI v0.1",
+            "TRI v0.1",
+            "Local IPW v0.1",
+            "Factual Reliability v0.1",
+            "Transparency Score v0.1",
+            "Verification Levels",
+            "Privacy Policy",
+            "Known Limitations",
+            "planned/not yet scored",
+            "Transparency Evidence",
+            "local inference hardware energy",
+            "private by default",
+            "approved public summaries only",
+            "verification level 0 means local/self-run evidence",
+            "latency and peak VRAM are deferred",
+        ]:
+            self.assertIn(expected, html)
+
+        for forbidden in [
+            "carbon neutral",
+            "full data-center energy",
+            "full datacenter energy",
+            "numeric tri",
+            "numeric transparency score",
+        ]:
+            self.assertNotIn(forbidden, lower_html)
+
+    def test_score_labels_link_to_methodology_anchors(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        script = (WEB_ROOT / "app.js").read_text()
+
+        for expected in [
+            'href="#methodology-tci-v0-1"',
+            'href="#methodology-ipw-v0-1"',
+            'href="#methodology-factual-reliability-v0-1"',
+            'href="#methodology-transparency-score-v0-1"',
+            'href="#methodology-verification-levels"',
+            'href="#methodology-known-limitations"',
+            'href="#methodology"',
+        ]:
+            self.assertIn(expected, html)
+
+        for expected in [
+            "methodologyLinks",
+            "appendMethodologyLabel",
+            "appendComparisonLabel",
+            "methodology-tci-v0-1",
+            "methodology-ipw-v0-1",
+            "methodology-factual-reliability-v0-1",
+            "methodology-transparency-score-v0-1",
+            "methodology-verification-levels",
+            "methodology-known-limitations",
+            "methodology version",
+        ]:
+            self.assertIn(expected, script)
 
     def test_index_includes_public_model_profile_view_without_deferred_scores(self) -> None:
         html = (WEB_ROOT / "index.html").read_text()
@@ -175,7 +244,7 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertIn(expected, html)
 
         for forbidden in [
-            "transparency score",
+            "numeric transparency score",
             "tri score",
         ]:
             self.assertNotIn(forbidden, lower_html)

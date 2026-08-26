@@ -85,7 +85,8 @@ a {
 
 .site-nav a,
 .header-link,
-.text-link {
+.text-link,
+.method-link {
   border-bottom: 1px solid transparent;
 }
 
@@ -94,8 +95,18 @@ a {
 .header-link:hover,
 .header-link:focus,
 .text-link:hover,
-.text-link:focus {
+.text-link:focus,
+.method-link:hover,
+.method-link:focus {
   border-bottom-color: currentColor;
+}
+
+.method-link {
+  color: inherit;
+}
+
+.method-link.inverse {
+  color: inherit;
 }
 
 .header-link {

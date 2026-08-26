@@ -23,6 +23,34 @@
   const models = summarizeModels(results);
   const comparisonRows = buildComparisonRows(results, modelProfiles);
   const comparisonSelectedIds = chooseDefaultComparisonIds(comparisonRows);
+  const methodologyLinks = {
+    tci: "#methodology-tci-v0-1",
+    reasoning: "#methodology-tci-v0-1",
+    coding: "#methodology-tci-v0-1",
+    mathematics: "#methodology-tci-v0-1",
+    "factual reliability": "#methodology-factual-reliability-v0-1",
+    "factual correctness": "#methodology-factual-reliability-v0-1",
+    "correct responses": "#methodology-factual-reliability-v0-1",
+    "incorrect responses": "#methodology-factual-reliability-v0-1",
+    "incorrect answer rate": "#methodology-factual-reliability-v0-1",
+    "abstention rate": "#methodology-factual-reliability-v0-1",
+    "attempted accuracy": "#methodology-factual-reliability-v0-1",
+    "local ipw": "#methodology-ipw-v0-1",
+    "best local ipw": "#methodology-ipw-v0-1",
+    "average local ipw": "#methodology-ipw-v0-1",
+    "ipw display score": "#methodology-ipw-v0-1",
+    "gpu energy": "#methodology-ipw-v0-1",
+    "gpu energy wh": "#methodology-ipw-v0-1",
+    "energy confidence": "#methodology-ipw-v0-1",
+    "transparency evidence": "#methodology-transparency-score-v0-1",
+    "tri: not yet scored": "#methodology-tri-v0-1",
+    "verification level": "#methodology-verification-levels",
+    "latency": "#methodology-known-limitations",
+    "tokens per second": "#methodology-known-limitations",
+    "throughput": "#methodology-known-limitations",
+    "peak vram": "#methodology-known-limitations",
+    "methodology version": "#methodology",
+  };
 
   if (resultCount) {
     resultCount.textContent = String(results.length);
@@ -282,10 +310,27 @@
     const item = document.createElement("div");
     const labelNode = document.createElement("span");
     const valueNode = document.createElement("strong");
-    labelNode.textContent = label;
+    appendMethodologyLabel(labelNode, label);
     valueNode.textContent = value;
     item.append(labelNode, valueNode);
     parent.appendChild(item);
+  }
+
+  function appendMethodologyLabel(parent, label) {
+    const href = methodologyLinks[label.toLowerCase()];
+    if (!href) {
+      parent.textContent = label;
+      return;
+    }
+    const link = document.createElement("a");
+    link.className = "method-link";
+    link.href = href;
+    link.textContent = label;
+    parent.appendChild(link);
+  }
+
+  function appendComparisonLabel(th, label) {
+    appendMethodologyLabel(th, label);
   }
 
   function appendComparisonCell(tr, value) {
@@ -407,7 +452,7 @@
       const tr = document.createElement("tr");
       const th = document.createElement("th");
       th.scope = "row";
-      th.textContent = label;
+      appendComparisonLabel(th, label);
       tr.appendChild(th);
       selectedRows.forEach((row) => appendComparisonCell(tr, valueForRow(row)));
       tbody.appendChild(tr);

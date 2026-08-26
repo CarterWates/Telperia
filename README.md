@@ -134,7 +134,7 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 ## Current Phase
 
-Phase 7 Step 25 is next on top of the completed local Phase 6 backend foundation. The current focus is turning public-safe seed summaries into useful Observatory views before live backend deployment and the later agent work.
+Phase 7 Step 25 is complete on top of the completed local Phase 6 backend foundation. The current focus is turning public-safe seed summaries into useful Observatory views before live backend deployment and the later agent work.
 
 The repo now includes a runnable local HTTP API wrapper around the ingestion validator, a SQLite-backed persistence path for accepted uploads, and an approved-only public read path. It can:
 
@@ -145,7 +145,7 @@ The repo now includes a runnable local HTTP API wrapper around the ingestion val
 
 The next major backend work is to connect these persistence and read boundaries to Supabase with real authentication, private Storage writes, Postgres summary writes, and RLS-backed public reads.
 
-The first static Observatory shell now exists under `apps/observatory-web/`. It includes homepage positioning, a public model directory, public-safe model profile views, a two-to-four configuration comparison view, seed results, and result detail views. The next website step is publishing methodology pages, then connecting frontend reads to persisted public summaries after live Supabase ingestion is ready.
+The first static Observatory shell now exists under `apps/observatory-web/`. It includes homepage positioning, a public model directory, public-safe model profile views, a two-to-four configuration comparison view, seed results, result detail views, and official methodology sections for the active and deferred MVP metrics. Score labels link back to their methodology anchors so public numbers stay tied to versioned definitions.
 
 ## Repository Map
 
