@@ -85,7 +85,7 @@ TRI and Transparency Score are planned methodology areas, not active MVP scores.
 
 ## What Is Built Today
 
-Telperia has completed the local Phase 6 backend foundation and the first Phase 7 static Observatory website shell. The next planned roadmap focus is Phase 8: separating the continuously running Telperia Agent from the controlled Evaluation Runner.
+Telperia has completed the local Phase 6 backend foundation, the first Phase 7 static Observatory website shell, and the first Phase 8 separation between the controlled Evaluation Runner and the local-first Telperia Agent.
 
 Completed foundation work includes:
 
@@ -104,6 +104,7 @@ Completed foundation work includes:
 - A result validation CLI for checking packages before hosted upload exists.
 - Public-safe Observatory row fixtures for future website and API testing.
 - A static Observatory website shell with home, model directory, model profile, comparison, methodology, terminology, results table, and result detail views.
+- A separate local-first Agent scaffold that can write non-content inference events to JSONL without uploads.
 - A Phase 6 backend design, result ingestion contract, API contract, Supabase setup guide, and draft migration.
 - Security guidance for secrets, uploads, raw JSON privacy, public review, and release checks.
 
@@ -134,7 +135,7 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 ## Current Phase
 
-Phase 7 Step 25 is complete on top of the completed local Phase 6 backend foundation. The current focus is preparing Phase 8 Agent work while keeping the runner, backend contracts, and Observatory website aligned.
+Phase 8 Step 26 is complete on top of the completed local Phase 6 backend foundation and Phase 7 Observatory shell. The current focus is building the Agent carefully while keeping privacy, local-first behavior, and runner separation clear.
 
 The repo now includes a runnable local HTTP API wrapper around the ingestion validator, a SQLite-backed persistence path for accepted uploads, and an approved-only public read path. It can:
 
@@ -147,14 +148,14 @@ The next major backend work is to connect these persistence and read boundaries 
 
 The first static Observatory shell now exists under `apps/observatory-web/`. It includes homepage positioning, a public model directory, public-safe model profile views, a two-to-four configuration comparison view, seed results, result detail views, official methodology sections, and in-page terminology explanations for the active and deferred MVP metrics. Score labels link back to methodology anchors so public numbers stay tied to versioned definitions.
 
-Phase 8 starts with Step 26: separating the Telperia Agent from the Evaluation Runner. The runner performs controlled benchmark sessions. The agent will be a separate local-first program for non-content telemetry during normal model use. They should share telemetry code where appropriate, but they should remain separate programs with separate responsibilities.
+Phase 8 started with Step 26: separating the Telperia Agent from the Evaluation Runner. The runner performs controlled benchmark sessions. The agent is now a separate local-first program scaffold for non-content telemetry during normal model use. They share telemetry code where appropriate, but remain separate programs with separate responsibilities.
 
 ## Repository Map
 
 - `apps/observatory-web/`: static public Observatory shell with seed result, model directory, model profile, and comparison views.
 - `apps/api/`: planned backend API and ingestion service.
 - `evaluation-runner/`: local benchmark runner and telemetry tooling.
-- `agent/`: planned local-first Telperia Agent for non-content telemetry during normal model use.
+- `agent/`: local-first Telperia Agent scaffold for non-content telemetry during normal model use.
 - `methodology/`: versioned methodology, limitations, privacy, and scoring documents.
 - `schemas/`: JSON schemas for result packages, telemetry samples, and inference events.
 - `datasets/`: benchmark data and seed result packages.
@@ -172,6 +173,7 @@ python3 -m unittest discover -s tests -q
 python3 -m compileall -q evaluation-runner tests
 python3 evaluation-runner/evaluate.py --help
 python3 evaluation-runner/validate_result.py tests/fixtures/ingestion/valid_private_upload.json
+python3 agent/agent.py record-once --output .local/telperia-agent/events.jsonl --model-id llama3.1:8b --latency-ms 250 --input-tokens 12 --output-tokens 18
 ```
 
 Run the local API with SQLite persistence:
@@ -212,6 +214,7 @@ See `evaluation-runner/README.md`, `docs/phase-5-local-experiments.md`, and `doc
 - Local backend persistence uses SQLite for development; live Supabase Storage/Postgres wiring is not connected yet.
 - Public read endpoints currently use local approved SQLite summaries; hosted Supabase public reads are not connected yet.
 - The backend migration is drafted but not applied to a live Supabase project yet.
+- The Telperia Agent is a local-only scaffold and does not yet run continuously or submit data.
 - The public Observatory website shell exists locally, but it is not hosted and the community submission flow is not live.
 
 ## How To Explain Telperia

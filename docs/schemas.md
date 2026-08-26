@@ -6,7 +6,7 @@ Telperia schemas define the portable data contracts used by the runner, telemetr
 
 - `schemas/evaluation-run.schema.json` describes one complete local evaluation result package.
 - `schemas/telemetry-sample.schema.json` describes one non-content hardware telemetry sample.
-- `schemas/inference-event.schema.json` describes one non-content inference event.
+- `schemas/inference-event.schema.json` describes one non-content inference event. The Phase 8 Agent scaffold writes this event shape locally as JSONL.
 
 Evaluation run packages may include `run_environment` metadata with a user-chosen `node_id`, operating system family, and monitor backend. Energy blocks may include `monitor_backend`, `energy_scope`, `energy_source`, and `energy_confidence` so local-dev, Linux NVIDIA, Windows NVIDIA, and future backends can be distinguished without changing metric formulas.
 
@@ -21,6 +21,8 @@ The public-safe comparison read model for the future Observatory is defined in `
 Schemas intentionally exclude prompt text, response text, filenames, environment variables, API keys, tokens, and passwords. Implementations should use identifiers for tasks and requests rather than storing private content.
 
 Machine identifiers must be user-chosen labels such as `linux-laptop` or `windows-5070`, not automatically collected hostnames or device serial numbers.
+
+The Evaluation Runner and Telperia Agent use different output contracts. The runner creates complete controlled benchmark result packages. The agent records normal-use inference event metadata and must not calculate benchmark scores or capture prompt and response content.
 
 ## Versioning
 

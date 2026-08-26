@@ -82,3 +82,11 @@ Phase 7 Step 24 comparison work adds a public-safe comparison view for selecting
 Phase 7 Step 25 methodology page work publishes official Observatory methodology sections for TCI v0.1, Factual Reliability v0.1, Local IPW v0.1, Verification Levels, Privacy Policy, and Known Limitations. It also describes TRI v0.1 and Transparency Score v0.1 as planned/not yet scored, keeps current public language on Transparency Evidence, links score-like labels in the website back to methodology anchors, and includes in-page terminology explanations for the core scoring and result-package terms.
 
 This shell is not deployed and does not read from Supabase yet. It should become the public Observatory frontend after Phase 6 backend ingestion can persist and expose approved summary rows.
+
+## Phase 8 Agent Foundation
+
+Phase 8 Step 26 separates the Telperia Agent from the Evaluation Runner. The Evaluation Runner remains responsible for controlled benchmark sessions and result packages. The Agent is now a separate local-first scaffold under `agent/` for normal-use, non-content inference events.
+
+The first Agent CLI can write one schema-valid inference event to a local JSONL file. It defaults to private/local-only behavior, does not connect to Supabase, does not upload data, and keeps Research Contribution Mode disabled. The Agent imports shared telemetry types from `evaluation-runner/telperia_telemetry` so hardware telemetry structures can be reused without turning the runner into a continuous background process.
+
+Step 27 should build the next layer of Agent behavior: a local event loop or monitor boundary, explicit privacy modes, and a clearer path for future opt-in contribution without collecting prompt or response content.

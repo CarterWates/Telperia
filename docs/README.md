@@ -2,7 +2,7 @@
 
 ## Read These Docs In This Order
 
-This folder is organized so a new reader can move from the project purpose to the current backend work without guessing where to start.
+This folder is organized so a new reader can move from the project purpose to the current Agent and backend work without guessing where to start.
 
 ## Contributors
 
@@ -46,15 +46,20 @@ This folder is organized so a new reader can move from the project purpose to th
 3. `tests/fixtures/observatory/README.md`: public-safe row fixture used by the shell.
 4. `docs/observatory-data-shape.md`: contract for the public comparison fields.
 
+## Agent Work
+
+1. `agent/README.md`: local-first Agent scaffold, privacy defaults, and JSONL event export.
+2. `schemas/inference-event.schema.json`: non-content inference event contract.
+3. `schemas/telemetry-sample.schema.json`: shared non-content hardware telemetry sample contract.
+4. `docs/telperia-methodology-v0.1.md`: Agent privacy modes and prohibited default collection.
+
 Quick local checks:
 
 ```bash
 python3 -m unittest discover -s tests -q
-python3 -m compileall -q evaluation-runner tests
+python3 -m compileall -q agent apps/api evaluation-runner tests
 ```
 
 ## Current Phase
 
-Phase 6 is focused on private-by-default result ingestion. The repo currently has local validation, a runnable local API wrapper, API and backend contracts, a Supabase migration draft, setup guidance, test fixtures, and public-safe Observatory row examples.
-
-The repo now includes a local API skeleton, `evaluation-runner/validate_result.py`, and a static Observatory shell. Live Supabase deployment and a hosted API are not implemented yet.
+Phase 8 has started with Step 26: separating the Telperia Agent from the Evaluation Runner. The repo now includes local validation, a runnable local API wrapper, API and backend contracts, a Supabase migration draft, a static Observatory shell, and a local-only Agent scaffold. Live Supabase deployment, hosted API wiring, continuous Agent monitoring, and site deployment are not implemented yet.

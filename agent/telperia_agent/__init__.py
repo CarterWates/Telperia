@@ -1,0 +1,11 @@
+from __future__ import annotations
+
+DEFAULT_MODE = "private"
+DEFAULT_UPLOAD_ENABLED = False
+DEFAULT_RESEARCH_CONTRIBUTION_ENABLED = False
+
+__all__ = [
+    "DEFAULT_MODE",
+    "DEFAULT_RESEARCH_CONTRIBUTION_ENABLED",
+    "DEFAULT_UPLOAD_ENABLED",
+]
