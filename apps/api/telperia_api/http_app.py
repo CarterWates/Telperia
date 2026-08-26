@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import urlparse
 
-from telperia_api.ingestion_service import InMemoryIngestionStore, ingest_result_request
+from telperia_api.ingestion_service import InMemoryIngestionStore, IngestionStore, ingest_result_request
+from telperia_api.persistence import SQLiteIngestionStore
 
 
 DEFAULT_USER_ID = "local-dev-user"
@@ -18,8 +19,9 @@ INGEST_PATH = "/api/results/ingest"
 @dataclass(frozen=True)
 class LocalApiConfig:
     schema_path: Path
-    store: InMemoryIngestionStore = field(default_factory=InMemoryIngestionStore)
+    store: IngestionStore = field(default_factory=InMemoryIngestionStore)
     default_user_id: str = DEFAULT_USER_ID
+    storage_mode: str = "memory"
 
 
 @dataclass(frozen=True)
@@ -46,7 +48,7 @@ def handle_local_request(
                 "status": "ok",
                 "service": "telperia-api",
                 "mode": "local",
-                "storage": "memory",
+                "storage": config.storage_mode,
                 "supabase": "disabled",
             },
         )
@@ -99,12 +101,19 @@ def create_request_handler(config: LocalApiConfig) -> type[BaseHTTPRequestHandle
     return TelperiaLocalRequestHandler
 
 
-def run_local_api(*, host: str, port: int, schema_path: Path) -> None:
-    config = LocalApiConfig(schema_path=schema_path)
+def run_local_api(*, host: str, port: int, schema_path: Path, sqlite_db: Path | None = None) -> None:
+    if sqlite_db is None:
+        config = LocalApiConfig(schema_path=schema_path)
+    else:
+        config = LocalApiConfig(
+            schema_path=schema_path,
+            store=SQLiteIngestionStore(sqlite_db),
+            storage_mode="sqlite",
+        )
     handler = create_request_handler(config)
     server = ThreadingHTTPServer((host, port), handler)
     print(f"Telperia local API listening on http://{host}:{port}", flush=True)
-    print("Supabase writes are disabled; accepted uploads are stored in memory only.", flush=True)
+    print(f"Supabase writes are disabled; accepted uploads use {config.storage_mode} storage.", flush=True)
     server.serve_forever()
 
 
@@ -118,9 +127,14 @@ def main() -> None:
         default=Path(__file__).resolve().parents[3] / "schemas" / "evaluation-run.schema.json",
         help="Path to schemas/evaluation-run.schema.json.",
     )
+    parser.add_argument(
+        "--sqlite-db",
+        type=Path,
+        help="Optional local SQLite database path for persistent development ingestion.",
+    )
     args = parser.parse_args()
     try:
-        run_local_api(host=args.host, port=args.port, schema_path=args.schema)
+        run_local_api(host=args.host, port=args.port, schema_path=args.schema, sqlite_db=args.sqlite_db)
     except KeyboardInterrupt:
         print("\nTelperia local API stopped.", flush=True)
 

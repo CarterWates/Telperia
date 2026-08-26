@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import subprocess
 import sys
 import unittest
@@ -24,6 +25,7 @@ from telperia_api.ingestion_service import (
     ingest_result_request,
     storage_path_for,
 )
+from telperia_api.persistence import SQLiteIngestionStore
 
 
 class LocalIngestionApiTests(unittest.TestCase):
@@ -146,6 +148,17 @@ class LocalIngestionApiTests(unittest.TestCase):
         self.assertEqual(second.status_code, 409)
         self.assertEqual(second.payload["error_code"], "duplicate_run_id")
 
+    def test_rejects_cross_user_duplicate_run_id(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+        store = InMemoryIngestionStore()
+
+        first = ingest_result_request({"result_package": package}, user_id="user-1", schema_path=SCHEMA_PATH, store=store)
+        second = ingest_result_request({"result_package": package}, user_id="user-2", schema_path=SCHEMA_PATH, store=store)
+
+        self.assertEqual(first.status_code, 201)
+        self.assertEqual(second.status_code, 409)
+        self.assertEqual(second.payload["error_code"], "duplicate_run_id")
+
     def test_rejects_invalid_result_package_without_storing_record(self) -> None:
         package = load_fixture("valid_private_upload.json")
         package["evaluation"]["scores"]["private_probe"] = {"prompt": "do not store me"}
@@ -156,6 +169,159 @@ class LocalIngestionApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         self.assertEqual(response.payload["error_code"], "privacy_violation")
         self.assertIsNone(store.get_by_run_id(package["run_id"]))
+
+
+class SQLitePersistenceTests(unittest.TestCase):
+    def test_persists_valid_private_upload_raw_package_and_summaries_separately(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+            response = ingest_result_request(
+                {"result_package": package},
+                user_id="user-1",
+                schema_path=SCHEMA_PATH,
+                store=store,
+            )
+
+            self.assertEqual(response.status_code, 201)
+            upload_id = response.payload["upload_id"]
+            self.assertEqual(store.raw_package_for_upload(upload_id), package)
+            self.assertEqual(store.table_count("raw_result_packages"), 1)
+            self.assertEqual(store.table_count("result_uploads"), 1)
+            self.assertEqual(store.table_count("model_configs"), 1)
+            self.assertEqual(store.table_count("hardware_profiles"), 1)
+            self.assertEqual(store.table_count("evaluation_runs"), 1)
+            self.assertEqual(store.table_count("run_scores"), 1)
+            self.assertEqual(store.table_count("public_submissions"), 0)
+
+            upload = store.upload_row_for_run(package["run_id"])
+            self.assertEqual(upload["visibility"], "private")
+            self.assertEqual(upload["ingestion_status"], "accepted")
+            self.assertEqual(upload["schema_version"], "0.1")
+            self.assertEqual(upload["methodology_version"], "0.1")
+
+            summary = store.summary_row_for_run(package["run_id"])
+            self.assertEqual(summary["model_name"], package["model"]["name"])
+            self.assertEqual(summary["gpu"], package["hardware"]["gpu"])
+            self.assertEqual(summary["tci_v0_1"], package["evaluation"]["scores"]["tci_v0_1"]["final_score"])
+            self.assertNotIn("raw_results", summary)
+            self.assertNotIn("prompt", json.dumps(summary).lower())
+            self.assertNotIn("response", json.dumps(summary).lower())
+
+    def test_persists_public_submission_request_as_pending_review(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+            response = ingest_result_request(
+                {"result_package": package, "visibility": "submit_for_public_review"},
+                user_id="user-1",
+                schema_path=SCHEMA_PATH,
+                store=store,
+            )
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.payload["visibility"], "submitted_for_public_review")
+            self.assertEqual(response.payload["public_submission_status"], "pending_review")
+            self.assertEqual(store.table_count("public_submissions"), 1)
+            upload = store.upload_row_for_run(package["run_id"])
+            self.assertEqual(upload["visibility"], "submitted_for_public_review")
+            self.assertEqual(upload["public_submission_requested"], 1)
+
+    def test_rejected_uploads_do_not_persist_any_rows(self) -> None:
+        invalid_schema = load_fixture("valid_private_upload.json")
+        del invalid_schema["hardware"]
+        privacy_violation = load_fixture("valid_private_upload.json")
+        privacy_violation["evaluation"]["scores"]["private_probe"] = {"prompt": "do not store me"}
+
+        for package in [invalid_schema, privacy_violation]:
+            with tempfile.TemporaryDirectory() as directory:
+                store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+                response = ingest_result_request(
+                    {"result_package": package},
+                    user_id="user-1",
+                    schema_path=SCHEMA_PATH,
+                    store=store,
+                )
+
+                self.assertEqual(response.status_code, 422)
+                self.assertEqual(store.table_count("raw_result_packages"), 0)
+                self.assertEqual(store.table_count("result_uploads"), 0)
+                self.assertEqual(store.table_count("evaluation_runs"), 0)
+                self.assertEqual(store.table_count("run_scores"), 0)
+
+    def test_direct_public_visibility_does_not_persist_rows(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+            response = ingest_result_request(
+                {"result_package": package, "visibility": "public"},
+                user_id="user-1",
+                schema_path=SCHEMA_PATH,
+                store=store,
+            )
+
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.payload["error_code"], "invalid_visibility")
+            self.assertEqual(store.table_count("raw_result_packages"), 0)
+            self.assertEqual(store.table_count("result_uploads"), 0)
+
+    def test_missing_required_sections_are_rejected_before_persistence(self) -> None:
+        for field in ["model", "runtime", "hardware", "methodology", "energy"]:
+            package = load_fixture("valid_private_upload.json")
+            del package[field]
+            with tempfile.TemporaryDirectory() as directory:
+                store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+                response = ingest_result_request(
+                    {"result_package": package},
+                    user_id="user-1",
+                    schema_path=SCHEMA_PATH,
+                    store=store,
+                )
+
+                self.assertEqual(response.status_code, 422)
+                self.assertEqual(response.payload["error_code"], "invalid_schema")
+                self.assertEqual(store.table_count("raw_result_packages"), 0)
+                self.assertEqual(store.table_count("result_uploads"), 0)
+
+    def test_persisted_duplicate_handling_matches_contract(self) -> None:
+        package = load_fixture("duplicate_run_id_original.json")
+        changed_package = load_fixture("duplicate_run_id_changed.json")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+            first = ingest_result_request({"result_package": package}, user_id="user-1", schema_path=SCHEMA_PATH, store=store)
+            same = ingest_result_request({"result_package": package}, user_id="user-1", schema_path=SCHEMA_PATH, store=store)
+            changed = ingest_result_request(
+                {"result_package": changed_package},
+                user_id="user-1",
+                schema_path=SCHEMA_PATH,
+                store=store,
+            )
+
+            self.assertEqual(first.status_code, 201)
+            self.assertEqual(same.status_code, 200)
+            self.assertTrue(same.payload["duplicate"])
+            self.assertEqual(changed.status_code, 409)
+            self.assertEqual(changed.payload["error_code"], "duplicate_run_id")
+            self.assertEqual(store.table_count("result_uploads"), 1)
+
+    def test_persisted_cross_user_duplicate_run_id_is_rejected(self) -> None:
+        package = load_fixture("valid_private_upload.json")
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+
+            first = ingest_result_request({"result_package": package}, user_id="user-1", schema_path=SCHEMA_PATH, store=store)
+            second = ingest_result_request({"result_package": package}, user_id="user-2", schema_path=SCHEMA_PATH, store=store)
+
+            self.assertEqual(first.status_code, 201)
+            self.assertEqual(second.status_code, 409)
+            self.assertEqual(second.payload["error_code"], "duplicate_run_id")
+            self.assertEqual(store.table_count("result_uploads"), 1)
 
 
 class ValidateResultCliTests(unittest.TestCase):

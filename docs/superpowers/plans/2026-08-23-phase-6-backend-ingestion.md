@@ -63,27 +63,27 @@
 
 ## Task 5: Ingestion Endpoint
 
-- [ ] Accept one `result_package` JSON object per request.
-- [ ] Default visibility to `private`.
-- [ ] Allow `submit_for_public_review` but not direct `public` visibility.
-- [ ] Run the local ingestion validator before any storage or summary writes.
-- [ ] Hash the incoming package for duplicate handling.
-- [ ] Store raw JSON in `result-packages/users/{user_id}/runs/{run_id}.json`.
-- [ ] Write normalized model, hardware, run, score, and upload records in one server-side flow.
-- [ ] Return stable accepted and rejected response shapes from `docs/result-ingestion-contract.md`.
+- [x] Accept one `result_package` JSON object per request.
+- [x] Default visibility to `private`.
+- [x] Allow `submit_for_public_review` but not direct `public` visibility.
+- [x] Run the local ingestion validator before any storage or summary writes.
+- [x] Hash the incoming package for duplicate handling.
+- [x] Store raw JSON in `result-packages/users/{user_id}/runs/{run_id}.json`.
+- [x] Write normalized model, hardware, run, score, and upload records in one server-side flow.
+- [x] Return stable accepted and rejected response shapes from `docs/result-ingestion-contract.md`.
 
 ## Task 6: Duplicate Handling
 
-- [ ] Treat `run_id` as globally unique.
-- [ ] Return the existing accepted upload when the same owner submits identical content.
-- [ ] Reject the same owner submitting different content for the same `run_id`.
-- [ ] Reject cross-user `run_id` collisions until signed-run provenance exists.
-- [ ] Add tests for each duplicate path.
+- [x] Treat `run_id` as globally unique.
+- [x] Return the existing accepted upload when the same owner submits identical content.
+- [x] Reject the same owner submitting different content for the same `run_id`.
+- [x] Reject cross-user `run_id` collisions until signed-run provenance exists.
+- [x] Add tests for each duplicate path.
 
 ## Task 7: Public Review And Observatory Read Model
 
-- [ ] Create a public submission record only after validation succeeds.
-- [ ] Start submissions as `pending_review`.
+- [x] Create a public submission record only after validation succeeds.
+- [x] Start submissions as `pending_review`.
 - [ ] Add a read-only public summary query using fields from `docs/observatory-data-shape.md`.
 - [ ] Ensure public summaries never read private raw Storage URLs.
 - [ ] Include energy confidence and verification level in every public row.

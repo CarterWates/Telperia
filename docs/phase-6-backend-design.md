@@ -2,7 +2,7 @@
 
 ## Status
 
-Phase 6 backend design for the Telperia MVP. The local API wrapper and first Supabase migration foundation exist in the repo, but the migration has not been applied to a live Supabase project.
+Phase 6 backend design for the Telperia MVP. The local API wrapper, SQLite persistence path, and first Supabase migration foundation exist in the repo, but the migration has not been applied to a live Supabase project.
 
 The Phase 6 backend should accept local evaluation result packages, keep uploads private by default, validate every package before ingestion, and expose only explicitly public results to the future Observatory.
 
@@ -239,6 +239,8 @@ The detailed request, validation, extraction, response, and error-code contract 
 
 The first reusable local implementation is `evaluation-runner/telperia_runner/ingestion.py`. It validates packages and extracts the public-safe Observatory row without performing authentication, Storage writes, database writes, or network calls.
 
+The local API can now persist accepted uploads through `SQLiteIngestionStore` for development and tests. This stores raw package JSON separately from normalized upload, model, hardware, run, score, and public-review summary tables. Supabase Storage/Postgres wiring remains a future hosted-backend step.
+
 The future API wrapper responsibilities are summarized in `apps/api/README.md`.
 
 ## Validation Rules
@@ -315,10 +317,10 @@ The detailed public comparison shape is defined in `docs/observatory-data-shape.
 2. Confirm Supabase CLI or MCP access.
 3. Use the local validator in `evaluation-runner/telperia_runner/ingestion.py` as the server-side validation baseline.
 4. Create the initial migration for tables, indexes, RLS, and Storage bucket policies. Done in `supabase/migrations/20260823000000_phase_6_result_ingestion.sql`.
-5. Add server-side ingestion validation by wrapping the local contract checks.
-6. Add tests with valid and rejected result packages.
-7. Add a private upload path.
-8. Add public submission request and review status.
+5. Add server-side ingestion validation by wrapping the local contract checks. Done in the local API wrapper.
+6. Add tests with valid and rejected result packages. Done for local API and SQLite persistence.
+7. Add a private upload path. Done locally with generated `result-packages/users/{user_id}/runs/{run_id}.json` paths.
+8. Add public submission request and review status. Done locally with pending-review records.
 9. Add a read-only public summary query for Phase 7 Observatory work.
 10. Shape approved public summaries according to `docs/observatory-data-shape.md`.
 

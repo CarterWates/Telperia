@@ -2,7 +2,7 @@
 
 ## Status
 
-Local Phase 6 API skeleton for result ingestion. This folder contains a storage-free service module and a runnable local HTTP API that wrap the local result validator and return the same response shape expected by the future hosted endpoint.
+Local Phase 6 API skeleton for result ingestion. This folder contains a service module, local persistence adapters, and a runnable local HTTP API that wrap the local result validator and return the same response shape expected by the future hosted endpoint.
 
 The Phase 6 API should wrap the local result validator, write private raw packages to Supabase Storage, store queryable summaries in Postgres, and create public review requests only when the user explicitly asks for them.
 
@@ -42,6 +42,7 @@ It currently provides:
 
 - `ingest_result_request`: backend-shaped request handling for one result package.
 - `InMemoryIngestionStore`: local duplicate handling for tests and CLI usage.
+- `SQLiteIngestionStore`: local durable persistence for accepted uploads, raw packages, normalized summaries, and public-review requests.
 - Canonical package hashing.
 - Private Storage path generation.
 - Local validation through `evaluation-runner/telperia_runner/ingestion.py`.
@@ -58,7 +59,7 @@ It exposes:
 - `GET /health`
 - `POST /api/results/ingest`
 
-It does not write to Supabase. Accepted uploads are stored in memory only for the lifetime of the local process. That keeps Phase 6 implementation testable on a Mac before live infrastructure is connected.
+It does not write to Supabase. Accepted uploads can be stored in memory or in a local SQLite database. SQLite mode keeps Phase 6 persistence testable on a Mac before live infrastructure is connected.
 
 ## Run Locally
 
@@ -66,6 +67,15 @@ From the repository root:
 
 ```bash
 PYTHONPATH=apps/api:evaluation-runner python3 -m telperia_api.http_app --host 127.0.0.1 --port 8000
+```
+
+Run with local SQLite persistence:
+
+```bash
+PYTHONPATH=apps/api:evaluation-runner python3 -m telperia_api.http_app \
+  --host 127.0.0.1 \
+  --port 8000 \
+  --sqlite-db .local/telperia-api.db
 ```
 
 Health check:
@@ -123,9 +133,11 @@ Rules:
 - Public pages read extracted summaries, not raw Storage URLs.
 - Failed validation writes no accepted summaries.
 
+In SQLite development mode, raw package JSON is stored in `raw_result_packages`; queryable upload, model, hardware, run, score, and review fields are stored in separate summary tables. This mirrors the future Supabase separation without requiring credentials.
+
 ## Database Access
 
-The migration draft enables RLS and keeps trusted summary writes behind the future backend path.
+The migration draft enables RLS and keeps trusted summary writes behind the future backend path. The local SQLite adapter mirrors the same table responsibilities for development and tests, but it is not a replacement for Supabase RLS.
 
 The service should write:
 
@@ -152,8 +164,8 @@ The public Observatory should only read approved public summaries.
 - Supabase client wiring.
 - Auth/session handling.
 - Live Storage writes.
-- Duplicate package hash persistence.
 - Reviewer/admin workflow.
 - Public Observatory read endpoint.
+- FastAPI or deployed hosted wrapper.
 
 Those pieces should be added after the Supabase project is active and the migration has been tested locally or in staging.

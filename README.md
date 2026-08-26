@@ -8,7 +8,7 @@ Telperia is an open AI measurement project for comparing AI model configurations
 
 The long-term goal is to build an AI Observatory: a public place where builders, researchers, companies, and local AI users can understand how models perform, how reliable they are, how much local GPU energy they use, and how much evidence supports each result.
 
-This repository contains the MVP foundation for that system: methodology documents, schemas, a local evaluation runner, NVIDIA telemetry collection, early Windows and Mac result packages, ingestion validation, backend design docs, and a draft Supabase migration.
+This repository contains the MVP foundation for that system: methodology documents, schemas, a local evaluation runner, NVIDIA telemetry collection, early Windows and Mac result packages, ingestion validation, local backend persistence, backend design docs, and a draft Supabase migration.
 
 ## Why Telperia Exists
 
@@ -95,14 +95,14 @@ Completed foundation work includes:
 - Windows RTX 5070 seed results under `datasets/results/`.
 - Repeatability and energy confidence guidance for local testing.
 - A local ingestion validator that checks schema validity, privacy rules, score math, IPW math, and raw telemetry consistency.
-- A local Phase 6 API skeleton that wraps the validator and models backend ingestion responses.
+- A local Phase 6 API skeleton that wraps the validator, models backend ingestion responses, and can persist accepted uploads to SQLite for development.
 - A result validation CLI for checking packages before hosted upload exists.
 - Public-safe Observatory row fixtures for future website and API testing.
 - A static Observatory website shell with home, methodology, results table, and result detail views.
 - A Phase 6 backend design, result ingestion contract, API contract, Supabase setup guide, and draft migration.
 - Security guidance for secrets, uploads, raw JSON privacy, public review, and release checks.
 
-No hosted Supabase backend or public Observatory website is live yet.
+No hosted Supabase backend or deployed public Observatory website is live yet.
 
 ## How A Result Package Works
 
@@ -131,12 +131,13 @@ See `docs/phase-5-results-summary.md` for the current seed result table.
 
 Phase 6 is active. The focus is private-by-default result ingestion before live backend deployment.
 
-The repo now includes a runnable local HTTP API wrapper around the ingestion validator. The next major implementation work is to connect the backend design to Supabase so it can:
+The repo now includes a runnable local HTTP API wrapper around the ingestion validator and a SQLite-backed persistence path for accepted uploads. It can:
 
-- Connect authenticated requests to Supabase.
 - Store raw JSON privately.
 - Persist public-safe summary rows.
 - Keep public submission as an explicit opt-in review flow.
+
+The next major backend work is to connect this persistence boundary to Supabase with real authentication, private Storage writes, and Postgres summary writes.
 
 The first static Observatory shell now exists under `apps/observatory-web/`. The next website step is connecting it to persisted public summaries after Phase 6 backend ingestion is live.
 
@@ -163,6 +164,12 @@ python3 -m unittest discover -s tests -q
 python3 -m compileall -q evaluation-runner tests
 python3 evaluation-runner/evaluate.py --help
 python3 evaluation-runner/validate_result.py tests/fixtures/ingestion/valid_private_upload.json
+```
+
+Run the local API with SQLite persistence:
+
+```bash
+PYTHONPATH=apps/api:evaluation-runner python3 -m telperia_api.http_app --sqlite-db .local/telperia-api.db
 ```
 
 Open the static Observatory shell locally:
@@ -193,6 +200,7 @@ See `evaluation-runner/README.md`, `docs/phase-5-local-experiments.md`, and `doc
 - Mac machines can generate valid capability result packages, but measured NVIDIA GPU energy is deferred unless compatible telemetry exists.
 - TCI v0.1 is an MVP benchmark and should be interpreted as an early methodology, not a final intelligence measure.
 - TCI v0.2 is a proposal only and is not implemented in current result packages.
+- Local backend persistence uses SQLite for development; live Supabase Storage/Postgres wiring is not connected yet.
 - The backend migration is drafted but not applied to a live Supabase project yet.
 - The public Observatory website and community submission flow are planned but not live.
 

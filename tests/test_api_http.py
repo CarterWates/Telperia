@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -17,6 +18,7 @@ sys.path.insert(0, str(API_ROOT))
 
 from telperia_api.http_app import LocalApiConfig, handle_local_request
 from telperia_api.ingestion_service import InMemoryIngestionStore
+from telperia_api.persistence import SQLiteIngestionStore
 
 
 class LocalHttpApiTests(unittest.TestCase):
@@ -91,6 +93,19 @@ class LocalHttpApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.payload["visibility"], "submitted_for_public_review")
         self.assertEqual(response.payload["public_submission_status"], "pending_review")
+
+    def test_ingest_endpoint_can_use_sqlite_persistence(self) -> None:
+        body = {"result_package": load_fixture("valid_private_upload.json")}
+        with tempfile.TemporaryDirectory() as directory:
+            store = SQLiteIngestionStore(Path(directory) / "telperia.db")
+            config = LocalApiConfig(schema_path=SCHEMA_PATH, store=store, storage_mode="sqlite")
+
+            response = handle_local_request("POST", "/api/results/ingest", {}, encode_json(body), config)
+            health = handle_local_request("GET", "/health", {}, b"", config)
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(health.payload["storage"], "sqlite")
+            self.assertEqual(store.table_count("result_uploads"), 1)
 
     def test_ingest_endpoint_rejects_malformed_json(self) -> None:
         response = handle_local_request("POST", "/api/results/ingest", {}, b"{", self.config)

@@ -5,7 +5,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 from uuid import uuid4
 
 from telperia_runner.ingestion import extract_observatory_row, validate_ingestion_package
@@ -43,6 +43,14 @@ class StoredIngestionRecord:
     validation_warnings: list[str]
 
 
+class IngestionStore(Protocol):
+    def get_by_run_id(self, run_id: str) -> StoredIngestionRecord | None:
+        ...
+
+    def save(self, record: StoredIngestionRecord) -> None:
+        ...
+
+
 class InMemoryIngestionStore:
     def __init__(self) -> None:
         self._records_by_run_id: dict[str, StoredIngestionRecord] = {}
@@ -59,7 +67,7 @@ def ingest_result_request(
     *,
     user_id: str | None,
     schema_path: Path,
-    store: InMemoryIngestionStore | None = None,
+    store: IngestionStore | None = None,
 ) -> IngestionResponse:
     if not user_id:
         return _rejected(401, "unauthenticated", "Authentication is required to upload result packages.")
