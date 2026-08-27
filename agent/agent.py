@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from time import sleep
 from pathlib import Path
 
 
@@ -14,9 +15,11 @@ if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from telperia_agent import DEFAULT_MODE, DEFAULT_RESEARCH_CONTRIBUTION_ENABLED, DEFAULT_UPLOAD_ENABLED
+from telperia_agent.buffer import AgentBuffer, BufferLimitError
 from telperia_agent.environment import build_environment_metadata
 from telperia_agent.events import build_inference_event
 from telperia_agent.exporters import append_jsonl
+from telperia_agent.fields import collected_fields_manifest
 from telperia_agent.hardware import build_unavailable_hardware_sample
 from telperia_agent.privacy import (
     PrivacyModeError,
@@ -90,6 +93,48 @@ def main() -> int:
     )
     _add_privacy_arguments(snapshot)
 
+    run = subcommands.add_parser(
+        "run",
+        help="Run the local Agent loop and buffer non-content hardware records.",
+    )
+    run.add_argument("--output-dir", type=Path, required=True)
+    run.add_argument("--interval-seconds", type=float, default=5.0)
+    run.add_argument("--max-samples", type=int)
+    run.add_argument("--max-storage-bytes", type=int, default=5_000_000)
+    run.add_argument("--model-id")
+    run.add_argument("--inference-engine", default="unknown")
+    run.add_argument(
+        "--telemetry-schema",
+        type=Path,
+        default=PROJECT_ROOT / "schemas" / "telemetry-sample.schema.json",
+        help="Path to schemas/telemetry-sample.schema.json.",
+    )
+    _add_privacy_arguments(run)
+
+    buffer_status = subcommands.add_parser(
+        "buffer-status",
+        help="Show local Agent buffer status without reading raw private content.",
+    )
+    buffer_status.add_argument("--output-dir", type=Path, required=True)
+
+    delete_local_data = subcommands.add_parser(
+        "delete-local-data",
+        help="Delete Agent-owned local buffer and pause state files.",
+    )
+    delete_local_data.add_argument("--output-dir", type=Path, required=True)
+    delete_local_data.add_argument("--confirm", action="store_true")
+
+    pause = subcommands.add_parser("pause", help="Pause local Agent collection.")
+    pause.add_argument("--output-dir", type=Path, required=True)
+
+    resume = subcommands.add_parser("resume", help="Resume local Agent collection.")
+    resume.add_argument("--output-dir", type=Path, required=True)
+
+    subcommands.add_parser(
+        "collected-fields",
+        help="Show exactly which Agent fields are collected and which are never collected.",
+    )
+
     args = parser.parse_args()
     if args.command == "privacy-status":
         return _privacy_status(args)
@@ -97,6 +142,18 @@ def main() -> int:
         return _record_once(args)
     if args.command == "snapshot":
         return _snapshot(args)
+    if args.command == "run":
+        return _run(args)
+    if args.command == "buffer-status":
+        return _buffer_status(args)
+    if args.command == "delete-local-data":
+        return _delete_local_data(args)
+    if args.command == "pause":
+        return _pause(args)
+    if args.command == "resume":
+        return _resume(args)
+    if args.command == "collected-fields":
+        return _collected_fields()
     return 2
 
 
@@ -225,6 +282,94 @@ def _snapshot(args: argparse.Namespace) -> int:
         f"research_contribution_enabled={DEFAULT_RESEARCH_CONTRIBUTION_ENABLED}",
         flush=True,
     )
+    return 0
+
+
+def _run(args: argparse.Namespace) -> int:
+    if args.interval_seconds < 0:
+        print("interval-seconds must be nonnegative.", file=sys.stderr)
+        return 2
+    if args.max_samples is not None and args.max_samples < 1:
+        print("max-samples must be positive when provided.", file=sys.stderr)
+        return 2
+    try:
+        privacy_settings = resolve_privacy_settings(
+            args.privacy_mode,
+            research_contribution_enabled=args.research_contribution_opt_in,
+        )
+        require_local_export_allowed(privacy_settings)
+    except PrivacyModeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    agent_buffer = AgentBuffer(args.output_dir)
+    if agent_buffer.is_paused():
+        print("Agent collection is paused; no records written.", flush=True)
+        return 0
+
+    written = 0
+    try:
+        while args.max_samples is None or written < args.max_samples:
+            sample = build_unavailable_hardware_sample(
+                node_id="local",
+                current_model=args.model_id,
+                inference_engine=args.inference_engine,
+                request_count=0,
+                error_count=0,
+            )
+            try:
+                validate_result_package(sample.to_dict(), args.telemetry_schema)
+                agent_buffer.append(
+                    "hardware_sample",
+                    sample.to_dict(),
+                    privacy_settings,
+                    max_storage_bytes=args.max_storage_bytes,
+                )
+            except SchemaValidationError as exc:
+                print(f"Invalid hardware sample: {exc}", file=sys.stderr)
+                return 1
+            except BufferLimitError as exc:
+                print(f"Local storage limit reached: {exc}", file=sys.stderr)
+                return 1
+            written += 1
+            if args.max_samples is None or written < args.max_samples:
+                sleep(args.interval_seconds)
+    except KeyboardInterrupt:
+        print(f"Agent stopped cleanly after {written} sample(s).", flush=True)
+        return 0
+
+    print(f"Agent wrote {written} sample(s) to the local buffer; upload disabled.", flush=True)
+    return 0
+
+
+def _buffer_status(args: argparse.Namespace) -> int:
+    print(json.dumps(AgentBuffer(args.output_dir).status(), sort_keys=True), flush=True)
+    return 0
+
+
+def _delete_local_data(args: argparse.Namespace) -> int:
+    if not args.confirm:
+        print("delete-local-data requires --confirm.", file=sys.stderr)
+        return 2
+    deleted = AgentBuffer(args.output_dir).delete_local_data()
+    print(f"Deleted {deleted} Agent-owned local file(s).", flush=True)
+    return 0
+
+
+def _pause(args: argparse.Namespace) -> int:
+    AgentBuffer(args.output_dir).pause()
+    print("Agent collection paused.", flush=True)
+    return 0
+
+
+def _resume(args: argparse.Namespace) -> int:
+    AgentBuffer(args.output_dir).resume()
+    print("Agent collection resumed.", flush=True)
+    return 0
+
+
+def _collected_fields() -> int:
+    print(json.dumps(collected_fields_manifest(), sort_keys=True), flush=True)
     return 0
 
 

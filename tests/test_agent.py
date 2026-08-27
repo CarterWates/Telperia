@@ -320,6 +320,203 @@ class TelperiaAgentTests(unittest.TestCase):
             self.assertIn("not connected", completed.stderr.lower())
             self.assertFalse(output.exists())
 
+    def test_agent_runtime_loop_writes_buffered_private_records(self) -> None:
+        with TemporaryDirectory() as directory:
+            output_dir = Path(directory)
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(AGENT_CLI_PATH),
+                    "run",
+                    "--output-dir",
+                    str(output_dir),
+                    "--interval-seconds",
+                    "0",
+                    "--max-samples",
+                    "2",
+                    "--model-id",
+                    "llama3.1:8b",
+                    "--inference-engine",
+                    "ollama",
+                ],
+                cwd=PROJECT_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertIn("2 sample", completed.stdout.lower())
+            records = self.read_buffer_records(output_dir)
+
+        self.assertEqual(len(records), 2)
+        self.assertTrue(all(record["record_type"] == "hardware_sample" for record in records))
+        self.assertTrue(all(record["privacy"]["mode"] == "private" for record in records))
+        self.assertTrue(all(record["buffer"]["upload_status"] == "not_configured" for record in records))
+        self.assertTrue(all(record["buffer"]["upload_attempt_count"] == 0 for record in records))
+        self.assertEqual(len({record["buffer"]["local_record_id"] for record in records}), 2)
+        for record in records:
+            validate_result_package(record["data"], TELEMETRY_SCHEMA_PATH)
+            self.assert_public_safe(record)
+
+    def test_agent_runtime_storage_limit_is_enforced_safely(self) -> None:
+        with TemporaryDirectory() as directory:
+            output_dir = Path(directory)
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(AGENT_CLI_PATH),
+                    "run",
+                    "--output-dir",
+                    str(output_dir),
+                    "--interval-seconds",
+                    "0",
+                    "--max-samples",
+                    "1",
+                    "--max-storage-bytes",
+                    "1",
+                    "--model-id",
+                    "llama3.1:8b",
+                ],
+                cwd=PROJECT_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(completed.returncode, 1)
+            self.assertIn("storage limit", completed.stderr.lower())
+            self.assertEqual(self.read_buffer_records(output_dir), [])
+
+    def test_agent_buffer_identifies_duplicate_records_by_hash(self) -> None:
+        from telperia_agent.buffer import AgentBuffer
+        from telperia_agent.privacy import resolve_privacy_settings
+
+        with TemporaryDirectory() as directory:
+            agent_buffer = AgentBuffer(Path(directory))
+            settings = resolve_privacy_settings()
+            data = {
+                "request_id": "request-1",
+                "start_time": "2026-08-26T12:00:00Z",
+                "end_time": "2026-08-26T12:00:01Z",
+                "latency_ms": 1000.0,
+                "model_id": "llama3.1:8b",
+                "input_tokens": 1,
+                "output_tokens": 2,
+                "tokens_per_second": 2.0,
+                "success": True,
+                "error_category": None,
+            }
+
+            first = agent_buffer.append("inference_event", data, settings)
+            second = agent_buffer.append("inference_event", data, settings)
+            records = agent_buffer.read_records()
+
+        self.assertEqual(first["buffer"]["content_hash"], second["buffer"]["content_hash"])
+        self.assertEqual(first["buffer"]["local_record_id"], second["buffer"]["local_record_id"])
+        self.assertTrue(second["buffer"]["duplicate"])
+        self.assertEqual(len(records), 1)
+
+    def test_agent_buffer_status_lists_pending_records_without_private_fields(self) -> None:
+        with TemporaryDirectory() as directory:
+            output_dir = Path(directory)
+            self.run_agent(
+                "run",
+                "--output-dir",
+                str(output_dir),
+                "--interval-seconds",
+                "0",
+                "--max-samples",
+                "1",
+                "--model-id",
+                "llama3.1:8b",
+            )
+
+            completed = self.run_agent("buffer-status", "--output-dir", str(output_dir))
+            payload = json.loads(completed.stdout)
+
+        self.assertEqual(payload["pending_count"], 1)
+        self.assertEqual(payload["upload_status"], "not_configured")
+        self.assertEqual(payload["privacy_mode"], "private")
+        self.assert_public_safe(payload)
+
+    def test_agent_delete_local_data_removes_only_agent_owned_files(self) -> None:
+        with TemporaryDirectory() as directory:
+            output_dir = Path(directory)
+            unrelated = output_dir / "notes.txt"
+            unrelated.write_text("keep me", encoding="utf-8")
+            self.run_agent(
+                "run",
+                "--output-dir",
+                str(output_dir),
+                "--interval-seconds",
+                "0",
+                "--max-samples",
+                "1",
+                "--model-id",
+                "llama3.1:8b",
+            )
+            self.run_agent("pause", "--output-dir", str(output_dir))
+
+            completed = self.run_agent("delete-local-data", "--output-dir", str(output_dir), "--confirm")
+
+            self.assertIn("deleted", completed.stdout.lower())
+            self.assertTrue(unrelated.exists())
+            self.assertEqual(self.read_buffer_records(output_dir), [])
+            self.assertFalse((output_dir / "agent-state.json").exists())
+
+    def test_agent_pause_prevents_collection_and_resume_allows_collection(self) -> None:
+        with TemporaryDirectory() as directory:
+            output_dir = Path(directory)
+            self.run_agent("pause", "--output-dir", str(output_dir))
+
+            paused = self.run_agent(
+                "run",
+                "--output-dir",
+                str(output_dir),
+                "--interval-seconds",
+                "0",
+                "--max-samples",
+                "1",
+                "--model-id",
+                "llama3.1:8b",
+            )
+            self.assertIn("paused", paused.stdout.lower())
+            self.assertEqual(self.read_buffer_records(output_dir), [])
+
+            self.run_agent("resume", "--output-dir", str(output_dir))
+            resumed = self.run_agent(
+                "run",
+                "--output-dir",
+                str(output_dir),
+                "--interval-seconds",
+                "0",
+                "--max-samples",
+                "1",
+                "--model-id",
+                "llama3.1:8b",
+            )
+            records_after_resume = self.read_buffer_records(output_dir)
+
+        self.assertIn("1 sample", resumed.stdout.lower())
+        self.assertEqual(len(records_after_resume), 1)
+
+    def test_agent_collected_fields_lists_allowed_fields_and_excludes_private_fields(self) -> None:
+        completed = self.run_agent("collected-fields")
+        payload = json.loads(completed.stdout)
+
+        self.assertIn("gpu.utilization_percent", payload["hardware"])
+        self.assertIn("model_id", payload["inference"])
+        self.assertIn("operating_system", payload["environment"])
+        self.assertIn("privacy.mode", payload["local_metadata"])
+        self.assertIn("prompt", payload["never_collected"])
+        self.assertIn("response", payload["never_collected"])
+        self.assertNotIn("prompt", payload["hardware"])
+        self.assertNotIn("response", payload["inference"])
+        self.assert_public_safe({"allowed": payload["hardware"] + payload["inference"] + payload["environment"] + payload["local_metadata"]})
+
     def test_agent_rejects_private_content_fields_before_export(self) -> None:
         from telperia_agent.events import build_inference_event
 
@@ -361,6 +558,23 @@ class TelperiaAgentTests(unittest.TestCase):
                     walk(child)
 
         walk(payload)
+
+    def run_agent(self, *args: str) -> subprocess.CompletedProcess[str]:
+        completed = subprocess.run(
+            [sys.executable, str(AGENT_CLI_PATH), *args],
+            cwd=PROJECT_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        return completed
+
+    def read_buffer_records(self, output_dir: Path) -> list[dict]:
+        buffer_path = output_dir / "agent-buffer.jsonl"
+        if not buffer_path.exists():
+            return []
+        return [json.loads(line) for line in buffer_path.read_text(encoding="utf-8").splitlines()]
 
 
 if __name__ == "__main__":

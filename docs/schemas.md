@@ -32,6 +32,16 @@ Agent local JSONL records wrap schema-valid payloads with a local `record_type` 
 
 The wrapper privacy metadata records the selected Agent privacy mode and whether upload is enabled. In the current MVP, upload remains disabled for every mode.
 
+Agent buffered records add local buffer metadata around those same payloads:
+
+- `buffer.local_record_id`
+- `buffer.created_at`
+- `buffer.upload_status`
+- `buffer.upload_attempt_count`
+- `buffer.content_hash`
+
+This metadata prepares for future retry and duplicate detection behavior. It does not indicate that upload exists in the current MVP.
+
 ## Versioning
 
 The first schema version is `0.1`. Future incompatible changes should add a new schema version instead of silently changing the meaning of existing result packages.

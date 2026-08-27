@@ -93,4 +93,6 @@ Phase 8 Step 27 adds the first Agent v0.1 local collection records. The Agent ca
 
 Phase 8 Step 28 adds explicit privacy modes. Private Mode is active and default. Personal Cloud Mode and Research Contribution Mode are recognized as planned modes, but neither can upload data until backend/cloud support is approved and connected. Research Contribution Mode remains disabled by default and requires explicit opt-in even to inspect its planned status.
 
-Step 29 should build the next layer of Agent behavior: a local event loop or monitor boundary, plus clearer local configuration for future opt-in contribution without collecting prompt or response content.
+Phase 8 Step 29 adds local buffering and a simple Agent runtime loop. The Agent can run in Private Mode, write non-content hardware samples to an Agent-owned local buffer, include retry-ready metadata without performing uploads, report buffer status, pause and resume collection, enforce a storage limit, delete only Agent-owned local files, and show exactly which fields are collected.
+
+Step 30 should build the next layer of Agent behavior: real local inference-engine observation or adapter boundaries, plus clearer configuration for future opt-in contribution without collecting prompt or response content.

@@ -20,3 +20,5 @@ Draft scaffold for MVP engineering constraints. This is not legal advice or a fi
 - Research Contribution Mode is planned for selected anonymized aggregate research data. It must require explicit opt-in and must remain disabled by default.
 
 The current MVP has no Agent upload path for any mode.
+
+Local Agent buffering must remain under the user-selected output directory. Users must be able to pause collection, inspect collected fields, and delete Agent-owned local buffer files without deleting unrelated files.

@@ -10,9 +10,10 @@ The Telperia Agent is separate from the Evaluation Runner:
 
 ## Current Status
 
-Step 28 adds explicit privacy modes on top of the Agent v0.1 local collection
-records. It does not connect to Supabase, upload data, require an account, or
-run continuously yet.
+Step 29 adds local buffering and a simple local runtime loop on top of the
+Agent privacy modes and v0.1 local collection records. It does not connect to
+Supabase, upload data, require an account, or run as a packaged background
+service yet.
 
 Current defaults:
 
@@ -123,3 +124,61 @@ The agent imports shared telemetry types and system telemetry helpers from
 `evaluation-runner/telperia_telemetry` instead of copying hardware telemetry
 structures. Future work can build on that shared package while keeping benchmark
 scoring inside the Evaluation Runner.
+
+## Local Runtime And Buffer
+
+Run a short local loop:
+
+```bash
+python3 agent/agent.py run \
+  --output-dir .local/telperia-agent \
+  --interval-seconds 1 \
+  --max-samples 3 \
+  --model-id llama3.1:8b \
+  --inference-engine ollama
+```
+
+The runtime writes Agent-owned local records to:
+
+```text
+.local/telperia-agent/agent-buffer.jsonl
+```
+
+Each buffered record includes:
+
+- `record_type`
+- privacy metadata
+- buffer metadata with local record id, created timestamp, upload status, upload attempt count, and content hash
+- non-content telemetry data
+
+Uploads are still disabled. Buffer records use `upload_status: not_configured`
+and `upload_attempt_count: 0` so future retry behavior has a safe place to start
+without creating a network path today.
+
+Check pending local records:
+
+```bash
+python3 agent/agent.py buffer-status --output-dir .local/telperia-agent
+```
+
+Pause or resume collection:
+
+```bash
+python3 agent/agent.py pause --output-dir .local/telperia-agent
+python3 agent/agent.py resume --output-dir .local/telperia-agent
+```
+
+Delete Agent-owned local files:
+
+```bash
+python3 agent/agent.py delete-local-data --output-dir .local/telperia-agent --confirm
+```
+
+The delete command removes only Agent-owned files in the chosen output
+directory: `agent-buffer.jsonl` and `agent-state.json`.
+
+Show collected fields:
+
+```bash
+python3 agent/agent.py collected-fields
+```
