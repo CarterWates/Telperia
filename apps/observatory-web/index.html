@@ -76,6 +76,37 @@
               <dd data-hero="monitor_backend">--</dd>
             </div>
           </dl>
+          <div class="measurement-visual" aria-hidden="true">
+            <div class="visual-head">
+              <span>Power trace</span>
+              <strong>Capability per watt-hour</strong>
+            </div>
+            <svg class="power-trace" viewBox="0 0 420 132" role="img" aria-label="Local inference power trace">
+              <path class="trace-rule" d="M12 108H408"></path>
+              <path class="trace-rule" d="M12 72H408"></path>
+              <path class="trace-rule" d="M12 36H408"></path>
+              <path
+                class="trace-line"
+                data-trace-line
+                d="M12 94 C48 78 72 82 102 65 C132 48 160 56 190 38 C228 16 258 60 292 47 C332 32 358 72 408 45"
+              ></path>
+              <circle class="trace-marker" data-trace-marker cx="292" cy="47" r="4"></circle>
+            </svg>
+            <div class="efficiency-field" aria-label="Capability and energy seed row field">
+              <b class="field-rule horizontal top"></b>
+              <b class="field-rule horizontal middle"></b>
+              <b class="field-rule horizontal bottom"></b>
+              <b class="field-rule vertical left"></b>
+              <b class="field-rule vertical center"></b>
+              <b class="field-rule vertical right"></b>
+              <span class="field-axis x-axis">Energy Wh</span>
+              <span class="field-axis y-axis">TCI</span>
+              <i class="field-point" data-field-point style="--x: 67%; --y: 38%"></i>
+              <i class="field-point muted" style="--x: 18%; --y: 68%"></i>
+              <i class="field-point muted" style="--x: 41%; --y: 52%"></i>
+              <i class="field-point muted" style="--x: 76%; --y: 30%"></i>
+            </div>
+          </div>
           <div class="specimen-axis" aria-hidden="true">
             <span style="--level: 25%"></span>
             <span style="--level: 58%"></span>
@@ -85,6 +116,11 @@
             <span style="--level: 64%"></span>
             <span style="--level: 52%"></span>
             <span style="--level: 76%"></span>
+          </div>
+          <div class="measurement-ribbon" aria-label="Benchmark specimen public fields">
+            <span>Local inference energy</span>
+            <span>Approved public summaries</span>
+            <span>Transparency evidence</span>
           </div>
           <p>
             Public rows expose summaries. Raw result packages preserve benchmark and telemetry evidence separately.

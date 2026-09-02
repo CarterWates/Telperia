@@ -20,6 +20,9 @@
   const comparisonTable = document.querySelector("#comparison-table");
   const comparisonStatus = document.querySelector("#comparison-status");
   const heroFields = document.querySelectorAll("[data-hero]");
+  const traceLine = document.querySelector("[data-trace-line]");
+  const traceMarker = document.querySelector("[data-trace-marker]");
+  const fieldPoint = document.querySelector("[data-field-point]");
   const models = summarizeModels(results);
   const comparisonRows = buildComparisonRows(results, modelProfiles);
   const comparisonSelectedIds = chooseDefaultComparisonIds(comparisonRows);
@@ -79,6 +82,47 @@
         field.textContent = value || "--";
       }
     });
+  }
+
+  function renderMeasurementVisuals(row, rows) {
+    if (!row) {
+      return;
+    }
+
+    const calculatedRows = rows.filter((item) => item.local_ipw_status === "calculated");
+    const maxEnergy = maxValue(calculatedRows.map((item) => item.gpu_energy_wh)) || 1;
+    const maxTci = maxValue(calculatedRows.map((item) => item.tci_v0_1)) || 100;
+    const x = clamp((Number(row.gpu_energy_wh || 0) / maxEnergy) * 74 + 13, 12, 88);
+    const y = clamp((Number(row.tci_v0_1 || 0) / maxTci) * 70 + 12, 12, 88);
+
+    if (fieldPoint) {
+      fieldPoint.dataset.x = String(Math.round(x));
+      fieldPoint.dataset.y = String(Math.round(y));
+      fieldPoint.style.setProperty("--x", `${x}%`);
+      fieldPoint.style.setProperty("--y", `${y}%`);
+    }
+
+    if (traceLine && traceMarker) {
+      const energy = Number(row.gpu_energy_wh || 0);
+      const tci = Number(row.tci_v0_1 || 0);
+      const ipw = Number(row.local_ipw_unscaled || 0);
+      const firstPeak = clamp(98 - tci, 28, 96);
+      const secondPeak = clamp(98 - ipw * 18, 22, 102);
+      const finalPeak = clamp(104 - energy * 80, 26, 104);
+      const d = [
+        "M12 96",
+        `C58 ${firstPeak} 84 92 116 ${clamp(firstPeak + 16, 34, 104)}`,
+        `C154 ${secondPeak} 186 ${clamp(secondPeak + 30, 40, 108)} 226 ${clamp(secondPeak + 8, 30, 100)}`,
+        `C268 ${finalPeak} 310 ${clamp(finalPeak + 36, 48, 110)} 408 ${clamp(finalPeak + 10, 30, 108)}`,
+      ].join(" ");
+      traceLine.setAttribute("d", d);
+      traceMarker.setAttribute("cx", "226");
+      traceMarker.setAttribute("cy", String(clamp(secondPeak + 8, 30, 100)));
+    }
+  }
+
+  function clamp(value, minimum, maximum) {
+    return Math.min(Math.max(value, minimum), maximum);
   }
 
   function formatPercent(value) {
@@ -687,6 +731,7 @@
   renderComparisonTable(comparisonRows);
   const heroResult = chooseHeroResult(results);
   updateHeroSpecimen(heroResult);
+  renderMeasurementVisuals(heroResult, results);
   if (models[0]) {
     selectModel(models[0].modelName);
   } else {

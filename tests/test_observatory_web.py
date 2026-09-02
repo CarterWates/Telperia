@@ -574,6 +574,68 @@ class ObservatoryWebShellTests(unittest.TestCase):
             self.assertIsNone(re.search(pattern, css))
         self.assertNotIn("linear-gradient", css)
 
+    def test_site_includes_measurement_visuals_and_reduced_motion_support(self) -> None:
+        html = (WEB_ROOT / "index.html").read_text()
+        css = (WEB_ROOT / "styles.css").read_text()
+        script = (WEB_ROOT / "app.js").read_text()
+
+        for expected in [
+            "measurement-visual",
+            "power-trace",
+            "trace-line",
+            "efficiency-field",
+            "field-point",
+            "measurement-ribbon",
+            "Capability per watt-hour",
+        ]:
+            self.assertIn(expected, html)
+
+        for expected in [
+            "@keyframes trace-reveal",
+            "@keyframes telemetry-pulse",
+            "@media (prefers-reduced-motion: reduce)",
+            "animation: none",
+        ]:
+            self.assertIn(expected, css)
+
+        for expected in [
+            "renderMeasurementVisuals",
+            "dataset.x",
+            "dataset.y",
+            "traceLine",
+            "fieldPoint",
+            "chooseHeroResult",
+        ]:
+            self.assertIn(expected, script)
+
+    def test_measurement_visuals_preserve_public_safe_scope(self) -> None:
+        combined = "\n".join(
+            [
+                (WEB_ROOT / "index.html").read_text().lower(),
+                (WEB_ROOT / "styles.css").read_text().lower(),
+                (WEB_ROOT / "app.js").read_text().lower(),
+            ]
+        )
+
+        for expected in [
+            "local inference energy",
+            "capability per watt-hour",
+            "approved public summaries",
+            "transparency evidence",
+        ]:
+            self.assertIn(expected, combined)
+
+        for forbidden in [
+            "data-center energy measurement",
+            "datacenter energy measurement",
+            "full data-center energy",
+            "prompt text is collected",
+            "response text is collected",
+            "storage_path",
+            "api_key",
+        ]:
+            self.assertNotIn(forbidden, combined)
+
     def test_hero_layout_uses_viewport_safe_desktop_scale(self) -> None:
         css = (WEB_ROOT / "styles.css").read_text()
 
